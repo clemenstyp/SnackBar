@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <title>CoffeeList</title>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+    <style>
+        p {
+            margin-top: 3em;
+        }
+
+        div {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <p>
+      <form action="{{ url_for('login') }}" method="post">
+        <div class="ui container">
+            {% for user in users %}
+            <button name="UserButton" value="{% if user.id %}{{user.id}}{% endif %}" class="huge ui button">
+                {{ user.name }}
+            </button>
+            {% endfor %}
+        </div>
+      </form>
+    </p>
+</body>
+
+</html>

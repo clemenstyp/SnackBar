@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <title>CoffeeList</title>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+    <style>
+        p {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 5em
+        }
+    </style>
+
+</head>
+
+<body>
+    <p>
+        <div class="ui container">
+            <div class="ui grid">
+                Hallo {{chosenuser}}, du hast in diesem Monat bereits {{ '%d' % nCoffee}} Kaffee getrunken!
+            </div>
+        </div>
+    </p>
+</body>
+
+</html>
