@@ -3,40 +3,46 @@ from flask import render_template
 from flask import request
 from ldap3 import Server, Connection, ALL, NTLM
 import sqlite3
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy import create_engine, MetaData, select
 
 Base = declarative_base()
 
-def connect(user, password, db, host='localhost', port=5432):
-    '''Returns a connection and a metadata object'''
-    # We connect with the help of the PostgreSQL URL
-    # postgresql://federer:grandestslam@localhost:5432/tennis
-    url = 'postgresql://{}:{}@{}:{}/{}'
-    url = url.format(user, password, host, port, db)
+user = 'coffeeadmin'
+password = 'ilikecoffee'
+db = 'CoffeeList'
+host = 'localhost'
+port = 5432
 
-    # The return value of create_engine() is our connection object
-    con = create_engine(url, client_encoding='utf8')
+url = 'postgresql://{}:{}@{}:{}/{}'
+url = url.format(user, password, host, port, db)
 
-    # We then bind the connection to MetaData()
-    meta = MetaData(bind=con, reflect=True)
+class CoffeeList(Base):
+     __tablename__ = 'coffeelist'
 
-    return con, meta
+     id = Column(Integer, primary_key=True)
+     name = Column(String)
+     ncoffee = Column(Integer)
 
-class CoffeeList():
-    __tablename__='coffeelist'
+     def __repr__(self):
+        return "<User(name='%s')>" % (
+                             self.name)
 
+engine = create_engine(url, client_encoding='utf8')
+metadata = MetaData(bind=engine, reflect=True)
 
-con, meta = connect('coffeeadmin', 'ilikecoffee', 'CoffeeList')
-print(con)
-print(meta)
+Session = sessionmaker(bind=engine)
+myfirstSession = Session()
+
+for instance in myfirstSession.query(CoffeeList).order_by(CoffeeList.ncoffee):
+    print(instance.name, instance.ncoffee)
 
 
 exit(0)
 
-#postgresql+pygresql://user:password@host:port/dbname[?key=value&key=value...]
+#postgresql+pygresql://user:password@host:port/dbname[?key=value&key=value]
 
 # conn = sqlite3.connect('sqlite/CoffeeList.db')
 # c = conn.cursor()
