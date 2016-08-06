@@ -30,18 +30,6 @@ class CoffeeList(Base):
         return "<User(name='%s')>" % (
                              self.name)
 
-engine = create_engine(url, client_encoding='utf8')
-metadata = MetaData(bind=engine, reflect=True)
-
-Session = sessionmaker(bind=engine)
-myfirstSession = Session()
-
-for instance in myfirstSession.query(CoffeeList).order_by(CoffeeList.ncoffee):
-    print(instance.name, instance.ncoffee)
-
-
-exit(0)
-
 #postgresql+pygresql://user:password@host:port/dbname[?key=value&key=value]
 
 # conn = sqlite3.connect('sqlite/CoffeeList.db')
@@ -78,16 +66,18 @@ def hello():
     #     if 'givenName' in item.entry_get_attributes_dict().keys():
     #         users.append({'name': '{} {}'.format(item.givenName, item.sn)})
     # conn.closed
-    conn = sqlite3.connect('sqlite/CoffeeList.db')
-    c = conn.cursor()
 
-    c.execute("SELECT * from coffeelist")
+    engine = create_engine(url, client_encoding='utf8')
+    metadata = MetaData(bind=engine, reflect=True)
+
+    Session = sessionmaker(bind=engine)
+    myfirstSession = Session()
+
     users = list()
-    for rows in c.fetchall():
-        users.append({'name': '{}'.format(rows[1]),
-                     'id': '{}'.format(rows[0])})
 
-    conn.close()
+    for instance in myfirstSession.query(CoffeeList):
+        users.append({'name': '{}'.format(instance.name),
+                      'id': '{}'.format(instance.id)})
 
     return render_template('index.html', users=users)
 
@@ -96,11 +86,14 @@ def login():
 
     if request.method == 'POST':
         userid = request.form['UserButton']
-        conn = sqlite3.connect('sqlite/CoffeeList.db')
-        c = conn.cursor()
-        c.execute("SELECT name,nCoffee from coffeelist WHERE id={}".format(userid))
-        for record in c.fetchall():
-            userName = record[0]
-            nCoffeeUser = int(record[1])
+        engine = create_engine(url, client_encoding='utf8')
+        metadata = MetaData(bind=engine, reflect=True)
 
+        Session = sessionmaker(bind=engine)
+        myfirstSession = Session()
+
+        for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
+            userName = instance.name
+            nCoffeeUser = instance.ncoffee
+            
     return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser)
