@@ -1,42 +1,36 @@
-from flask import Flask
+from flask import Flask, redirect,url_for
 from flask import render_template
 from flask import request
 from ldap3 import Server, Connection, ALL, NTLM
 import sqlite3
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, update
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy import create_engine, MetaData, select
 
 Base = declarative_base()
 
-def connect(user, password, db, host='localhost', port=5432):
-    '''Returns a connection and a metadata object'''
-    # We connect with the help of the PostgreSQL URL
-    # postgresql://federer:grandestslam@localhost:5432/tennis
-    url = 'postgresql://{}:{}@{}:{}/{}'
-    url = url.format(user, password, host, port, db)
+user = 'coffeeadmin'
+password = 'ilikecoffee'
+db = 'CoffeeList'
+host = 'localhost'
+port = 5432
 
-    # The return value of create_engine() is our connection object
-    con = create_engine(url, client_encoding='utf8')
+url = 'sqlite:///sqlite/CoffeeList.db'
+url = url.format(user, password, host, port, db)
 
-    # We then bind the connection to MetaData()
-    meta = MetaData(bind=con, reflect=True)
+class CoffeeList(Base):
+     __tablename__ = 'coffeelist'
 
-    return con, meta
+     id = Column(Integer, primary_key=True)
+     name = Column(String)
+     ncoffee = Column(Integer)
 
-class CoffeeList():
-    __tablename__='coffeelist'
+     def __repr__(self):
+        return "<User(name='%s')>" % (
+                             self.name)
 
-
-con, meta = connect('coffeeadmin', 'ilikecoffee', 'CoffeeList')
-print(con)
-print(meta)
-
-
-exit(0)
-
-#postgresql+pygresql://user:password@host:port/dbname[?key=value&key=value...]
+#postgresql+pygresql://user:password@host:port/dbname[?key=value&key=value]
 
 # conn = sqlite3.connect('sqlite/CoffeeList.db')
 # c = conn.cursor()
@@ -72,29 +66,56 @@ def hello():
     #     if 'givenName' in item.entry_get_attributes_dict().keys():
     #         users.append({'name': '{} {}'.format(item.givenName, item.sn)})
     # conn.closed
-    conn = sqlite3.connect('sqlite/CoffeeList.db')
-    c = conn.cursor()
 
-    c.execute("SELECT * from coffeelist")
+    engine = create_engine(url, convert_unicode='utf8')
+    metadata = MetaData(bind=engine, reflect=True)
+
+    Session = sessionmaker(bind=engine)
+    myfirstSession = Session()
+
     users = list()
-    for rows in c.fetchall():
-        users.append({'name': '{}'.format(rows[1]),
-                     'id': '{}'.format(rows[0])})
 
-    conn.close()
+    for instance in myfirstSession.query(CoffeeList):
+        users.append({'name': '{}'.format(instance.name),
+                      'id': '{}'.format(instance.id)})
 
     return render_template('index.html', users=users)
 
-@app.route('/login/', methods=['GET', 'POST'])
-def login():
+@app.route('/login/<int:userid>')
+def login(userid):
 
-    if request.method == 'POST':
-        userid = request.form['UserButton']
-        conn = sqlite3.connect('sqlite/CoffeeList.db')
-        c = conn.cursor()
-        c.execute("SELECT name,nCoffee from coffeelist WHERE id={}".format(userid))
-        for record in c.fetchall():
-            userName = record[0]
-            nCoffeeUser = int(record[1])
+    engine = create_engine(url, convert_unicode='utf8')
+    metadata = MetaData(bind=engine, reflect=True)
 
-    return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser)
+    Session = sessionmaker(bind=engine)
+    myfirstSession = Session()
+
+    for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
+        userName = instance.name
+        nCoffeeUser = instance.ncoffee
+
+    return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser, userid=userid)
+
+@app.route('/change/<int:userid>')
+def change(userid):
+    addcoffee = "add"
+
+    engine = create_engine(url, convert_unicode='utf8')
+    metadata = MetaData(bind=engine, reflect=True)
+
+    Session = sessionmaker(bind=engine)
+    myfirstSession = Session()
+
+    for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
+        userName = instance.name
+        nCoffeeUser = instance.ncoffee
+
+    if addcoffee=='add':
+        myfirstSession.query(CoffeeList).update({CoffeeList.ncoffee: CoffeeList.ncoffee+1})
+        myfirstSession.commit()
+
+
+        return redirect(url_for('login',userid=userid))
+
+if __name__ == "__main__":
+    app.run()
