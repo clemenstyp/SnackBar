@@ -17,6 +17,7 @@ host = 'localhost'
 port = 5432
 
 url = 'sqlite:///sqlite/CoffeeList.db'
+#url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
 class CoffeeList(Base):
@@ -43,7 +44,6 @@ app = Flask(__name__)
 @app.route('/', methods=['GET','POST'])
 def hello():
     myfirstSession = connect_db(url)
-
     users = list()
 
     for instance in myfirstSession.query(CoffeeList):
@@ -82,4 +82,5 @@ def change(userid):
 
 if __name__ == "__main__":
     app.run()
+
 
