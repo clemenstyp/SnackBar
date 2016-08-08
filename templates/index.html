@@ -21,13 +21,17 @@
 
 <body>
     <p>
-        <div class="ui container">
+      <div class="ui container">
+        <div class="ui stackable equal width grid">
             {% for user in users %}
-            <a href="/login/{{user.id}}" class="huge ui button">
+            <div class="column">
+                <a href="/login/{{user.id}}" class="huge ui button">
                 {{ user.name }}
             </a>
+          </div>
             {% endfor %}
         </div>
+      </div>
     </p>
 </body>
 

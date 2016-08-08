@@ -16,7 +16,7 @@ db = 'CoffeeList'
 host = 'localhost'
 port = 5432
 
-url = 'sqlite:///sqlite/CoffeeList.db'
+url = 'sqlite:///sqlite/TestDB.db'
 #url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
@@ -26,6 +26,8 @@ class CoffeeList(Base):
      id = Column(Integer, primary_key=True)
      name = Column(String)
      ncoffee = Column(Integer)
+     nsnacks = Column(Integer)
+     nwater = Column(Integer)
 
      def __repr__(self):
         return "<User(name='%s')>" % (
@@ -40,8 +42,13 @@ def connect_db(url):
     return myfirstSession
 
 app = Flask(__name__)
+@app.route('/test', methods=['GET'])
+def test():
+    print(request.args.get('a'))
+    print(request.args.get('b'))
 
-@app.route('/', methods=['GET','POST'])
+
+@app.route('/')
 def hello():
     myfirstSession = connect_db(url)
     users = list()
@@ -52,7 +59,7 @@ def hello():
 
     return render_template('index.html', users=users)
 
-@app.route('/login/<int:userid>')
+@app.route('/login/<int:userid>',methods = ['GET'])
 def login(userid):
 
     myfirstSession = connect_db(url)
@@ -60,25 +67,56 @@ def login(userid):
     for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
         userName = instance.name
         nCoffeeUser = instance.ncoffee
+        nSnacksUser = instance.nsnacks
+        nWaterUser = instance.nwater
 
-    return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser, userid=userid)
+    return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser, userid=userid, nWater=nWaterUser, nSnacks=nSnacksUser)
 
 @app.route('/change/<int:userid>')
 def change(userid):
-    addcoffee = "add"
 
     myfirstSession = connect_db(url)
+
+    action =  request.args.get('act')
+    item = request.args.get('item')
+
 
     for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
         userName = instance.name
         nCoffeeUser = instance.ncoffee
+        nWaterUser = instance.nwater
+        nSnacksUser = instance.nsnacks
 
-    if addcoffee=='add':
-        myfirstSession.query(CoffeeList).update({CoffeeList.ncoffee: CoffeeList.ncoffee+1})
-        myfirstSession.commit()
+    if item =='coffee':
+        if action=='add':
+            myfirstSession.query(CoffeeList).update({CoffeeList.ncoffee: CoffeeList.ncoffee+1})
+            myfirstSession.commit()
+        elif action=='del':
+            if nCoffeeUser-1 >= 0:
+                myfirstSession.query(CoffeeList).update({CoffeeList.ncoffee: CoffeeList.ncoffee-1})
+                myfirstSession.commit()
+
+    if item == 'water':
+        if action == 'add':
+            myfirstSession.query(CoffeeList).update({CoffeeList.nwater: CoffeeList.nwater + 1})
+            myfirstSession.commit()
+        elif action == 'del':
+            if nWaterUser-1 >= 0:
+                myfirstSession.query(CoffeeList).update({CoffeeList.nwater: CoffeeList.nwater - 1})
+                myfirstSession.commit()
+
+    if item == 'snacks':
+        if action == 'add':
+            myfirstSession.query(CoffeeList).update({CoffeeList.nsnacks: CoffeeList.nsnacks + 1})
+            myfirstSession.commit()
+        elif action == 'del':
+            if nSnacksUser-1 >= 0:
+                myfirstSession.query(CoffeeList).update({CoffeeList.nsnacks: CoffeeList.nsnacks - 1})
+                myfirstSession.commit()
 
 
-        return redirect(url_for('login',userid=userid))
+
+    return redirect(url_for('login',userid=userid))
 
 if __name__ == "__main__":
     app.run()
