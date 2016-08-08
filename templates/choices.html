@@ -34,8 +34,8 @@
                             {{ '%d' % nCoffee}}
                         </td>
                         <td class="collapsing">
-                            <a href="{{ url_for('change', userid=userid, act='add', item='coffee') }}" class="ui medium button"><i class="coffee icon"></i><i class="arrow up icon"></i></a>
-                            <a href="{{ url_for('change', userid=userid, act='del', item='coffee') }}" class="ui medium button"><i class="coffee icon"></i><i class="arrow down icon"></i></a>
+                            <a href="{{ url_for('change', userid=userid, act='add', item='coffee') }}" class="ui left attached button"><i class="arrow up icon"></i></a>
+                            <a href="{{ url_for('change', userid=userid, act='del', item='coffee') }}" class="right attached ui button"><i class="arrow down icon"></i></a>
 
                         </td>
                     </tr>
@@ -47,9 +47,8 @@
                             {{ '%d' % nSnacks}}
                         </td>
                         <td class="collapsing">
-                            <a href="{{ url_for('change', userid=userid, act='add', item='snacks') }}" class="ui medium button"><i class="coffee icon"></i><i class="arrow up icon"></i></a>
-                            <a href="{{ url_for('change', userid=userid, act='del',item='snacks' )}}" class="ui medium button"><i class="coffee icon"></i><i class="arrow down icon"></i></a>
-
+                            <a href="{{ url_for('change', userid=userid, act='add', item='snacks') }}" class="ui left attached button"><i class="arrow up icon"></i></a>
+                            <a href="{{ url_for('change', userid=userid, act='del',item='snacks' )}}" class="right attached ui button"><i class="arrow down icon"></i></a>
                         </td>
                     </tr>
                     <td>
@@ -59,8 +58,8 @@
                         {{ '%d' % nWater}}
                     </td>
                     <td class="collapsing">
-                        <a href="{{ url_for('change', userid=userid, act='add', item='water') }}" class="ui medium button"><i class="coffee icon"></i><i class="arrow up icon"></i></a>
-                        <a href="{{ url_for('change', userid=userid, act='del', item='water') }}" class="ui medium button"><i class="coffee icon"></i><i class="arrow down icon"></i></a>
+                        <a href="{{ url_for('change', userid=userid, act='add', item='water') }}" class="ui left attached button"><i class="arrow up icon"></i></a>
+                        <a href="{{ url_for('change', userid=userid, act='del', item='water') }}" class="right attached ui button"><i class="arrow down icon"></i></a>
 
                     </td>
                 </tr>
@@ -69,7 +68,8 @@
 
     </div>
 </div class="ui container">
-
+<div class="ui divider"></div>
+<h2 class="ui center aligned header"> Your current bill is: {{ currbill|round(2,'floor') }}€.</h2>
 <button class ="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
 </div>
 </p>

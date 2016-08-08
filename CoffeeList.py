@@ -16,6 +16,10 @@ db = 'CoffeeList'
 host = 'localhost'
 port = 5432
 
+priceCoffe = 0.4
+priceSnacks= 0.6
+priceWater = 0.9
+
 url = 'sqlite:///sqlite/TestDB.db'
 #url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
@@ -23,15 +27,19 @@ url = url.format(user, password, host, port, db)
 class CoffeeList(Base):
      __tablename__ = 'coffeelist'
 
-     id = Column(Integer, primary_key=True)
-     name = Column(String)
-     ncoffee = Column(Integer)
-     nsnacks = Column(Integer)
-     nwater = Column(Integer)
+     id       = Column(Integer, primary_key=True)
+     name     = Column(String)
+     ncoffee  = Column(Integer)
+     nsnacks  = Column(Integer)
+     nwater   = Column(Integer)
+     currbill = Column(Integer)
 
      def __repr__(self):
         return "<User(name='%s')>" % (
                              self.name)
+def updateBill(nCoffeeUser, nWaterUser,nSnacksUser):
+    currBill = nCoffeeUser*priceCoffe+nWaterUser*priceWater+nSnacksUser*priceSnacks
+    return currBill
 
 def connect_db(url):
     engine = create_engine(url, convert_unicode='utf8')
@@ -69,8 +77,14 @@ def login(userid):
         nCoffeeUser = instance.ncoffee
         nSnacksUser = instance.nsnacks
         nWaterUser = instance.nwater
+        currbill = instance.currbill
 
-    return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser, userid=userid, nWater=nWaterUser, nSnacks=nSnacksUser)
+    return render_template('choices.html',currbill = currbill,
+                                          chosenuser=userName,
+                                          nCoffee=nCoffeeUser,
+                                          userid=userid,
+                                          nWater=nWaterUser,
+                                          nSnacks=nSnacksUser)
 
 @app.route('/change/<int:userid>')
 def change(userid):
@@ -89,29 +103,42 @@ def change(userid):
 
     if item =='coffee':
         if action=='add':
-            myfirstSession.query(CoffeeList).update({CoffeeList.ncoffee: CoffeeList.ncoffee+1})
+            myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.ncoffee: CoffeeList.ncoffee+1})
+            currbill = updateBill(nCoffeeUser+1,nWaterUser,nSnacksUser)
+            myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.currbill: currbill})
             myfirstSession.commit()
+
         elif action=='del':
             if nCoffeeUser-1 >= 0:
-                myfirstSession.query(CoffeeList).update({CoffeeList.ncoffee: CoffeeList.ncoffee-1})
+                myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.ncoffee: CoffeeList.ncoffee-1})
+                currbill = updateBill(nCoffeeUser-1, nWaterUser, nSnacksUser)
+                myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.currbill: currbill})
                 myfirstSession.commit()
 
     if item == 'water':
         if action == 'add':
-            myfirstSession.query(CoffeeList).update({CoffeeList.nwater: CoffeeList.nwater + 1})
+            myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.nwater: CoffeeList.nwater + 1})
+            currbill = updateBill(nCoffeeUser,nWaterUser+1,nSnacksUser)
+            myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.currbill: currbill})
             myfirstSession.commit()
         elif action == 'del':
             if nWaterUser-1 >= 0:
-                myfirstSession.query(CoffeeList).update({CoffeeList.nwater: CoffeeList.nwater - 1})
+                myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.nwater: CoffeeList.nwater - 1})
+                currbill = updateBill(nCoffeeUser, nWaterUser-1, nSnacksUser)
+                myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.currbill: currbill})
                 myfirstSession.commit()
 
     if item == 'snacks':
         if action == 'add':
-            myfirstSession.query(CoffeeList).update({CoffeeList.nsnacks: CoffeeList.nsnacks + 1})
+            myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.nsnacks: CoffeeList.nsnacks + 1})
+            currbill = updateBill(nCoffeeUser, nWaterUser, nSnacksUser+1)
+            myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.currbill: currbill})
             myfirstSession.commit()
         elif action == 'del':
             if nSnacksUser-1 >= 0:
-                myfirstSession.query(CoffeeList).update({CoffeeList.nsnacks: CoffeeList.nsnacks - 1})
+                myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.nsnacks: CoffeeList.nsnacks - 1})
+                currbill = updateBill(nCoffeeUser, nWaterUser, nSnacksUser-1)
+                myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid).update({CoffeeList.currbill: currbill})
                 myfirstSession.commit()
 
 
