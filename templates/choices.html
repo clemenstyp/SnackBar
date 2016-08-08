@@ -18,14 +18,50 @@
 
 </head>
 
-<body>
+<body style="text-align:center">
     <p>
-        <div class="ui container">
-            <div class="ui grid">
-                Hallo {{chosenuser}}, du hast in diesem Monat bereits {{ '%d' % nCoffee}} Kaffee getrunken!
-            </div>
+        <div class="ui text container">
+            <h2 class="ui center aligned dividing header"> Hallo {{chosenuser}}!</h2>
+        </div>
+        <div class="ui center aligned container">
+            <table class="ui center aligned celled table" style="width:800px;margin-top:50px">
+                <tbody>
+                    <tr>
+                        <td>
+                            Coffee
+                        </td>
+                        <td>
+                            {{ '%d' % nCoffee}}   <form action="{{ url_for('change') }}" method="post">
+                                  <input type="hidden" value="{{ userid }}" name="UserId">
+                                  <button name="addCoffee" value="add" class="ui medium button"><i class="coffee icon"></i><i class="arrow up icon"></i></button>
+                              </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Water
+                        </td>
+                        <td>
+                            0
+                        </td>
+                    </tr>
+                    <td>
+                        Snacks
+                    </td>
+                    <td>
+                        12
+                    </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+        </div class="ui container">
+
+        <button class ="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
         </div>
     </p>
+
 </body>
 
 </html>

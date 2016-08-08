@@ -1,9 +1,9 @@
-from flask import Flask
+from flask import Flask, redirect,url_for
 from flask import render_template
 from flask import request
 from ldap3 import Server, Connection, ALL, NTLM
 import sqlite3
-from sqlalchemy import Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, update
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine, MetaData, select
@@ -85,7 +85,8 @@ def hello():
 def login():
 
     if request.method == 'POST':
-        userid = request.form['UserButton']
+
+        userid = request.form['UserId']
         engine = create_engine(url, client_encoding='utf8')
         metadata = MetaData(bind=engine, reflect=True)
 
@@ -95,5 +96,30 @@ def login():
         for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
             userName = instance.name
             nCoffeeUser = instance.ncoffee
-            
-    return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser)
+
+
+    return render_template('choices.html',chosenuser=userName,nCoffee=nCoffeeUser, userid=userid)
+
+@app.route('/change/', methods=['POST'])
+def change():
+    if request.method == 'POST':
+        userid = request.form['UserId']
+        addcoffee = request.form['addCoffee']
+
+        engine = create_engine(url, client_encoding='utf8')
+        metadata = MetaData(bind=engine, reflect=True)
+
+        Session = sessionmaker(bind=engine)
+        myfirstSession = Session()
+
+        for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
+            userName = instance.name
+            nCoffeeUser = instance.ncoffee
+
+        if addcoffee=='add':
+            myfirstSession.query(CoffeeList).update({CoffeeList.ncoffee: CoffeeList.ncoffee+1})
+            myfirstSession.commit()
+
+
+        return redirect(url_for('login',UserId=userid), code=307)
+

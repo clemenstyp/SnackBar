@@ -24,7 +24,7 @@
       <form action="{{ url_for('login') }}" method="post">
         <div class="ui container">
             {% for user in users %}
-            <button name="UserButton" value="{% if user.id %}{{user.id}}{% endif %}" class="huge ui button">
+            <button name="UserId" value="{% if user.id %}{{user.id}}{% endif %}" class="huge ui button">
                 {{ user.name }}
             </button>
             {% endfor %}
