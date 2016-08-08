@@ -1,7 +1,10 @@
-PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
-CREATE TABLE coffeelist (id integer primary key, name text, nCoffee int);
-INSERT INTO "coffeelist" VALUES(1,'Lennart Duschek',8);
-INSERT INTO "coffeelist" VALUES(2,'Jan Oliver Oelerich',1);
-INSERT INTO "coffeelist" VALUES(3,'Lukas Nattermann',2);
+CREATE TABLE "coffeelist" (
+	`id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+	`name`	TEXT NOT NULL,
+	`ncoffee`	INTEGER NOT NULL,
+	`nsnacks`	INTEGER NOT NULL,
+	`nwater`	INTEGER NOT NULL,
+	`currbill`	INTEGER
+);
 COMMIT;
