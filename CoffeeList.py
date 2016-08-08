@@ -30,48 +30,19 @@ class CoffeeList(Base):
         return "<User(name='%s')>" % (
                              self.name)
 
-#postgresql+pygresql://user:password@host:port/dbname[?key=value&key=value]
-
-# conn = sqlite3.connect('sqlite/CoffeeList.db')
-# c = conn.cursor()
-#
-# c.execute("SELECT name,nCoffee from coffeelist WHERE name='Lennart Duschek'")
-# for record in c.fetchall():
-#     userName=record[0]
-#     nCoffee=record[1]
-#
-# print(userName)
-# print(nCoffee)
-#
-# #c.execute("UPDATE coffeelist SET nCoffee={} WHERE name=name".format(nCoffeeUser))
-# #conn.commit()
-# conn.close()
-#
-app = Flask(__name__)
-
-@app.route('/', methods=['GET','POST'])
-def hello():
-
-    # server = Server('Server', get_info=ALL)
-    # conn = Connection(server, user='username', password='password', auto_bind=True)
-    # # print(server.info)
-    # # print(server.schema)
-    # conn.search(search_base='dc=Physik,dc=Uni-Marburg,dc=DE',
-    #             search_filter='(|(memberOf=cn=uni-fb13_wzmw,ou=groups,ou=uni-fb13,dc=physik,dc=uni-marburg,dc=de)(gidNumber=1000100))',
-    #             attributes=['cn', 'givenName', 'sn', 'userPrincipalName'])
-    # # print(conn.entries)
-    #
-    # users = list()
-    # for item in conn.entries:
-    #     if 'givenName' in item.entry_get_attributes_dict().keys():
-    #         users.append({'name': '{} {}'.format(item.givenName, item.sn)})
-    # conn.closed
-
+def connect_db(url):
     engine = create_engine(url, convert_unicode='utf8')
     metadata = MetaData(bind=engine, reflect=True)
 
     Session = sessionmaker(bind=engine)
     myfirstSession = Session()
+    return myfirstSession
+
+app = Flask(__name__)
+
+@app.route('/', methods=['GET','POST'])
+def hello():
+    myfirstSession = connect_db(url)
 
     users = list()
 
@@ -84,11 +55,7 @@ def hello():
 @app.route('/login/<int:userid>')
 def login(userid):
 
-    engine = create_engine(url, convert_unicode='utf8')
-    metadata = MetaData(bind=engine, reflect=True)
-
-    Session = sessionmaker(bind=engine)
-    myfirstSession = Session()
+    myfirstSession = connect_db(url)
 
     for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
         userName = instance.name
@@ -100,11 +67,7 @@ def login(userid):
 def change(userid):
     addcoffee = "add"
 
-    engine = create_engine(url, convert_unicode='utf8')
-    metadata = MetaData(bind=engine, reflect=True)
-
-    Session = sessionmaker(bind=engine)
-    myfirstSession = Session()
+    myfirstSession = connect_db(url)
 
     for instance in myfirstSession.query(CoffeeList).filter(CoffeeList.id == userid):
         userName = instance.name
@@ -119,3 +82,4 @@ def change(userid):
 
 if __name__ == "__main__":
     app.run()
+
