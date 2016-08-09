@@ -79,6 +79,9 @@ def login(userid):
         nWaterUser = instance.nwater
         currbill = instance.currbill
 
+    if currbill==None:
+        currbill = 0
+
     return render_template('choices.html',currbill = currbill,
                                           chosenuser=userName,
                                           nCoffee=nCoffeeUser,
