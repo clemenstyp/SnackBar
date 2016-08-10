@@ -1,6 +1,7 @@
 from flask import Flask, redirect,url_for
 from flask import render_template
 from flask import request
+from flask_sqlalchemy import SQLAlchemy
 from ldap3 import Server, Connection, ALL, NTLM
 import sqlite3
 from sqlalchemy import Column, ForeignKey, Integer, String, Table, update
@@ -8,6 +9,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine, MetaData, select
 
+
+app = Flask(__name__)
 Base = declarative_base()
 
 user = 'coffeeadmin'
@@ -24,9 +27,61 @@ url = 'sqlite:///sqlite/TestDB.db'
 #url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
-class CoffeeList(Base):
-     __tablename__ = 'coffeelist'
 
+from flask import Flask, redirect,url_for
+from flask_sqlalchemy import SQLAlchemy
+
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sqlite/MyDatabase.db'
+db = SQLAlchemy(app)
+
+class user(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(80), unique=True)
+    email = db.Column(db.String(120), unique=True)
+
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+
+class itemlist(db.Model):
+    itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    item = db.Column(db.String(80), unique=True)
+    price = db.Column(db.Float)
+
+    def __init__(self, item,price):
+        self.item = item
+        self.price = price
+
+    def __repr__(self):
+        return '<Item %r>' % self.item
+
+
+class history(db.Model):
+    historyID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user = db.Column(db.Integer,db.ForeignKey('user.id'), primary_key=True)
+    item = db.Column(db.String(80),db.ForeignKey('itemlist.itemid'))
+    price = db.Column(db.Float)
+
+    date = db.Column(db.DateTime)
+
+    def __init__(self, user, item,price,date):
+        self.user = user
+        self.item = item
+        self.price = price
+        self.date = date
+
+    def __repr__(self):
+        return '<Item %r>' % self.item
+
+class CoffeeList(Base):
+
+     __tablename__ = 'coffeelist'
      id       = Column(Integer, primary_key=True)
      name     = Column(String)
      ncoffee  = Column(Integer)
@@ -37,6 +92,8 @@ class CoffeeList(Base):
      def __repr__(self):
         return "<User(name='%s')>" % (
                              self.name)
+
+
 def updateBill(nCoffeeUser, nWaterUser,nSnacksUser):
     currBill = nCoffeeUser*priceCoffe+nWaterUser*priceWater+nSnacksUser*priceSnacks
     return currBill
@@ -48,6 +105,7 @@ def connect_db(url):
     Session = sessionmaker(bind=engine)
     myfirstSession = Session()
     return myfirstSession
+
 
 app = Flask(__name__)
 @app.route('/test', methods=['GET'])

@@ -1,3 +1,4 @@
 flask
 sqlalchemy
 ldap3
+Flask-SQLAlchemy
