@@ -1,7 +1,7 @@
 import os
 from flask import Flask, redirect,url_for,render_template,request
 from flask_sqlalchemy import SQLAlchemy
-from flask_admin import Admin,expose,helpers,AdminIndexView
+from flask_admin import Admin,expose,helpers,AdminIndexView, BaseView
 from flask_admin.contrib.sqla import ModelView
 import flask_login as loginflask
 from wtforms import form, fields, validators
@@ -141,6 +141,38 @@ def init_login():
     def load_user(user_id):
         return db.session.query(coffeeadmin).get(user_id)
 
+class AnalyticsView(BaseView):
+
+    @expose('/')
+    def index(self):
+
+        users = list()
+        for instance in user.query:
+            bill = history.query.filter(history.userid == instance.userid).filter(history.paid == False)
+            currbill = 0
+
+            for entry in bill:
+                currbill += entry.price
+
+            users.append({'name': '{}'.format(instance.username),
+                          'userid':'{}'.format(instance.userid),
+                          'bill': currbill})
+
+        return self.render('admin/test.html',users = users)
+
+    @expose('/paid/', methods=['GET'])
+    def paid(self):
+
+        userid = request.args.get('userid')
+        print(userid)
+        purchase = history.query.filter(history.userid == userid).filter(history.paid == False)
+
+        for entry in purchase:
+            entry.paid = True
+
+        db.session.commit()
+        return redirect(url_for('.index'))
+
 class MyModelView(ModelView):
 
     def is_accessible(self):
@@ -178,6 +210,9 @@ admin = Admin(app, name = 'CoffeeList Admin Page',index_view=MyAdminIndexView(),
 admin.add_view(MyModelView(history, db.session))
 admin.add_view(MyModelView(user, db.session))
 admin.add_view(MyModelView(item, db.session))
+admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
+
+
 
 
 @app.route('/')
