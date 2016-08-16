@@ -1,0 +1,32 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+<table class="ui center aligned celled table" style="width:800px;margin:50px auto">
+    <thead>
+        <tr>
+            <th>name</th>
+            <th>bill</th>
+            <th>paid</th>
+        </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+
+        <tr>
+            <td>
+              {{ user.name }}
+            </td>
+            <td>
+              {{ '%0.2f'|format(user.bill) }}
+            </td>
+            <td class="collapsing">
+              <a href="{{ url_for('analytics.paid', userid=user.userid) }}" class="ui left attached button">Paid!</a>
+            </td>
+
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+<a href="{{ url_for('analytics.export') }}" class="ui left attached button">Export as csv!</a>
+
+{% endblock %}
