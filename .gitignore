@@ -1,4 +1,5 @@
 .DS_Store
+*.xls
 *.pyc
 *.pyo
 env
