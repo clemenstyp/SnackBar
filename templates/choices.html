@@ -9,11 +9,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
     <style>
-    p {
-        display: table-cell;
-        vertical-align: middle;
-        padding: 5em
-    }
+        p {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 5em
+        }
     </style>
 
 </head>
@@ -21,67 +21,46 @@
 <body style="text-align:center">
     <p>
         <div class="ui text container">
-            <h2 class="ui center aligned dividing header"> Hallo {{chosenuser}}!</h2>
+            <h2 class="ui center aligned dividing header"> Hello {{chosenuser}}!</h2>
         </div>
         <div class="ui center aligned container">
             <table class="ui center aligned celled table" style="width:800px;margin:50px auto">
+                <thead>
+                    <tr>
+                        <th>item</th>
+                        <th>price</th>
+                        <th>#</th>
+                        <th></th>
+                    </tr>
+                </thead>
                 <tbody>
+                    {% for item in items %}
                     <tr>
                         <td>
-                            Coffee
+                            {{item.name}}
                         </td>
                         <td class="collapsing">
-                            {{ '%d' % nCoffee}}
+                            {{'%0.2f'|format(item.price|round(2))}} €
                         </td>
                         <td class="collapsing">
-                            <a href="{{ url_for('change', userid=userid, itemid='1') }}" class="ui left attached button"><i class="arrow up icon"></i></a>
+                            {{ '%d' % item.count}}
+                        </td>
+                        <td class="collapsing">
+                            <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui left attached button"><i class="arrow up icon"></i></a>
 
                         </td>
                     </tr>
-                    <tr>
-                        <td>
-                            Water
-                        </td>
-                        <td class="collapsing">
-                            {{ '%d' % nWater}}
-                        </td>
-                        <td class="collapsing">
-                            <a href="{{ url_for('change', userid=userid, itemid='2') }}" class="ui left attached button"><i class="arrow up icon"></i></a>
-                        </td>
-                    </tr>
-                    <td>
-                        Snacks
-                    </td>
-                    <td class="collapsing">
-                        {{ '%d' % nSnack}}
-                    </td>
-                    <td class="collapsing">
-                        <a href="{{ url_for('change', userid=userid, itemid='3') }}" class="ui left attached button"><i class="arrow up icon"></i></a>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-                    </td>
-                    <tr>
-                    <td>
-                        Softdrink
-                    </td>
-                    <td class="collapsing">
-                        {{ '%d' % nSoftdrink}}
-                    </td>
-                    <td class="collapsing">
-                        <a href="{{ url_for('change', userid=userid, itemid='4') }}" class="ui left attached button"><i class="arrow up icon"></i></a>
-
-                    </td>
-                    </tr>
-                </tr>
-            </tbody>
-        </table>
-
-    </div>
-</div class="ui container">
-<div class="ui divider"></div>
-<h2 class="ui center aligned header"> Your current bill is: {{ currbill|round(2,'floor')}}€.</h2>
-<button class ="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
-</div>
-</p>
+        </div>
+        </div class="ui container">
+        <div class="ui divider"></div>
+        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
+        <button class="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
+        </div>
+    </p>
 
 
 </body>

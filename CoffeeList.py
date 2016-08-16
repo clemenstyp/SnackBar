@@ -195,10 +195,12 @@ def hello():
 def login(userid):
 
     userName = user.query.get(userid).username
-    nCoffee =  len(history.query.filter(history.userid == userid ).filter(history.itemid == 1).filter(history.paid == False).all())
-    nWater = len(history.query.filter(history.userid == userid ).filter(history.itemid == 2).filter(history.paid == False).all())
-    nSnack = len(history.query.filter(history.userid == userid).filter(history.itemid == 3).filter(history.paid == False).all())
-    nSoftdrink = len(history.query.filter(history.userid == userid).filter(history.itemid == 4).filter(history.paid == False).all())
+    items = list()
+    for instance in item.query:
+        items.append({'name' :'{}'.format(instance.name),
+                      'price': instance.price,
+                      'itemid':'{}'.format(instance.itemid),
+                      'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
 
     bill = history.query.filter(history.userid == userid).filter(history.paid == False)
     currbill = 0
@@ -212,10 +214,8 @@ def login(userid):
                            currbill = currbill,
                            chosenuser = userName,
                            userid = userid,
-                           nCoffee = nCoffee,
-                           nWater = nWater,
-                           nSnack = nSnack,
-                           nSoftdrink = nSoftdrink)
+                           items = items
+                           )
 
 @app.route('/change/<int:userid>')
 def change(userid):

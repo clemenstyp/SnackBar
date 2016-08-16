@@ -3,9 +3,9 @@
 {{ super() }}
 <div class="row-fluid">
 
-    <div>
+    <div class = "ui container">
         {% if current_user.is_authenticated %}
-
+          <a href={{url_for('admin.login_view')}}> test</a>
         {% else %}
         <form method="POST" action="">
             {{ form.hidden_tag() if form.hidden_tag }}

@@ -21,19 +21,23 @@
 
 <body>
     <p>
-      <div class="ui container">
-        <div class="ui stackable four column grid">
-            {% for user in users %}
-            <div class="column">
-                <a href="/login/{{user.id}}" class="huge ui button">
+        <div class="ui container">
+            <div class="ui stackable four column grid">
+                {% for user in users %}
+                <div class="column">
+                    <a href="/login/{{user.id}}" class="huge ui button">
                 {{ user.name }}
             </a>
-          </div>
-            {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="ui divider">
+              <p style="text-align:center;margin:50px auto">
+                <a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
+              </p>
+            </div>
         </div>
-      </div>
     </p>
-<a href="{{url_for('admin.index')}}">Go to the admin page!</a>
 </body>
 
 </html>
