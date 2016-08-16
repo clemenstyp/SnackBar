@@ -1,5 +1,5 @@
-import os
-from flask import Flask, redirect,url_for,render_template,request
+import os,tablib
+from flask import Flask, redirect,url_for,render_template,request, send_from_directory,current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin,expose,helpers,AdminIndexView, BaseView
 from flask_admin.contrib.sqla import ModelView
@@ -23,7 +23,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SECRET_KEY'] = '123456790'
-
+app.config['STATIC_FOLDER'] = 'static'
 
 db = SQLAlchemy(app)
 
@@ -141,6 +141,22 @@ def init_login():
     def load_user(user_id):
         return db.session.query(coffeeadmin).get(user_id)
 
+def getcurrbill(userid):
+    bill = history.query.filter(history.userid == userid).filter(history.paid == False)
+    currbill = 0
+
+    for entry in bill:
+        currbill += entry.price
+    return currbill
+
+def getunpaid(userid,itemid):
+
+    nUnpaid = len(history.query.filter(history.userid == userid).
+        filter(history.itemid == itemid).
+        filter(history.paid == False).all())
+
+    return nUnpaid
+
 class AnalyticsView(BaseView):
 
     @expose('/')
@@ -172,6 +188,37 @@ class AnalyticsView(BaseView):
 
         db.session.commit()
         return redirect(url_for('.index'))
+
+    @expose('/export/')
+    def export(self):
+        filename = 'CoffeeBill_{}_{}.xls'.format(datetime.now().date().isoformat(),
+                                                 datetime.now().time().strftime('%H:%M:%S'))
+
+        fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
+        header = list()
+        header.append('name')
+        for entry in item.query:
+            header.append('{}'.format(entry.name))
+        header.append('bill')
+
+        excelData = tablib.Dataset()
+        excelData.headers = header
+
+        for instance in user.query:
+            firstline = list()
+            firstline.append('{}'.format(instance.username))
+
+            for record in item.query:
+                firstline.append('{}'.format(getunpaid(instance.userid, record.itemid)))
+
+            firstline.append('{0:.2f}'.format(getcurrbill(instance.userid)))
+            excelData.append(firstline)
+
+        with open(os.path.join(fullpath,filename), 'wb') as f:
+            f.write(excelData.xls)
+
+        return send_from_directory(directory=fullpath, filename=filename, as_attachment=True)
+
 
 class MyModelView(ModelView):
 
@@ -213,8 +260,6 @@ admin.add_view(MyModelView(item, db.session))
 admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
 
 
-
-
 @app.route('/')
 def hello():
     users = list()
@@ -237,10 +282,7 @@ def login(userid):
                       'itemid':'{}'.format(instance.itemid),
                       'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
 
-    bill = history.query.filter(history.userid == userid).filter(history.paid == False)
-    currbill = 0
-    for instance in bill:
-        currbill += instance.price
+    currbill = getcurrbill(userid)
 
     if currbill==None:
         currbill = 0
