@@ -14,7 +14,7 @@ db = 'CoffeeList'
 host = 'localhost'
 port = 5432
 
-url = 'sqlite:///sqlite/TestDB.db'
+url = 'sqlite:///TestDB.db'
 #url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
@@ -241,19 +241,19 @@ def build_sample_db():
         'wilhelm@kackebart.de', 'franz@powischer.de', 'berta@haufen.de', 'fritz@sabbert.de']
 
     for i in range(len(name)):
-        user = user()
-        user.username = name[i]
-        user.email = email[i]
-        db.session.add(user)
+        newuser = user(username='{}'.format(name[i]),email = '{}'.format(email[i]))
+        #newuser.username = name[i]
+        #newuser.email = email[i]
+        db.session.add(newuser)
 
     itemname = ['coffe','water','snacks','cola']
     price   = [0.5,0.9,0.6,0.3]
 
     for i in range(len(name)):
-        item = item()
-        item.name = itemname[i]
-        item.price = price[i]
-        db.session.add(item)
+        newitem = item(name='{}'.format(itemname[i]),price = '{}'.format(price[i]))
+       # newitem.name = itemname[i]
+        #newitem.price = price[i]
+        db.session.add(newitem)
 
 
     db.session.commit()
@@ -262,7 +262,7 @@ def build_sample_db():
 
 if __name__ == "__main__":
     app_dir = os.path.realpath(os.path.dirname(__file__))
-    database_path = os.path.join(app_dir, 'sqlite/TestDB.db')
+    database_path = os.path.join(app_dir, 'TestDB.db')
     if not os.path.exists(database_path):
         build_sample_db()
 

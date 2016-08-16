@@ -12,3 +12,4 @@ _mailinglist
 .cache/
 .idea/
 sqlite
+*.db
