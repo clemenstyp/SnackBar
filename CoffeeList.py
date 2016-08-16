@@ -255,6 +255,8 @@ def build_sample_db():
         #newitem.price = price[i]
         db.session.add(newitem)
 
+    newadmin = coffeeadmin(name='admin',password='secretpassword')
+    db.session.add(newadmin)
 
     db.session.commit()
     return
@@ -264,6 +266,7 @@ if __name__ == "__main__":
     app_dir = os.path.realpath(os.path.dirname(__file__))
     database_path = os.path.join(app_dir, 'TestDB.db')
     if not os.path.exists(database_path):
+        print('Create new test database')
         build_sample_db()
 
 
