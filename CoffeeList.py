@@ -211,7 +211,7 @@ class AnalyticsView(BaseView):
     @expose('/export/')
     def export(self):
         filename = 'CoffeeBill_{}_{}.xls'.format(datetime.now().date().isoformat(),
-                                                 datetime.now().time().strftime('%H:%M:%S'))
+                                                 datetime.now().time().strftime('%H-%M-%S'))
 
         fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
         header = list()
@@ -280,7 +280,6 @@ admin.add_view(MyModelView(history, db.session))
 admin.add_view(MyModelView(user, db.session))
 admin.add_view(MyModelView(item, db.session))
 admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
-
 
 @app.route('/')
 def hello():
