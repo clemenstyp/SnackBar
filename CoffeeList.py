@@ -1,4 +1,4 @@
-import os,tablib
+import os, tablib, random
 from flask import Flask, redirect,url_for,render_template,request, send_from_directory,current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin,expose,helpers,AdminIndexView, BaseView
@@ -8,15 +8,14 @@ from wtforms import form, fields, validators
 from datetime import datetime
 from jinja2 import Markup
 
-
-user = 'coffeeadmin'
+user = 'coffee'
 password = 'ilikecoffee'
-db = 'CoffeeList'
+db = 'coffee'
 host = 'localhost'
 port = 5432
 
-url = 'sqlite:///TestDB.db'
-#url = 'postgresql://{}:{}@{}:{}/{}'
+#url = 'sqlite:///TestDB.db'
+url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
 
@@ -76,31 +75,41 @@ class history(db.Model):
         self.date = date
 
     def __repr__(self):
-        return '<User {} bought {} for {} on the {} >'.format(self.user,self.item,self.price,self.date)
+        return 'User {} bought {} for {} on the {}'.format(self.user,self.item,self.price,self.date)
+
+colors = ('red','orange','yellow','olive','green','teal','blue','violet','purple',
+          'pink','brown','grey','black')
+
 
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120), unique=True)
+    btncolor = db.Column(db.String(80))
 
-    def __init__(self, username, email):
+
+    def __init__(self, username='', email='', btncolor=None):
         self.username = username
         self.email = email
+        if btncolor is None:
+            btncolor = random.choice(colors)
+        self.btncolor = btncolor
+
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return self.username
 
 class item(db.Model):
     itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), unique=True)
     price = db.Column(db.Float)
 
-    def __init__(self, name, price):
+    def __init__(self, name='', price=0):
         self.name = name
         self.price = price
 
     def __repr__(self):
-        return '<Item %r>' % self.name
+        return self.name
 
 
 class coffeeadmin(db.Model):
@@ -242,7 +251,37 @@ class AnalyticsView(BaseView):
         return loginflask.current_user.is_authenticated
 
 
-class MyModelView(ModelView):
+class MyHistoryModelView(ModelView):
+    can_create = False
+    can_export = True
+    export_types = ['csv']
+    column_descriptions = dict(
+        paid='Indicates if the purchase is already paid.'
+    )
+    column_labels = dict(user='Name')
+
+    def is_accessible(self):
+        return loginflask.current_user.is_authenticated
+
+class MyUserModelView(ModelView):
+    can_export = True
+    export_types = ['csv', 'xls']
+    form_excluded_columns = ('history')
+    column_descriptions = dict(
+        username='Name of the corresponding person'
+    )
+    column_labels = dict(username='Name',btncolor='Button Color')
+    #form_choices = {'username' : ['Lennart','Lukas'],
+    #               'email' : [],
+    #                'btncolor' : []}
+
+    def is_accessible(self):
+        return loginflask.current_user.is_authenticated
+
+class MyItemModelView(ModelView):
+    can_export = True
+    export_types =['csv','xls']
+    form_excluded_columns = ('items')
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
@@ -254,6 +293,7 @@ class MyAdminIndexView(AdminIndexView):
         if not loginflask.current_user.is_authenticated:
             return redirect(url_for('.login_view'))
         return super(MyAdminIndexView, self).index()
+        #return redirect(url_for('bill.index'))
 
     @expose('/login/', methods=('GET', 'POST'))
     def login_view(self):
@@ -276,18 +316,24 @@ class MyAdminIndexView(AdminIndexView):
 
 init_login()
 admin = Admin(app, name = 'CoffeeList Admin Page',index_view=MyAdminIndexView(), base_template='my_master.html')
-admin.add_view(MyModelView(history, db.session))
-admin.add_view(MyModelView(user, db.session))
-admin.add_view(MyModelView(item, db.session))
-admin.add_view(AnalyticsView(name='Analytics', endpoint='analytics'))
+admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
+admin.add_view(MyUserModelView(user, db.session, 'User'))
+admin.add_view(MyItemModelView(item, db.session,'Items'))
+admin.add_view(MyHistoryModelView(history, db.session,'History'))
+
+
 
 @app.route('/')
 def hello():
-    users = list()
+    initusers = list()
 
     for instance in user.query:
-        users.append({'name': '{}'.format(instance.username),
-                      'id': '{}'.format(instance.userid)})
+        initusers.append({'name': '{}'.format(instance.username),
+                      'id': '{}'.format(instance.userid),
+                      'bill': getcurrbill(instance.userid),
+                      'color': '{}'.format(instance.btncolor)})
+
+    users = sorted(initusers,key=lambda k: k['bill'],reverse=True)
 
     return render_template('index.html', users=users)
 
@@ -344,7 +390,7 @@ def build_sample_db():
         #newuser.email = email[i]
         db.session.add(newuser)
 
-    itemname = ['coffe','water','snacks','cola']
+    itemname = ['Coffee','Water','Snacks','Cola']
     price   = [0.5,0.9,0.6,0.3]
 
     for i in range(len(name)):
@@ -361,11 +407,12 @@ def build_sample_db():
 
 
 if __name__ == "__main__":
-    app_dir = os.path.realpath(os.path.dirname(__file__))
-    database_path = os.path.join(app_dir, 'TestDB.db')
-    if not os.path.exists(database_path):
-        print('Create new test database')
-        build_sample_db()
+ #   app_dir = os.path.realpath(os.path.dirname(__file__))
+ #   database_path = os.path.join(app_dir, 'TestDB.db')
+ #   if not os.path.exists(database_path):
+ #       print('Create new test database')
+    #build_sample_db()
 
 
-    app.run(debug = True)
+    app.run(debug=True)
+

@@ -25,7 +25,7 @@
             <div class="ui stackable four column grid">
                 {% for user in users %}
                 <div class="column">
-                    <a href="/login/{{user.id}}" class="huge ui button">
+                    <a href="/login/{{user.id}}" class="ui huge {{user.color}} button">
                 {{ user.name }}
             </a>
                 </div>

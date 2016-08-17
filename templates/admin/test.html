@@ -19,7 +19,7 @@
               {{ '%0.2f'|format(user.bill) }}
             </td>
             <td class="collapsing">
-              <a href="{{ url_for('analytics.paid', userid=user.userid) }}" class="btn btn-default">Paid!</a>
+              <a href="{{ url_for('bill.paid', userid=user.userid) }}" class="btn btn-default">Paid!</a>
             </td>
 
         </tr>
@@ -28,7 +28,7 @@
     </tbody>
 </table>
 <div style="text-align:right">
-    <a href="{{ url_for('analytics.export') }}" class="btn btn-primary">Export as csv!</a>
+    <a href="{{ url_for('bill.export') }}" class="btn btn-primary">Export as csv!</a>
 </div>
 
 

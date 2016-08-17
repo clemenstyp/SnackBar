@@ -5,7 +5,9 @@
 
     <div class = "ui container">
         {% if current_user.is_authenticated %}
-          <a href={{url_for('admin.login_view')}}> test</a>
+        <p>
+          <h4>Welcome to the admin page of the coffee list. Here you can mark a <a href={{url_for('bill.index')}}>bill</a> of a user as paid, add <a href={{url_for('user.index_view')}}>new users</a>
+          as well as new <a href={{url_for('item.index_view')}}>items</a>.</h4></p>
         {% else %}
         <form method="POST" action="">
             {{ form.hidden_tag() if form.hidden_tag }}
