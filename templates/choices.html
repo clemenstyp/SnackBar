@@ -43,7 +43,7 @@
                             {{'%0.2f'|format(item.price|round(2))}} €
                         </td>
                         <td class="collapsing">
-                            {{ '%d' % item.count}}
+                            {{ item.count|itemstrikes }}
                         </td>
                         <td class="collapsing">
                             <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui left attached button"><i class="arrow up icon"></i></a>

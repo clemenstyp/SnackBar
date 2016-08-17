@@ -1,6 +1,6 @@
 {% extends 'admin/master.html' %}
 {% block body %}
-<table class="ui center aligned celled table" style="width:800px;margin:50px auto">
+<table class="table table-bordered table-striped">
     <thead>
         <tr>
             <th>name</th>
@@ -19,7 +19,7 @@
               {{ '%0.2f'|format(user.bill) }}
             </td>
             <td class="collapsing">
-              <a href="{{ url_for('analytics.paid', userid=user.userid) }}" class="ui left attached button">Paid!</a>
+              <a href="{{ url_for('analytics.paid', userid=user.userid) }}" class="btn btn-default">Paid!</a>
             </td>
 
         </tr>
@@ -27,6 +27,9 @@
 
     </tbody>
 </table>
-<a href="{{ url_for('analytics.export') }}" class="ui left attached button">Export as csv!</a>
+<div style="text-align:right">
+    <a href="{{ url_for('analytics.export') }}" class="btn btn-primary">Export as csv!</a>
+</div>
+
 
 {% endblock %}
