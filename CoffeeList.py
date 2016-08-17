@@ -6,6 +6,7 @@ from flask_admin.contrib.sqla import ModelView
 import flask_login as loginflask
 from wtforms import form, fields, validators
 from datetime import datetime
+from jinja2 import Markup
 
 
 user = 'coffeeadmin'
@@ -27,8 +28,26 @@ app.config['STATIC_FOLDER'] = 'static'
 
 db = SQLAlchemy(app)
 
-
-
+@app.template_filter("itemstrikes")
+def itemstrikes(value):
+    counter = 0
+    tag_opened = False
+    out = ""
+    if value > 4:
+        out = "<s>"
+        tag_opened = True
+    for f in range(value):
+        counter += 1
+        if counter % 5 == 0:
+            out += "</s> "
+            if value - counter > 4:
+                out += "<s>"
+        else:
+            out += "|"
+    if tag_opened:
+        out += "</s>"
+    out += " (%d)" % value
+    return Markup(out)
 
 class history(db.Model):
     historyID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -219,6 +238,9 @@ class AnalyticsView(BaseView):
 
         return send_from_directory(directory=fullpath, filename=filename, as_attachment=True)
 
+    def is_accessible(self):
+        return loginflask.current_user.is_authenticated
+
 
 class MyModelView(ModelView):
 
@@ -348,5 +370,3 @@ if __name__ == "__main__":
 
 
     app.run(debug = True)
-
-
