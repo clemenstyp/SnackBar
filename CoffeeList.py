@@ -414,5 +414,5 @@ if __name__ == "__main__":
     #build_sample_db()
 
 
-    app.run(debug=True)
+    app.run()
 

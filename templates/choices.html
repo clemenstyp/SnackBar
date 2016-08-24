@@ -12,7 +12,7 @@
         p {
             display: table-cell;
             vertical-align: middle;
-            padding: 5em
+            padding: 20px
         }
     </style>
 
@@ -23,6 +23,25 @@
         <div class="ui text container">
             <h2 class="ui center aligned dividing header"> Hello {{chosenuser}}!</h2>
         </div>
+        <div class="ui container" style="margin:50px auto">
+            <div class="ui stackable four column grid">
+              {% for item in items %}
+
+                <div class="column">
+                    <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} € </a>
+                </div>
+
+              {% endfor %}
+
+            </div>
+        </div>
+
+        </div class="ui container">
+        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
+        <button class="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
+        </div>
+        <div class="ui divider"></div>
+
         <div class="ui center aligned container">
             <table class="ui center aligned celled table" style="width:800px;margin:50px auto">
                 <thead>
@@ -30,13 +49,12 @@
                         <th>item</th>
                         <th>price</th>
                         <th>#</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in items %}
                     <tr>
-                        <td>
+                        <td class = "collapsing">
                             {{item.name}}
                         </td>
                         <td class="collapsing">
@@ -45,20 +63,11 @@
                         <td class="collapsing">
                             {{ item.count|itemstrikes }}
                         </td>
-                        <td class="collapsing">
-                            <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui left attached button"><i class="arrow up icon"></i></a>
-
-                        </td>
-                    </tr>
+                      </tr>
                     {% endfor %}
                 </tbody>
             </table>
 
-        </div>
-        </div class="ui container">
-        <div class="ui divider"></div>
-        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
-        <button class="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
         </div>
     </p>
 
