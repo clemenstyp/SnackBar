@@ -80,6 +80,33 @@ class history(db.Model):
 colors = ('red','orange','yellow','olive','green','teal','blue','violet','purple',
           'pink','brown','grey','black')
 
+class inpayment(db.Model):
+
+    paymentID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
+    user = db.relationship('user', backref=db.backref('inpayment', lazy='dynamic'))
+
+    amount = db.Column(db.Float)
+    rest = db.Column(db.Float)
+    date = db.Column(db.DateTime)
+
+    def __init__(self, user=None, amount=None, rest = amount, date=None):
+        self.userid = user
+
+        if amount is None:
+            amount = 0
+        self.amount = amount
+
+        self.rest = rest
+
+        if date is None:
+            date = datetime.now()
+        self.date = date
+
+    def __repr__(self):
+        return 'User {} paid {} on the {}'.format(self.userid, self.amount, self.date)
+
 
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -185,6 +212,51 @@ def getunpaid(userid,itemid):
 
     return nUnpaid
 
+
+def accountPayment(userid):
+
+    if len(history.query.filter(history.userid == userid).filter(history.paid == False).all()) != 0:
+        if len(inpayment.query.filter(inpayment.userid == userid).filter(inpayment.rest != 0).all()) != 0:
+
+            purchase = history.query.filter(history.userid == userid).filter(history.paid == False)
+            inpay = inpayment.query.filter(inpayment.userid == userid).filter(inpayment.rest != 0).all()
+            transfer = 0
+
+            for instance in purchase:
+                print(instance)
+                for entry in inpay:
+                    print(entry)
+                    if entry.rest + transfer - instance.price < 0:
+                        print('Geld aus erstem Eintrag reicht nicht')
+                        if len(inpayment.query.filter(inpayment.userid == userid).filter(inpayment.rest != 0).all()) > 1:
+                            print('Transferiere Geld aus erstem Eintrag')
+                            transfer = entry.rest
+                            print(transfer)
+                            entry.rest = 0
+                            entry.date = datetime.now()
+
+                        continue
+
+                    else:
+                        print('Geld aus eintrag ist genug')
+                        print(entry.rest + transfer)
+                        entry.rest = entry.rest + transfer - instance.price
+                        instance.paid = True
+                        entry.date = datetime.now()
+                        transfer = 0
+                        print('Neuer Betrag ist')
+                        print(entry.rest)
+
+        else:
+            print('Unpaid Bills but no InPay')
+
+    else:
+        print('Nothing to pay')
+
+    db.session.commit()
+
+    return
+
 class AnalyticsView(BaseView):
 
     @expose('/')
@@ -250,6 +322,14 @@ class AnalyticsView(BaseView):
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
 
+
+class MyPaymentModelView(ModelView):
+    can_create = True
+    can_export = True
+    export_types = ['csv']
+
+    def is_accessible(self):
+        return loginflask.current_user.is_authenticated
 
 class MyHistoryModelView(ModelView):
     can_create = False
@@ -317,10 +397,10 @@ class MyAdminIndexView(AdminIndexView):
 init_login()
 admin = Admin(app, name = 'CoffeeList Admin Page',index_view=MyAdminIndexView(), base_template='my_master.html')
 admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
+admin.add_view(MyUserModelView(inpayment, db.session, 'InPayment'))
 admin.add_view(MyUserModelView(user, db.session, 'User'))
 admin.add_view(MyItemModelView(item, db.session,'Items'))
 admin.add_view(MyHistoryModelView(history, db.session,'History'))
-
 
 
 @app.route('/')
@@ -340,7 +420,7 @@ def hello():
 
 @app.route('/login/<int:userid>',methods = ['GET'])
 def login(userid):
-
+    accountPayment(userid)
     userName = user.query.get(userid).username
     items = list()
     for instance in item.query:
@@ -414,5 +494,5 @@ if __name__ == "__main__":
     #build_sample_db()
 
 
-    app.run()
+    app.run(debug=True)
 
