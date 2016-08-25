@@ -8,36 +8,45 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+    <script src="/static/stay_standalone.js" type="text/javascript"></script>
     <style>
-        p {
-            display: table-cell;
-            vertical-align: middle;
-            padding: 20px
+
+        div.item_button {
+            margin:5px;
+            display:inline-block;
+            width:150px;
         }
+
+        .items_container {
+            text-align:center;
+            margin:30px;
+        }
+
+
     </style>
 
 </head>
 
 <body style="text-align:center">
-    <p>
-        <div class="ui text container">
+
+        <div class="ui text container" style = "margin-top:30px">
             <h2 class="ui center aligned dividing header"> Hello {{chosenuser}}!</h2>
         </div>
-        <div class="ui container" style="margin:50px auto">
-            <div class="ui stackable four column grid">
+        <div class="items_container" >
+
               {% for item in items %}
 
-                <div class="column">
-                    <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} € </a>
+                <div class="item_button">
+                    <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} â‚¬ </a>
                 </div>
 
               {% endfor %}
 
-            </div>
+
         </div>
 
-        </div class="ui container">
-        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
+        <div class="ui container" style="">
+        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} â‚¬</h2>
         <button class="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
@@ -58,7 +67,7 @@
                             {{item.name}}
                         </td>
                         <td class="collapsing">
-                            {{'%0.2f'|format(item.price|round(2))}} €
+                            {{'%0.2f'|format(item.price|round(2))}} â‚¬
                         </td>
                         <td class="collapsing">
                             {{ item.count|itemstrikes }}
@@ -69,7 +78,7 @@
             </table>
 
         </div>
-    </p>
+
 
 
 </body>

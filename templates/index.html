@@ -8,36 +8,43 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+    <script src="/static/stay_standalone.js" type="text/javascript"></script>
     <style>
-        p {
-            margin-top: 3em;
+        body {
+            margin:20px;
         }
 
-        div {
-            margin-top: 10px;
+        .buttons_container {
+            text-align:center;
+        }
+
+        div.person_button {
+            margin:5px;
+            display:inline-block;
+            width:150px;
         }
     </style>
 </head>
 
 <body>
-    <p>
-        <div class="ui container">
-            <div class="ui stackable four column grid">
+
+        <div>
+            <div class="buttons_container">
                 {% for user in users %}
-                <div class="column">
+                <div class="person_button">
                     <a href="/login/{{user.id}}" class="ui huge {{user.color}} button">
                 {{ user.name }}
-            </a>
+                    </a>
                 </div>
                 {% endfor %}
             </div>
-            <div class="ui divider">
+            <div class="ui divider" style="clear:both">
               <p style="text-align:center;margin:50px auto">
                 <a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
               </p>
             </div>
         </div>
-    </p>
+
 </body>
 
 </html>
