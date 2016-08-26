@@ -37,7 +37,7 @@
               {% for item in items %}
 
                 <div class="item_button">
-                    <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} â‚¬ </a>
+                    <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} €</a>
                 </div>
 
               {% endfor %}
@@ -46,7 +46,7 @@
         </div>
 
         <div class="ui container" style="">
-        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} â‚¬</h2>
+        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
         <button class="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
@@ -67,7 +67,7 @@
                             {{item.name}}
                         </td>
                         <td class="collapsing">
-                            {{'%0.2f'|format(item.price|round(2))}} â‚¬
+                            {{'%0.2f'|format(item.price|round(2))}} €
                         </td>
                         <td class="collapsing">
                             {{ item.count|itemstrikes }}

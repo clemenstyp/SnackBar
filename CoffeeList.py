@@ -7,6 +7,8 @@ import flask_login as loginflask
 from wtforms import form, fields, validators
 from datetime import datetime
 from jinja2 import Markup
+from hashlib import md5
+from math import sqrt
 
 user = 'coffee'
 password = 'ilikecoffee'
@@ -77,8 +79,6 @@ class history(db.Model):
     def __repr__(self):
         return 'User {} bought {} for {} on the {}'.format(self.user,self.item,self.price,self.date)
 
-colors = ('red','orange','yellow','olive','green','teal','blue','violet','purple',
-          'pink','brown','grey','black')
 
 class inpayment(db.Model):
 
@@ -91,14 +91,10 @@ class inpayment(db.Model):
     rest = db.Column(db.Float)
     date = db.Column(db.DateTime)
 
-    def __init__(self, user=None, amount=None, rest = amount, date=None):
+    def __init__(self, user=None, amount=None, date=None):
         self.userid = user
-
-        if amount is None:
-            amount = 0
         self.amount = amount
-
-        self.rest = rest
+        self.rest = self.amount
 
         if date is None:
             date = datetime.now()
@@ -112,15 +108,15 @@ class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120), unique=True)
-    btncolor = db.Column(db.String(80))
 
 
-    def __init__(self, username='', email='', btncolor=None):
+    def __init__(self, username='', email=''):
         self.username = username
+        if not email:
+            email = 'test@†est.de'
+
         self.email = email
-        if btncolor is None:
-            btncolor = random.choice(colors)
-        self.btncolor = btncolor
+
 
 
     def __repr__(self):
@@ -257,6 +253,31 @@ def accountPayment(userid):
 
     return
 
+def button_background(user):
+    """
+        returns the background color based on the username md5
+    """
+    hash = md5(user.encode('utf-8')).hexdigest()
+    hash_values = (hash[:8], hash[8:16], hash[16:24])
+    background = tuple(int(value, 16) % 256 for value in hash_values)
+    return '#%02x%02x%02x' % background
+
+def button_font_color(user):
+    """
+        returns black or white according to the brightness
+    """
+    rCoef = 0.241
+    gCoef = 0.691
+    bCoef = 0.068
+    hash = md5(user.encode('utf-8')).hexdigest()
+    hash_values = (hash[:8], hash[8:16], hash[16:24])
+    bg = tuple(int(value, 16) % 256 for value in hash_values)
+    b = sqrt(rCoef * bg[0] ** 2 + gCoef * bg[1] ** 2 + bCoef * bg[2] ** 2)
+    if b > 130:
+        return '#%02x%02x%02x' % (0, 0, 0)
+    else:
+        return '#%02x%02x%02x' % (255, 255, 255)
+
 class AnalyticsView(BaseView):
 
     @expose('/')
@@ -326,6 +347,7 @@ class AnalyticsView(BaseView):
 class MyPaymentModelView(ModelView):
     can_create = True
     can_export = True
+    form_excluded_columns = ('rest','date')
     export_types = ['csv']
 
     def is_accessible(self):
@@ -346,11 +368,11 @@ class MyHistoryModelView(ModelView):
 class MyUserModelView(ModelView):
     can_export = True
     export_types = ['csv', 'xls']
-    form_excluded_columns = ('history')
+    form_excluded_columns = ('history','inpayment')
     column_descriptions = dict(
         username='Name of the corresponding person'
     )
-    column_labels = dict(username='Name',btncolor='Button Color')
+    column_labels = dict(username='Name')
     #form_choices = {'username' : ['Lennart','Lukas'],
     #               'email' : [],
     #                'btncolor' : []}
@@ -397,7 +419,7 @@ class MyAdminIndexView(AdminIndexView):
 init_login()
 admin = Admin(app, name = 'CoffeeList Admin Page',index_view=MyAdminIndexView(), base_template='my_master.html')
 admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
-admin.add_view(MyUserModelView(inpayment, db.session, 'InPayment'))
+admin.add_view(MyPaymentModelView(inpayment, db.session, 'inpayment'))
 admin.add_view(MyUserModelView(user, db.session, 'User'))
 admin.add_view(MyItemModelView(item, db.session,'Items'))
 admin.add_view(MyHistoryModelView(history, db.session,'History'))
@@ -411,7 +433,8 @@ def hello():
         initusers.append({'name': '{}'.format(instance.username),
                       'id': '{}'.format(instance.userid),
                       'bill': getcurrbill(instance.userid),
-                      'color': '{}'.format(instance.btncolor)})
+                      'bgcolor': '{}'.format(button_background(instance.username)),
+                      'fontcolor': '{}'.format(button_font_color(instance.username))})
 
     users = sorted(initusers,key=lambda k: k['bill'],reverse=True)
 
@@ -455,25 +478,34 @@ def change(userid):
     return redirect(url_for('login',userid=userid))
 
 def build_sample_db():
-
+    import csv
     db.drop_all()
     db.create_all()
 
+
+    with open('static/userListWZMZ.csv') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            newuser = user(username='{} {}'.format(row['FirstName'], row['LastName']),
+                           email='{}@{}.de'.format(row['FirstName'], row['LastName']))
+            db.session.add(newuser)
+    '''
     name = [
-        'Wilhelm Kackebart', 'Franz Powischer', 'Berta Haufen', 'Fritz Sabbert']
+        'Wilhelm Müller', 'Franz Meier', 'Berta Schmitt', 'Fritz Hase']
     email = [
-        'wilhelm@kackebart.de', 'franz@powischer.de', 'berta@haufen.de', 'fritz@sabbert.de']
+        'wilhelm@mueller.de', 'franz@meier.de', 'berta@schmitt.de', 'fritz@hase.de']
 
     for i in range(len(name)):
         newuser = user(username='{}'.format(name[i]),email = '{}'.format(email[i]))
         #newuser.username = name[i]
         #newuser.email = email[i]
-        db.session.add(newuser)
+    '''
+
 
     itemname = ['Coffee','Water','Snacks','Cola']
     price   = [0.5,0.9,0.6,0.3]
 
-    for i in range(len(name)):
+    for i in range(len(itemname)):
         newitem = item(name='{}'.format(itemname[i]),price = '{}'.format(price[i]))
        # newitem.name = itemname[i]
         #newitem.price = price[i]

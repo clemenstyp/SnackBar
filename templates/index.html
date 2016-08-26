@@ -21,7 +21,8 @@
         div.person_button {
             margin:5px;
             display:inline-block;
-            width:150px;
+            width:170px;
+            height:70px;
         }
     </style>
 </head>
@@ -32,7 +33,7 @@
             <div class="buttons_container">
                 {% for user in users %}
                 <div class="person_button">
-                    <a href="/login/{{user.id}}" class="ui huge {{user.color}} button">
+                    <a href="/login/{{user.id}}" class="ui huge {{user.color}} button" style="color:{{user.fontcolor}};background-color:{{ user.bgcolor }}">
                 {{ user.name }}
                     </a>
                 </div>
