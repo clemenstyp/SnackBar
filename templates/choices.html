@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
     <script src="/static/stay_standalone.js" type="text/javascript"></script>
     <style>
@@ -37,7 +38,9 @@
               {% for item in items %}
 
                 <div class="item_button">
-                    <a href="{{ url_for('change', userid=userid, itemid=item.itemid) }}" class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} €</a>
+                    <a onclick="changeButton({{item.itemid}})"
+                       id="{{item.itemid}}" href="{{ url_for('change', userid=userid, itemid=item.itemid) }}"
+                       class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} €</a>
                 </div>
 
               {% endfor %}
@@ -80,7 +83,14 @@
         </div>
 
 
-<script>setTimeout(function(){window.location.href='/'},5000);</script>
+<script>setTimeout(function(){window.location.href='/'},10000);</script>
+<script>
+function changeButton(itemid) {
+    document.getElementById(itemid).style.backgroundColor = 'green';
+    document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
+    return;
+}
+</script>
 </body>
 
 </html>

@@ -1,14 +1,13 @@
 {% extends 'admin/master.html' %}
 {% block body %}
 <div style="text-align:right;margin-bottom:50px">
-    <a href="{{ url_for('bill.export') }}" class="btn btn-primary">Export as csv!</a>
+    <a href="{{ url_for('bill.export') }}" class="btn btn-primary">Export as xls!</a>
 </div>
-<table class="table table-bordered table-striped">
+<table class="table table-sm table-bordered table-striped">
     <thead>
         <tr>
-            <th>name</th>
-            <th>bill</th>
-            <th>paid</th>
+            <th>Name</th>
+            <th>Bill</th>
         </tr>
     </thead>
     <tbody>
@@ -20,9 +19,6 @@
             </td>
             <td>
               {{ '%0.2f'|format(user.bill) }}
-            </td>
-            <td class="collapsing">
-              <a href="{{ url_for('bill.paid', userid=user.userid) }}" class="btn btn-default">Paid!</a>
             </td>
 
         </tr>

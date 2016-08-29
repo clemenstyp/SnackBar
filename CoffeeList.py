@@ -255,12 +255,15 @@ class AnalyticsView(BaseView):
     @expose('/')
     def index(self):
 
-        users = list()
+        initusers = list()
+
         for instance in user.query:
 
-            users.append({'name': '{}'.format(instance.username),
+            initusers.append({'name': '{}'.format(instance.username),
                           'userid':'{}'.format(instance.userid),
-                          'bill': getcurrbill(instance.userid)})
+                          'bill': restBill(instance.userid)})
+
+        users = sorted(initusers, key=lambda k: k['name'])
 
         return self.render('admin/test.html',users = users)
 
@@ -386,7 +389,7 @@ class MyAdminIndexView(AdminIndexView):
 init_login()
 admin = Admin(app, name = 'CoffeeList Admin Page',index_view=MyAdminIndexView(), base_template='my_master.html')
 admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
-admin.add_view(MyPaymentModelView(inpayment, db.session, 'inpayment'))
+admin.add_view(MyPaymentModelView(inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(user, db.session, 'User'))
 admin.add_view(MyItemModelView(item, db.session,'Items'))
 admin.add_view(MyHistoryModelView(history, db.session,'History'))
