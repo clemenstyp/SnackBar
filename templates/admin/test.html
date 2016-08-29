@@ -1,5 +1,8 @@
 {% extends 'admin/master.html' %}
 {% block body %}
+<div style="text-align:right;margin-bottom:50px">
+    <a href="{{ url_for('bill.export') }}" class="btn btn-primary">Export as csv!</a>
+</div>
 <table class="table table-bordered table-striped">
     <thead>
         <tr>
@@ -27,9 +30,7 @@
 
     </tbody>
 </table>
-<div style="text-align:right">
-    <a href="{{ url_for('bill.export') }}" class="btn btn-primary">Export as csv!</a>
-</div>
+
 
 
 {% endblock %}

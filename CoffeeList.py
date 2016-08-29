@@ -88,13 +88,11 @@ class inpayment(db.Model):
     user = db.relationship('user', backref=db.backref('inpayment', lazy='dynamic'))
 
     amount = db.Column(db.Float)
-    rest = db.Column(db.Float)
     date = db.Column(db.DateTime)
 
     def __init__(self, user=None, amount=None, date=None):
         self.userid = user
         self.amount = amount
-        self.rest = self.amount
 
         if date is None:
             date = datetime.now()
@@ -107,7 +105,7 @@ class inpayment(db.Model):
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(80), unique=True)
-    email = db.Column(db.String(120), unique=True)
+    email = db.Column(db.String(120))
 
 
     def __init__(self, username='', email=''):
@@ -203,55 +201,29 @@ def getcurrbill(userid):
 def getunpaid(userid,itemid):
 
     nUnpaid = len(history.query.filter(history.userid == userid).
-        filter(history.itemid == itemid).
-        filter(history.paid == False).all())
+                    filter(history.itemid == itemid).
+                    filter(history.paid == False).all())
 
     return nUnpaid
 
+def getPayment(userid):
 
-def accountPayment(userid):
+    payment = inpayment.query.filter(inpayment.userid == userid)
+    totalPayment = 0
 
-    if len(history.query.filter(history.userid == userid).filter(history.paid == False).all()) != 0:
-        if len(inpayment.query.filter(inpayment.userid == userid).filter(inpayment.rest != 0).all()) != 0:
+    for entry in payment:
+        totalPayment += entry.amount
 
-            purchase = history.query.filter(history.userid == userid).filter(history.paid == False)
-            inpay = inpayment.query.filter(inpayment.userid == userid).filter(inpayment.rest != 0).all()
-            transfer = 0
+    return totalPayment
 
-            for instance in purchase:
-                print(instance)
-                for entry in inpay:
-                    print(entry)
-                    if entry.rest + transfer - instance.price < 0:
-                        print('Geld aus erstem Eintrag reicht nicht')
-                        if len(inpayment.query.filter(inpayment.userid == userid).filter(inpayment.rest != 0).all()) > 1:
-                            print('Transferiere Geld aus erstem Eintrag')
-                            transfer = entry.rest
-                            print(transfer)
-                            entry.rest = 0
-                            entry.date = datetime.now()
+def restBill(userid):
 
-                        continue
+    currBill = getcurrbill(userid)
+    totalPayment = getPayment(userid)
 
-                    else:
-                        print('Geld aus eintrag ist genug')
-                        print(entry.rest + transfer)
-                        entry.rest = entry.rest + transfer - instance.price
-                        instance.paid = True
-                        entry.date = datetime.now()
-                        transfer = 0
-                        print('Neuer Betrag ist')
-                        print(entry.rest)
+    restAmount = currBill-totalPayment
 
-        else:
-            print('Unpaid Bills but no InPay')
-
-    else:
-        print('Nothing to pay')
-
-    db.session.commit()
-
-    return
+    return restAmount
 
 def button_background(user):
     """
@@ -285,15 +257,10 @@ class AnalyticsView(BaseView):
 
         users = list()
         for instance in user.query:
-            bill = history.query.filter(history.userid == instance.userid).filter(history.paid == False)
-            currbill = 0
-
-            for entry in bill:
-                currbill += entry.price
 
             users.append({'name': '{}'.format(instance.username),
                           'userid':'{}'.format(instance.userid),
-                          'bill': currbill})
+                          'bill': getcurrbill(instance.userid)})
 
         return self.render('admin/test.html',users = users)
 
@@ -347,7 +314,7 @@ class AnalyticsView(BaseView):
 class MyPaymentModelView(ModelView):
     can_create = True
     can_export = True
-    form_excluded_columns = ('rest','date')
+    form_excluded_columns = ('date')
     export_types = ['csv']
 
     def is_accessible(self):
@@ -432,7 +399,7 @@ def hello():
     for instance in user.query:
         initusers.append({'name': '{}'.format(instance.username),
                       'id': '{}'.format(instance.userid),
-                      'bill': getcurrbill(instance.userid),
+                      'bill': restBill(instance.userid),
                       'bgcolor': '{}'.format(button_background(instance.username)),
                       'fontcolor': '{}'.format(button_font_color(instance.username))})
 
@@ -443,16 +410,17 @@ def hello():
 
 @app.route('/login/<int:userid>',methods = ['GET'])
 def login(userid):
-    accountPayment(userid)
+
     userName = user.query.get(userid).username
     items = list()
     for instance in item.query:
         items.append({'name' :'{}'.format(instance.name),
                       'price': instance.price,
                       'itemid':'{}'.format(instance.itemid),
-                      'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
+                      'count':getunpaid(userid,instance.itemid)})
+                      #'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
 
-    currbill = getcurrbill(userid)
+    currbill = restBill(userid)
 
     if currbill==None:
         currbill = 0
@@ -483,7 +451,7 @@ def build_sample_db():
     db.create_all()
 
 
-    with open('static/userListWZMZ.csv') as csvfile:
+    with open('static/userListWZMW.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             newuser = user(username='{} {}'.format(row['FirstName'], row['LastName']),
@@ -526,5 +494,5 @@ if __name__ == "__main__":
     #build_sample_db()
 
 
-    app.run(debug=True)
+    app.run(host='0.0.0.0',debug=True)
 

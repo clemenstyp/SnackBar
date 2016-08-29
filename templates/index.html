@@ -19,10 +19,12 @@
         }
 
         div.person_button {
+            display:block;
             margin:5px;
             display:inline-block;
             width:170px;
             height:70px;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -34,8 +36,9 @@
                 {% for user in users %}
                 <div class="person_button">
                     <a href="/login/{{user.id}}" class="ui huge {{user.color}} button" style="color:{{user.fontcolor}};background-color:{{ user.bgcolor }}">
-                {{ user.name }}
+                     {{ user.name }}
                     </a>
+
                 </div>
                 {% endfor %}
             </div>
