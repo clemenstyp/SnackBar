@@ -23,9 +23,6 @@
             display:block;
             margin:5px;
             display:inline-block;
-            width:170px;
-            height:70px;
-            overflow: hidden;
         }
     </style>
 </head>
@@ -36,8 +33,12 @@
             <div class="buttons_container">
                 {% for user in users %}
                 <div class="person_button">
-                    <a href="/login/{{user.id}}" class="ui huge {{user.color}} button" style="color:{{user.fontcolor}};background-color:{{ user.bgcolor }}">
-                     {{ user.name }}
+                    <a href="/login/{{user.id}}" class="ui huge {{user.color}} button"
+                     style="width:160px;
+                            heigth:80px;
+                            color:{{user.fontcolor}};
+                            background-color:{{ user.bgcolor }}">
+                     {{ user.firstName }}<br>{{ user.lastName }}
                     </a>
 
                 </div>

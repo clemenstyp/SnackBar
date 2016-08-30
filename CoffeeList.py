@@ -12,7 +12,7 @@ from math import sqrt
 
 user = 'coffee'
 password = 'ilikecoffee'
-db = 'coffee'
+db = 'coffeelist'
 host = 'localhost'
 port = 5432
 
@@ -104,12 +104,15 @@ class inpayment(db.Model):
 
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(80), unique=True)
+    firstName = db.Column(db.String(80))
+    lastName = db.Column(db.String(80))
+
     email = db.Column(db.String(120))
 
 
-    def __init__(self, username='', email=''):
-        self.username = username
+    def __init__(self, firstName='', lastName='', email=''):
+        self.firstName = firstName
+        self.lastName = lastName
         if not email:
             email = 'test@†est.de'
 
@@ -118,7 +121,7 @@ class user(db.Model):
 
 
     def __repr__(self):
-        return self.username
+        return '{} {}'.format(self.firstName,self.lastName)
 
 class item(db.Model):
     itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -259,7 +262,7 @@ class AnalyticsView(BaseView):
 
         for instance in user.query:
 
-            initusers.append({'name': '{}'.format(instance.username),
+            initusers.append({'name': '{} {}'.format(instance.firstName,instance.lastName),
                           'userid':'{}'.format(instance.userid),
                           'bill': restBill(instance.userid)})
 
@@ -297,7 +300,7 @@ class AnalyticsView(BaseView):
 
         for instance in user.query:
             firstline = list()
-            firstline.append('{}'.format(instance.username))
+            firstline.append('{} {}'.format(instance.firstName,instance.lastName))
 
             for record in item.query:
                 firstline.append('{}'.format(getunpaid(instance.userid, record.itemid)))
@@ -340,9 +343,10 @@ class MyUserModelView(ModelView):
     export_types = ['csv', 'xls']
     form_excluded_columns = ('history','inpayment')
     column_descriptions = dict(
-        username='Name of the corresponding person'
+        firstName='Name of the corresponding person'
     )
-    column_labels = dict(username='Name')
+    column_labels = dict(firstName='First Name',
+                         lastName = 'Last Name')
     #form_choices = {'username' : ['Lennart','Lukas'],
     #               'email' : [],
     #                'btncolor' : []}
@@ -400,11 +404,12 @@ def hello():
     initusers = list()
 
     for instance in user.query:
-        initusers.append({'name': '{}'.format(instance.username),
-                      'id': '{}'.format(instance.userid),
-                      'bill': restBill(instance.userid),
-                      'bgcolor': '{}'.format(button_background(instance.username)),
-                      'fontcolor': '{}'.format(button_font_color(instance.username))})
+        initusers.append({'firstName': '{}'.format(instance.firstName),
+                          'lastName': '{}'.format(instance.lastName),
+                          'id': '{}'.format(instance.userid),
+                          'bill': restBill(instance.userid),
+                          'bgcolor': '{}'.format(button_background(instance.firstName)),
+                          'fontcolor': '{}'.format(button_font_color(instance.firstName))})
 
     users = sorted(initusers,key=lambda k: k['bill'],reverse=True)
 
@@ -414,7 +419,7 @@ def hello():
 @app.route('/login/<int:userid>',methods = ['GET'])
 def login(userid):
 
-    userName = user.query.get(userid).username
+    userName = '{} {}'.format(user.query.get(userid).firstName,user.query.get(userid).lastName)
     items = list()
     for instance in item.query:
         items.append({'name' :'{}'.format(instance.name),
@@ -457,7 +462,8 @@ def build_sample_db():
     with open('static/userListWZMW.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            newuser = user(username='{} {}'.format(row['FirstName'], row['LastName']),
+            newuser = user(firstName='{}'.format(row['FirstName']),
+                           lastName='{}'.format(row['LastName']),
                            email='{}@{}.de'.format(row['FirstName'], row['LastName']))
             db.session.add(newuser)
     '''
