@@ -202,10 +202,11 @@ def getcurrbill(userid):
     return currbill
 
 def getunpaid(userid,itemid):
+    nUnpaid = 0
 
-    nUnpaid = len(history.query.filter(history.userid == userid).
-                    filter(history.itemid == itemid).
-                    filter(history.paid == False).all())
+    for entry in history.query.filter(history.userid == userid).filter(history.itemid == itemid).filter(history.paid == False).all():
+        if entry.date.month == datetime.now().month:
+            nUnpaid += 1
 
     return nUnpaid
 
@@ -397,7 +398,6 @@ admin.add_view(MyPaymentModelView(inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(user, db.session, 'User'))
 admin.add_view(MyItemModelView(item, db.session,'Items'))
 admin.add_view(MyHistoryModelView(history, db.session,'History'))
-
 
 @app.route('/')
 def hello():
