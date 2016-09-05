@@ -229,6 +229,36 @@ def restBill(userid):
 
     return restAmount
 
+def makeXLSBill(filename,fullpath):
+    #filename = 'CoffeeBill_{}_{}.xls'.format(datetime.now().date().isoformat(),
+    #                                        datetime.now().time().strftime('%H-%M-%S'))
+
+    #fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
+    header = list()
+    header.append('name')
+    for entry in item.query:
+        header.append('{}'.format(entry.name))
+    header.append('bill')
+
+    excelData = tablib.Dataset()
+    excelData.headers = header
+
+    for instance in user.query:
+        firstline = list()
+        firstline.append('{} {}'.format(instance.firstName, instance.lastName))
+
+        for record in item.query:
+            firstline.append('{}'.format(getunpaid(instance.userid, record.itemid)))
+
+        firstline.append('{0:.2f}'.format(getcurrbill(instance.userid)))
+        excelData.append(firstline)
+
+    with open(os.path.join(fullpath, filename), 'wb') as f:
+        f.write(excelData.xls)
+
+    return
+
+
 def button_background(user):
     """
         returns the background color based on the username md5
@@ -290,27 +320,7 @@ class AnalyticsView(BaseView):
                                                  datetime.now().time().strftime('%H-%M-%S'))
 
         fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
-        header = list()
-        header.append('name')
-        for entry in item.query:
-            header.append('{}'.format(entry.name))
-        header.append('bill')
-
-        excelData = tablib.Dataset()
-        excelData.headers = header
-
-        for instance in user.query:
-            firstline = list()
-            firstline.append('{} {}'.format(instance.firstName,instance.lastName))
-
-            for record in item.query:
-                firstline.append('{}'.format(getunpaid(instance.userid, record.itemid)))
-
-            firstline.append('{0:.2f}'.format(getcurrbill(instance.userid)))
-            excelData.append(firstline)
-
-        with open(os.path.join(fullpath,filename), 'wb') as f:
-            f.write(excelData.xls)
+        makeXLSBill(filename,fullpath)
 
         return send_from_directory(directory=fullpath, filename=filename, as_attachment=True)
 
