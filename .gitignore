@@ -1,4 +1,5 @@
 .DS_Store
+credentials.py
 venv
 *.xls
 *.pyc
