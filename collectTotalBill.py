@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from CoffeeList import makeXLSBill
+from CoffeeList import makeXLSBill,user,getcurrbill
 from datetime import datetime
 from sendEmail import Bimail
 import os
@@ -23,20 +23,27 @@ fullpath = 'static'
 
 makeXLSBill(filename,fullpath)
 
+
 import credentials
 # subject and recipients
-mymail = Bimail('CoffeList for the ' + datetime.now().strftime('%Y/%m/%d'), ['recipient@provider.com'])
-mymail.sendername = 'Nameofthesender@provider.com'
-mymail.sender = credentials.username
-mymail.senderpass = credentials.password
-mymail.servername = 'name.of.the.smtp.server:587'
-
-# start html body. Here we add a greeting.
-mymail.htmladd('Godd Morning<br>You can find detailed version of the current coffeelist bill in the attachement.<br>')
-# Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
-# here we add a line of text and an html table previously stored in the variable
-# add image chart title
-# attach another file
-mymail.addattach([os.path.join(fullpath, filename)])
-# send!
-mymail.send()
+for instance in user.query:
+    if instance.email:
+        currbill = '{0:.2f}'.format(getcurrbill(instance.userid))
+        type(currbill)
+        mymail = Bimail('CoffeList for the ' + datetime.now().strftime('%Y/%m/%d'), ['{}'.format(instance.email)])
+        mymail.sendername = 'sender@email.com'
+        mymail.sender = credentials.username
+        mymail.senderpass = credentials.password
+        mymail.servername = 'smtp.server.de:587'
+        # start html body. Here we add a greeting.
+        mymail.htmladd('Good morning {} {}. <br> Your Bill is {} € <br> You can find detailed version of the current coffeelist bill attached to this email.<br>'.format(instance.firstName,instance.lastName,currbill))
+        # Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
+        # here we add a line of text and an html table previously stored in the variable
+        # add image chart title
+        # attach another file
+        mymail.htmladd('Please pay your remaining bill as soon as possible.')
+        mymail.addattach([os.path.join(fullpath, filename)])
+        # send!
+        mymail.send()
+    else:
+        continue
