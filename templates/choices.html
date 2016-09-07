@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
+    <script src="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+    <link href="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
@@ -56,7 +58,7 @@
         <button class="ui icon button"><a href="/"><i class="arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
-
+        <div class="ct-chart" style="margins:300px"></div>
         <div class="ui center aligned container">
             <table class="ui center aligned celled table" style="width:800px;margin:50px auto">
                 <thead>
@@ -93,6 +95,20 @@ function changeButton(itemid) {
     document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
     return;
 }
+</script>
+<script id="jsbin-javascript">
+new Chartist.Bar('.ct-chart', {
+  labels: ['Coffee', 'Water', 'Snacks', 'Cola'],
+  series: [
+    [2, 8, 2, 4],
+    [3, 10,5, 1]
+  ]
+}, {
+  seriesBarDistance: 20,
+  axisX: {
+    showGrid: false
+  }
+});
 </script>
 </body>
 
