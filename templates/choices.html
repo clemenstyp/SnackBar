@@ -98,10 +98,10 @@ function changeButton(itemid) {
 </script>
 <script id="jsbin-javascript">
 new Chartist.Bar('.ct-chart', {
-  labels: ['Coffee', 'Water', 'Snacks', 'Cola'],
+    
+  labels: ["{{ items|join('", "', attribute='name')}}"],
   series: [
-    [2, 8, 2, 4],
-    [3, 10,5, 1]
+    [{{ items|join(', ', attribute='count')}}]]
   ]
 }, {
   seriesBarDistance: 20,
