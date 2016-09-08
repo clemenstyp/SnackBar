@@ -47,7 +47,8 @@
                     <a onclick="changeButton({{item.itemid}})"
                        id="{{item.itemid}}"
                        style = "width:154px;
-                                height:95px;"
+                                height:95px;
+                                background-color: #e6efff;"
                        href="{{ url_for('change', userid=userid, itemid=item.itemid) }}"
                        class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} €</a>
                 </div>
