@@ -14,15 +14,16 @@
         body {
             margin:20px;
         }
-
         .buttons_container {
             text-align:center;
         }
-
         div.person_button {
             display:block;
             margin:5px;
             display:inline-block;
+        }
+        a:active {
+          color:red;
         }
     </style>
 </head>
@@ -35,7 +36,7 @@
                 <div class="person_button">
                     <a href="/login/{{user.id}}" class="ui huge button"
                      style="width:160px;
-                            heigth:80px;
+                            height:80px;
                             color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
                      {{ user.firstName }}<br>{{ user.lastName }}
