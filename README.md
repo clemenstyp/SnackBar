@@ -12,6 +12,9 @@ This is a web app for a digital coffee list hosted on an Ipad.
 * Your App should run on localhost at port 5000
 * Remember to set the comment line 513 or the database will be rebuild at every start
 
+
+# Screenshots
+
 ![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/1.png)
 ![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/2.png)
 ![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/3.png)
