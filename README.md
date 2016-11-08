@@ -13,3 +13,5 @@ This is a web app for a digital coffee list hosted on an Ipad.
 * Remember to set the comment line 513 or the database will be rebuild at every start
 
 ![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/1.png)
+![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/2.png)
+![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/3.png)
