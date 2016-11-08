@@ -16,8 +16,8 @@ db = 'coffeelist'
 host = 'localhost'
 port = 5432
 
-#url = 'sqlite:///TestDB.db'
-url = 'postgresql://{}:{}@{}:{}/{}'
+url = 'sqlite:///TestDB.db'
+#url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
 
@@ -469,7 +469,7 @@ def build_sample_db():
     db.create_all()
 
 
-    with open('static/userListWZMW.csv') as csvfile:
+    with open('static/userList.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             newuser = user(firstName='{}'.format(row['FirstName']),
@@ -510,7 +510,7 @@ if __name__ == "__main__":
  #   database_path = os.path.join(app_dir, 'TestDB.db')
  #   if not os.path.exists(database_path):
  #       print('Create new test database')
-    #build_sample_db()
+ #    build_sample_db()
 
 
     app.run(host='0.0.0.0',debug=True)
