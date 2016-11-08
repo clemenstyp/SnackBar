@@ -15,6 +15,6 @@ This is a web app for a digital coffee list hosted on an Ipad.
 
 # Screenshots
 
-![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/1.png)
-![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/2.png)
-![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/3.png)
+![alt tag](https://cloud.githubusercontent.com/assets/20201737/20115443/8deffc5e-a5f8-11e6-84fa-2757c86b508b.png)
+![alt tag](https://cloud.githubusercontent.com/assets/20201737/20115444/8df0936c-a5f8-11e6-938b-303229f9423d.png)
+![alt tag](https://cloud.githubusercontent.com/assets/20201737/20115446/8df31ad8-a5f8-11e6-9fe2-80f83903e4d6.png)
