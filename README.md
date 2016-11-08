@@ -11,3 +11,5 @@ This is a web app for a digital coffee list hosted on an Ipad.
 * At the first run: Go into CoffeeList.py and uncomment line 513 ('build_sample_db()')
 * Your App should run on localhost at port 5000
 * Remember to set the comment line 513 or the database will be rebuild at every start
+
+![alt tag](https://raw.githubusercontent.com/duscheln/CoffeeList/master/screenshots/1.png)
