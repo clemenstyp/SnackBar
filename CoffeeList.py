@@ -474,7 +474,7 @@ def build_sample_db():
         for row in reader:
             newuser = user(firstName='{}'.format(row['FirstName']),
                            lastName='{}'.format(row['LastName']),
-                           email='{}@{}.de'.format(row['FirstName'], row['LastName']))
+                           email='{}'.format(row['email']))
             db.session.add(newuser)
     '''
     name = [
@@ -510,7 +510,7 @@ if __name__ == "__main__":
  #   database_path = os.path.join(app_dir, 'TestDB.db')
  #   if not os.path.exists(database_path):
  #       print('Create new test database')
- #    build_sample_db()
+    build_sample_db()
 
 
     app.run(host='0.0.0.0',debug=True)
