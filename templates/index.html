@@ -17,13 +17,15 @@
         .buttons_container {
             text-align:center;
         }
-        div.person_button {
-            display:block;
-            margin:5px;
-            display:inline-block;
+        a.coffee-button {
+            margin:5px !important;
+            display:inline-block !important;
+            width:160px !important;
+            height:80px !important;
         }
-        a:active {
+        a.coffee-button:active {
           color:red;
+          border:3px solid black;
         }
     </style>
 </head>
@@ -33,16 +35,11 @@
         <div>
             <div class="buttons_container">
                 {% for user in users %}
-                <div class="person_button">
-                    <a href="/login/{{user.id}}" class="ui huge button"
-                     style="width:160px;
-                            height:80px;
-                            color:{{user.fontcolor}};
+                    <a href="/login/{{user.id}}" class="ui coffee-button huge button"
+                     style="color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
                      {{ user.firstName }}<br>{{ user.lastName }}
                     </a>
-
-                </div>
                 {% endfor %}
             </div>
             <div class="ui divider" style="clear:both">
