@@ -35,7 +35,7 @@
         <div>
             <div class="buttons_container">
                 {% for user in users %}
-                    <a href="/login/{{user.id}}" class="ui coffee-button huge button"
+                    <a href="/login/{{user.id}}?password={{pwd}}" class="ui coffee-button huge button"
                      style="color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
                      {{ user.firstName }}<br>{{ user.lastName }}
