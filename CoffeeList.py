@@ -359,9 +359,7 @@ class MyUserModelView(ModelView):
     )
     column_labels = dict(firstName='First Name',
                          lastName = 'Last Name')
-    #form_choices = {'username' : ['Lennart','Lukas'],
-    #               'email' : [],
-    #                'btncolor' : []}
+
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
@@ -417,17 +415,33 @@ def hello():
         return render_template('accessDenied.html')
 
     initusers = list()
+
     for instance in user.query:
+        items = list()
+        for entry in item.query:
+            items.append({entry.itemid: getunpaid(instance.userid, entry.itemid)})
+
         initusers.append({'firstName': '{}'.format(instance.firstName),
                           'lastName': '{}'.format(instance.lastName),
                           'id': '{}'.format(instance.userid),
                           'bill': restBill(instance.userid),
                           'bgcolor': '{}'.format(button_background(instance.firstName)),
-                          'fontcolor': '{}'.format(button_font_color(instance.firstName))})
+                          'fontcolor': '{}'.format(button_font_color(instance.firstName)),
+                          'counts': items
+                              })
 
-    users = sorted(initusers,key=lambda k: k['bill'],reverse=True)
+    users = sorted(initusers,key=lambda k: k['lastName'],reverse=True)
 
-    return render_template('index.html', users=users,pwd=SecKey)
+    maxima = [0] * len(users[0]['counts'])
+    maximaID = [0] * len(users[0]['counts'])
+
+    for elem in users:
+        for i, entry in enumerate(elem['counts']):
+            if list(entry.values())[0] > maxima[i]:
+                maxima[i] = list(entry.values())[0]
+                maximaID[i] = int(elem['id'])
+
+    return render_template('index.html', users=users,pwd=SecKey,maxima=maxima,maximaID=maximaID)
 
 
 @app.route('/login/<int:userid>',methods = ['GET'])
@@ -443,7 +457,6 @@ def login(userid):
                       'itemid':'{}'.format(instance.itemid),
                       'count':getunpaid(userid,instance.itemid)})
                       #'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
-
     currbill = restBill(userid)
 
     if currbill==None:
@@ -519,7 +532,7 @@ if __name__ == "__main__":
  #   database_path = os.path.join(app_dir, 'TestDB.db')
  #   if not os.path.exists(database_path):
  #       print('Create new test database')
-    build_sample_db()
+ #   build_sample_db()
 
 
     app.run(host='0.0.0.0',debug=True)
