@@ -20,6 +20,7 @@ url = 'sqlite:///TestDB.db'
 #url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
+SecKey = 'hdpzhrcurkxe6qrqoPrbopaegfjobvqwxgbte6u2kneiaikcNcaoahgoskud'
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = url
@@ -411,8 +412,11 @@ admin.add_view(MyHistoryModelView(history, db.session,'History'))
 
 @app.route('/')
 def hello():
-    initusers = list()
 
+    if request.args.get('password') != SecKey :
+        return render_template('accessDenied.html')
+
+    initusers = list()
     for instance in user.query:
         initusers.append({'firstName': '{}'.format(instance.firstName),
                           'lastName': '{}'.format(instance.lastName),
@@ -423,11 +427,13 @@ def hello():
 
     users = sorted(initusers,key=lambda k: k['bill'],reverse=True)
 
-    return render_template('index.html', users=users)
+    return render_template('index.html', users=users,pwd=SecKey)
 
 
 @app.route('/login/<int:userid>',methods = ['GET'])
 def login(userid):
+    if request.args.get('password') != SecKey:
+        return render_template('accessDenied.html')
 
     userName = '{} {}'.format(user.query.get(userid).firstName,user.query.get(userid).lastName)
     items = list()
@@ -447,11 +453,14 @@ def login(userid):
                            currbill = currbill,
                            chosenuser = userName,
                            userid = userid,
-                           items = items
+                           items = items,
+                           pwd=SecKey
                            )
 
 @app.route('/change/<int:userid>')
 def change(userid):
+    if request.args.get('password') != SecKey:
+        return render_template('accessDenied.html')
 
     itemid = request.args.get('itemid')
     curuser = user.query.get(userid)
@@ -461,7 +470,7 @@ def change(userid):
     db.session.add(userPurchase)
     db.session.commit()
 
-    return redirect(url_for('login',userid=userid))
+    return redirect(url_for('login',userid=userid,password=SecKey))
 
 def build_sample_db():
     import csv
@@ -510,7 +519,7 @@ if __name__ == "__main__":
  #   database_path = os.path.join(app_dir, 'TestDB.db')
  #   if not os.path.exists(database_path):
  #       print('Create new test database')
- #   build_sample_db()
+    build_sample_db()
 
 
     app.run(host='0.0.0.0',debug=True)
