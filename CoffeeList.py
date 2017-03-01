@@ -430,7 +430,7 @@ admin.add_view(MyHistoryModelView(history, db.session,'History'))
 
 @app.route('/')
 def hello():
-
+    
     if request.args.get('password') != SecKey :
         return render_template('accessDenied.html')
 
@@ -454,7 +454,7 @@ def hello():
 
     leaderID = getLeader(users)
 
-    return render_template('index.html', users=users,pwd=SecKey,leaderID=leaderID)
+    return render_template('index.html', users=users,pwd=SecKey,leaderID=leaderID.tolist())
 
 
 @app.route('/login/<int:userid>',methods = ['GET'])
