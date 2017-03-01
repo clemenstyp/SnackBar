@@ -16,8 +16,8 @@ db = 'coffeelist'
 host = 'localhost'
 port = 5432
 
-#url = 'sqlite:///TestDB.db'
-url = 'postgresql://{}:{}@{}:{}/{}'
+url = 'sqlite:///TestDB.db'
+#url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
 SecKey = 'hdpzhrcurkxe6qrqoPrbopaegfjobvqwxgbte6u2kneiaikcNcaoahgoskud'
@@ -201,6 +201,26 @@ def getcurrbill(userid):
     for entry in bill:
         currbill += entry.price
     return currbill
+
+def getLeader(data):
+    import numpy as np 
+
+    itemID = [0] * len(data[0]['counts'])
+    uID = [0] * len(data)
+    maxima = np.zeros((len(data),len(data[0]['counts'])))
+
+    for j, elem in enumerate(data):
+      
+      uID[j] = elem['firstName']
+
+      for i, entry in enumerate(elem['counts']):
+
+        itemID[i] = list(entry.keys())[0]
+        maxima[j][i] = list(entry.values())[0]
+
+    maximaID = np.argmax(maxima,axis=0)
+    print(maximaID)
+    return maximaID
 
 def getunpaid(userid,itemid):
     nUnpaid = 0
@@ -432,16 +452,9 @@ def hello():
 
     users = sorted(initusers,key=lambda k: k['lastName'],reverse=True)
 
-    maxima = [0] * len(users[0]['counts'])
-    maximaID = [0] * len(users[0]['counts'])
+    leaderID = getLeader(users)
 
-    for elem in users:
-        for i, entry in enumerate(elem['counts']):
-            if list(entry.values())[0] > maxima[i]:
-                maxima[i] = list(entry.values())[0]
-                maximaID[i] = int(elem['id'])
-
-    return render_template('index.html', users=users,pwd=SecKey,maxima=maxima,maximaID=maximaID)
+    return render_template('index.html', users=users,pwd=SecKey,leaderID=leaderID)
 
 
 @app.route('/login/<int:userid>',methods = ['GET'])
