@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from CoffeeList import makeXLSBill,user,getcurrbill
+from CoffeeList import makeXLSBill,user,restBill
 from datetime import datetime
 from sendEmail import Bimail
 import os
@@ -30,26 +30,26 @@ print(datetime.now().time().strftime('%H-%M-%S'))
 # subject and recipients
 for instance in user.query:
     if instance.email:
-        currbill = '{0:.2f}'.format(getcurrbill(instance.userid))
-        type(currbill)
-        mymail = Bimail('CoffeList for the ' + datetime.now().strftime('%Y/%m/%d'), ['{}'.format(instance.email)])
-        mymail.sendername = 'coffeebill@james.uni-marburg.de'
+
+        currbill = '{0:.2f}'.format(restBill(instance.userid))
+        #print(instance.firstName)
+        #print(currbill)
+        mymail = Bimail('Coffebill for the ' + datetime.now().strftime('%Y/%m/%d'), ['{}'.format(instance.email)])
+        mymail.sendername = 'coffeebill@james.physik.uni-marburg.de'
         mymail.sender = credentials.username
         mymail.senderpass = credentials.password
         mymail.servername = 'smtp.staff.uni-marburg.de:587'
         # start html body. Here we add a greeting.
-        mymail.htmladd('Good morning {} {}. <br> Your Bill is {} € <br> You can find detailed version of the current coffeelist bill attached to this email.<br>'.format(instance.firstName,instance.lastName,currbill))
+        mymail.htmladd('Good morning {} {}. <br> Your Bill is {} € <br><br>'.format(instance.firstName,instance.lastName,currbill))
         # Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
         # here we add a line of text and an html table previously stored in the variable
         # add image chart title
         # attach another file
-        mymail.htmladd('Please pay your remaining bill as soon as possible.')
-        mymail.addattach([os.path.join(fullpath, filename)])
+        mymail.htmladd('Please pay your remaining bill to Elke as soon as possible.')
+        #mymail.addattach([os.path.join(fullpath, filename)])
         # send!
         print(mymail.htmlbody)
         #mymail.send()
     else:
         continue
 
-print('Finished sending emails.')
-print(datetime.now().time().strftime('%H-%M-%S'))

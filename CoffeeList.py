@@ -16,8 +16,8 @@ db = 'coffeelist'
 host = 'localhost'
 port = 5432
 
-url = 'sqlite:///TestDB.db'
-#url = 'postgresql://{}:{}@{}:{}/{}'
+#url = 'sqlite:///TestDB.db'
+url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
 SecKey = 'hdpzhrcurkxe6qrqoPrbopaegfjobvqwxgbte6u2kneiaikcNcaoahgoskud'
@@ -251,7 +251,7 @@ def makeXLSBill(filename,fullpath):
         for record in item.query:
             firstline.append('{}'.format(getunpaid(instance.userid, record.itemid)))
 
-        firstline.append('{0:.2f}'.format(getcurrbill(instance.userid)))
+        firstline.append('{0:.2f}'.format(restBill(instance.userid)))
         excelData.append(firstline)
 
     with open(os.path.join(fullpath, filename), 'wb') as f:
@@ -532,8 +532,8 @@ if __name__ == "__main__":
  #   database_path = os.path.join(app_dir, 'TestDB.db')
  #   if not os.path.exists(database_path):
  #       print('Create new test database')
- #   build_sample_db()
+ #    build_sample_db()
 
 
-    app.run(host='0.0.0.0',debug=True)
+    app.run()
 
