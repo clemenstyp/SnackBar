@@ -28,19 +28,35 @@
             color:gray;
             border:3px solid black;
         }
+        .button_user{
+            display:inline-block !important;
+            position: relative;
+            width: 170px;
+            height: 90px;
+        }
+        #coffeeCup{
+            position: absolute;
+            width: 30px;
+            right: -7px;
+            top: -10px;
+        }
     </style>
 </head>
 
 <body>
-
-        <div>
+        <div class = "container">
             <div class="buttons_container">
                 {% for user in users %}
-                    <a href="/login/{{user.id}}" class="ui coffee-button huge button"
+                <div class="button_user">
+                    {% if user.id|int in maximaID %}
+                        <img id = "coffeeCup" src='https://cdn1.iconfinder.com/data/icons/hotel-restaurant/512/15-512.png' />
+                    {% endif %}
+                    <a href="/login/{{user.id}}?password={{pwd}}" class="ui coffee-button huge button"
                      style="color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
                      {{ user.firstName }}<br>{{ user.lastName }}
                     </a>
+                </div>
                 {% endfor %}
             </div>
             <div class="ui divider" style="clear:both">
@@ -49,7 +65,6 @@
               </p>
             </div>
         </div>
-
 </body>
 <script>
     $('a').click(function(){

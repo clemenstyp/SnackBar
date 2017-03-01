@@ -20,6 +20,7 @@ port = 5432
 url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
+SecKey = 'hdpzhrcurkxe6qrqoPrbopaegfjobvqwxgbte6u2kneiaikcNcaoahgoskud'
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = url
@@ -358,9 +359,7 @@ class MyUserModelView(ModelView):
     )
     column_labels = dict(firstName='First Name',
                          lastName = 'Last Name')
-    #form_choices = {'username' : ['Lennart','Lukas'],
-    #               'email' : [],
-    #                'btncolor' : []}
+
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
@@ -411,23 +410,44 @@ admin.add_view(MyHistoryModelView(history, db.session,'History'))
 
 @app.route('/')
 def hello():
+
+    if request.args.get('password') != SecKey :
+        return render_template('accessDenied.html')
+
     initusers = list()
 
     for instance in user.query:
+        items = list()
+        for entry in item.query:
+            items.append({entry.itemid: getunpaid(instance.userid, entry.itemid)})
+
         initusers.append({'firstName': '{}'.format(instance.firstName),
                           'lastName': '{}'.format(instance.lastName),
                           'id': '{}'.format(instance.userid),
                           'bill': restBill(instance.userid),
                           'bgcolor': '{}'.format(button_background(instance.firstName)),
-                          'fontcolor': '{}'.format(button_font_color(instance.firstName))})
+                          'fontcolor': '{}'.format(button_font_color(instance.firstName)),
+                          'counts': items
+                              })
 
-    users = sorted(initusers,key=lambda k: k['lastName'])
+    users = sorted(initusers,key=lambda k: k['lastName'],reverse=True)
 
-    return render_template('index.html', users=users)
+    maxima = [0] * len(users[0]['counts'])
+    maximaID = [0] * len(users[0]['counts'])
+
+    for elem in users:
+        for i, entry in enumerate(elem['counts']):
+            if list(entry.values())[0] > maxima[i]:
+                maxima[i] = list(entry.values())[0]
+                maximaID[i] = int(elem['id'])
+
+    return render_template('index.html', users=users,pwd=SecKey,maxima=maxima,maximaID=maximaID)
 
 
 @app.route('/login/<int:userid>',methods = ['GET'])
 def login(userid):
+    if request.args.get('password') != SecKey:
+        return render_template('accessDenied.html')
 
     userName = '{} {}'.format(user.query.get(userid).firstName,user.query.get(userid).lastName)
     items = list()
@@ -437,7 +457,6 @@ def login(userid):
                       'itemid':'{}'.format(instance.itemid),
                       'count':getunpaid(userid,instance.itemid)})
                       #'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
-
     currbill = restBill(userid)
 
     if currbill==None:
@@ -447,11 +466,14 @@ def login(userid):
                            currbill = currbill,
                            chosenuser = userName,
                            userid = userid,
-                           items = items
+                           items = items,
+                           pwd=SecKey
                            )
 
 @app.route('/change/<int:userid>')
 def change(userid):
+    if request.args.get('password') != SecKey:
+        return render_template('accessDenied.html')
 
     itemid = request.args.get('itemid')
     curuser = user.query.get(userid)
@@ -461,7 +483,7 @@ def change(userid):
     db.session.add(userPurchase)
     db.session.commit()
 
-    return redirect(url_for('login',userid=userid))
+    return redirect(url_for('login',userid=userid,password=SecKey))
 
 def build_sample_db():
     import csv
