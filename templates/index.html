@@ -34,12 +34,23 @@
             width: 170px;
             height: 90px;
         }
-        #coffeeCup{
+
+        .flag{
             position: absolute;
             width: 30px;
-            right: -7px;
             top: -10px;
+            visibility: hidden;
         }
+        #number1{
+            right: -7px;
+        }
+        #number2{
+            right: 25px;
+        }
+        #number3{
+            right: 55px;
+        }
+    
     </style>
 </head>
 
@@ -48,9 +59,11 @@
             <div class="buttons_container">
                 {% for user in users %}
                 <div class="button_user">
-                    {% if user.id|int in maximaID %}
-                        <img id = "coffeeCup" src='https://cdn1.iconfinder.com/data/icons/hotel-restaurant/512/15-512.png' />
-                    {% endif %}
+                        <img class = "flag" id = "number1" src='static/number1.svg' />
+                        <img class = "flag" id = "number2" src='static/number2.svg' />
+                        <img class = "flag" id = "number3" src='static/number3.svg' />
+                    <!-- {% if user.id|int in maximaID %}    
+                    {% endif %} -->
                     <a href="/login/{{user.id}}?password={{pwd}}" class="ui coffee-button huge button"
                      style="color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
