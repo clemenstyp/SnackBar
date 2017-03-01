@@ -24,8 +24,9 @@
             height:80px !important;
         }
         a.coffee-button:active {
-          color:red;
-          border:3px solid black;
+            background-color:gray;
+            color:gray;
+            border:3px solid black;
         }
     </style>
 </head>
@@ -50,5 +51,11 @@
         </div>
 
 </body>
-
+<script>
+    $('a').click(function(){
+        $(this).css('background-color','#ccc');
+        $(this).css('color','#ccc');
+        $('body').css('background-color','green');
+    });
+</script>
 </html>
