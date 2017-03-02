@@ -20,7 +20,7 @@ url = 'sqlite:///TestDB.db'
 #url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
-SecKey = 'hdpzhrcurkxe6qrqoPrbopaegfjobvqwxgbte6u2kneiaikcNcaoahgoskud'
+SecKey = 'supersecretpassword'
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = url
@@ -218,7 +218,7 @@ def getLeader(data):
         maxima[j][i] = list(entry.values())[0]
 
     maximaID = np.argmax(maxima,axis=0)
-    print(uID)
+
     return {"maxID":maximaID.tolist(),
             "itemID": itemID,
             "uID": uID}
@@ -451,10 +451,9 @@ def hello():
                           'counts': items
                               })
 
-    users = sorted(initusers,key=lambda k: k['lastName'],reverse=True)
-
+    users = sorted(initusers,key=lambda k: k['lastName'])
     leaderID = getLeader(users)
-    print(leaderID)
+
 
     return render_template('index.html', users=users,pwd=SecKey,leaderID=leaderID)
 
@@ -543,12 +542,6 @@ def build_sample_db():
 
 
 if __name__ == "__main__":
- #   app_dir = os.path.realpath(os.path.dirname(__file__))
- #   database_path = os.path.join(app_dir, 'TestDB.db')
- #   if not os.path.exists(database_path):
- #       print('Create new test database')
- #    build_sample_db()
-
-
+    #build_sample_db()
     app.run()
 
