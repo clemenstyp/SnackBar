@@ -204,14 +204,13 @@ def getcurrbill(userid):
 
 def getLeader(data):
     import numpy as np 
-
+    import json
     itemID = [0] * len(data[0]['counts'])
     uID = [0] * len(data)
     maxima = np.zeros((len(data),len(data[0]['counts'])))
 
     for j, elem in enumerate(data):
-      
-      uID[j] = elem['firstName']
+      uID[j] = int(elem['id'])
 
       for i, entry in enumerate(elem['counts']):
 
@@ -219,8 +218,10 @@ def getLeader(data):
         maxima[j][i] = list(entry.values())[0]
 
     maximaID = np.argmax(maxima,axis=0)
-    print(maximaID)
-    return maximaID
+    print(uID)
+    return {"maxID":maximaID.tolist(),
+            "itemID": itemID,
+            "uID": uID}
 
 def getunpaid(userid,itemid):
     nUnpaid = 0
@@ -430,7 +431,7 @@ admin.add_view(MyHistoryModelView(history, db.session,'History'))
 
 @app.route('/')
 def hello():
-    
+
     if request.args.get('password') != SecKey :
         return render_template('accessDenied.html')
 
@@ -453,8 +454,9 @@ def hello():
     users = sorted(initusers,key=lambda k: k['lastName'],reverse=True)
 
     leaderID = getLeader(users)
+    print(leaderID)
 
-    return render_template('index.html', users=users,pwd=SecKey,leaderID=leaderID.tolist())
+    return render_template('index.html', users=users,pwd=SecKey,leaderID=leaderID)
 
 
 @app.route('/login/<int:userid>',methods = ['GET'])

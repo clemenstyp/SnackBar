@@ -16,3 +16,4 @@ _mailinglist
 .idea/
 sqlite
 *.db
+*.bak
