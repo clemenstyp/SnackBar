@@ -4,3 +4,4 @@ Flask-SQLAlchemy
 Flask-Login
 Flask-Admin
 tablib
+numpy
