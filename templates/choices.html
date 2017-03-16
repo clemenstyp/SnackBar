@@ -6,8 +6,6 @@
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
-    <script src="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-    <link href="http://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
@@ -69,6 +67,7 @@
                 <thead>
                     <tr>
                         <th>item</th>
+                        <th>rank</th>
                         <th>price</th>
                         <th>#</th>
                     </tr>
@@ -78,6 +77,9 @@
                     <tr>
                         <td class = "collapsing">
                             {{item.name}}
+                        </td>
+                        <td class = "collapsing">
+                            {{item.rank}}/{{noOfUsers}}
                         </td>
                         <td class="collapsing">
                             {{'%0.2f'|format(item.price|round(2))}} €
@@ -100,22 +102,5 @@ function changeButton(itemid) {
     return;
 }
 </script>
-<script id="jsbin-javascript">
-new Chartist.Bar('.ct-chart', {
-
-  labels: [{% for item in items %}"{{item.name}}",{% endfor %}],
-  series: [
-    [{{ items|join(', ', attribute='count')}}]
-  ]
-}, {
-  seriesBarDistance: 5,
-  width: '750px',
-  height: '350px',
-  axisX: {
-    showGrid: true
-  }
-});
-</script>
 </body>
-
 </html>
