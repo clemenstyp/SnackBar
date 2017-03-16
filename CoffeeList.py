@@ -202,26 +202,55 @@ def getcurrbill(userid):
         currbill += entry.price
     return currbill
 
+def getUsers():
+
+    initusers = list()
+
+    for instance in user.query:
+        items = list()
+        for entry in item.query:
+            items.append({entry.itemid: getunpaid(instance.userid, entry.itemid)})
+
+        initusers.append({'firstName': '{}'.format(instance.firstName),
+                          'lastName': '{}'.format(instance.lastName),
+                          'id': '{}'.format(instance.userid),
+                          'bill': restBill(instance.userid),
+                          'bgcolor': '{}'.format(button_background(instance.firstName)),
+                          'fontcolor': '{}'.format(button_font_color(instance.firstName)),
+                          'counts': items
+                              })
+    return initusers
+
 def getLeader(data):
     import numpy as np 
     import json
+
     itemID = [0] * len(data[0]['counts'])
     uID = [0] * len(data)
     maxima = np.zeros((len(data),len(data[0]['counts'])))
 
     for j, elem in enumerate(data):
       uID[j] = int(elem['id'])
-
       for i, entry in enumerate(elem['counts']):
-
         itemID[i] = list(entry.keys())[0]
         maxima[j][i] = list(entry.values())[0]
 
+    leaderBoard = maxima.argsort(axis=0)[::-1].argsort(axis=0)+1
     maximaID = np.argmax(maxima,axis=0)
 
-    return {"maxID":maximaID.tolist(),
+    # print(maxima)
+    # print(leaderBoard)
+
+    return {"maxID":maximaID.tolist(),  
             "itemID": itemID,
-            "uID": uID}
+            "uID": uID,
+            "leaderBoard": leaderBoard.tolist()}
+
+
+def getRank(leaderInfo, userid, itemid):
+    a = leaderInfo["uID"].index(userid)
+    b = leaderInfo["itemID"].index(itemid)
+    return leaderInfo["leaderBoard"][a][b]
 
 def getunpaid(userid,itemid):
     nUnpaid = 0
@@ -435,27 +464,27 @@ def hello():
     if request.args.get('password') != SecKey :
         return render_template('accessDenied.html')
 
-    initusers = list()
+    # initusers = list()
 
-    for instance in user.query:
-        items = list()
-        for entry in item.query:
-            items.append({entry.itemid: getunpaid(instance.userid, entry.itemid)})
+    # for instance in user.query:
+    #     items = list()
+    #     for entry in item.query:
+    #         items.append({entry.itemid: getunpaid(instance.userid, entry.itemid)})
 
-        initusers.append({'firstName': '{}'.format(instance.firstName),
-                          'lastName': '{}'.format(instance.lastName),
-                          'id': '{}'.format(instance.userid),
-                          'bill': restBill(instance.userid),
-                          'bgcolor': '{}'.format(button_background(instance.firstName)),
-                          'fontcolor': '{}'.format(button_font_color(instance.firstName)),
-                          'counts': items
-                              })
+    #     initusers.append({'firstName': '{}'.format(instance.firstName),
+    #                       'lastName': '{}'.format(instance.lastName),
+    #                       'id': '{}'.format(instance.userid),
+    #                       'bill': restBill(instance.userid),
+    #                       'bgcolor': '{}'.format(button_background(instance.firstName)),
+    #                       'fontcolor': '{}'.format(button_font_color(instance.firstName)),
+    #                       'counts': items
+    #                           })
 
-    users = sorted(initusers,key=lambda k: k['lastName'])
-    leaderID = getLeader(users)
+    initusers = getUsers()
+    users = sorted(initusers, key=lambda k: k['lastName'])
+    leaderInfo = getLeader(users)
 
-
-    return render_template('index.html', users=users,pwd=SecKey,leaderID=leaderID)
+    return render_template('index.html', users=users, pwd=SecKey, leaderID=leaderInfo)
 
 
 @app.route('/login/<int:userid>',methods = ['GET'])
@@ -465,14 +494,20 @@ def login(userid):
 
     userName = '{} {}'.format(user.query.get(userid).firstName,user.query.get(userid).lastName)
     items = list()
-    for instance in item.query:
-        items.append({'name' :'{}'.format(instance.name),
-                      'price': instance.price,
-                      'itemid':'{}'.format(instance.itemid),
-                      'count':getunpaid(userid,instance.itemid)})
-                      #'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
-    currbill = restBill(userid)
 
+    initusers = getUsers()
+    users = sorted(initusers, key=lambda k: k['lastName'])
+    leaderInfo = getLeader(users)
+
+    for instance in item.query:
+        items.append({'name'  : '{}'.format(instance.name),
+                      'price' : instance.price,
+                      'itemid': '{}'.format(instance.itemid),
+                      'count' : getunpaid(userid,instance.itemid),
+                      'rank'  : getRank(leaderInfo, userid, instance.itemid)})
+                      #'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
+    
+    currbill = restBill(userid)
     if currbill==None:
         currbill = 0
 
@@ -481,7 +516,10 @@ def login(userid):
                            chosenuser = userName,
                            userid = userid,
                            items = items,
-                           pwd=SecKey
+                           pwd = SecKey,
+                           noOfUsers = len(leaderInfo["uID"]),
+                           leaderInfo = leaderInfo,
+
                            )
 
 @app.route('/change/<int:userid>')
@@ -497,7 +535,7 @@ def change(userid):
     db.session.add(userPurchase)
     db.session.commit()
 
-    return redirect(url_for('login',userid=userid,password=SecKey))
+    return redirect(url_for('login',userid = userid, password = SecKey))
 
 def build_sample_db():
     import csv
@@ -534,7 +572,7 @@ def build_sample_db():
         #newitem.price = price[i]
         db.session.add(newitem)
 
-    newadmin = coffeeadmin(name='admin',password='secretpassword')
+    newadmin = coffeeadmin(name = 'admin', password = 'secretpassword')
     db.session.add(newadmin)
 
     db.session.commit()
