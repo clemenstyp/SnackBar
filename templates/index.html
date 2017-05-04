@@ -73,18 +73,19 @@
     });
 </script>
 <script type="text/javascript">
-    var leaderID  = {{leaderID.maxID}};
     var itemID  = {{leaderID.itemID}};
     var uID = {{leaderID.uID}};
+
     $('document').ready(function(){
-        for (i = 0; i < leaderID.length; i++) { 
-        position = (-7 + (itemID[i]-1) * 34)
-        addElem = "<img class='flag' id='item" + itemID[i] + "user" + uID[leaderID[i]] + "' style='right:" + position + "px' src='static/item" + itemID[i] + ".svg' />"; 
-        var string = ("user" + uID[leaderID[i]]);
-        console.log(addElem);
-        // console.log($("#"+string))
-        // document.getElementById(string).style.display = 'inline';
-        $("#"+string).before(addElem);
+        for (i = 0; i < uID.length; i++) { 
+            position = (-7 + (itemID[i]-1) * 34)
+            addElem = "<img class='flag' id='item" + itemID[i] + "user" + uID[i] + "' style='right:" + position + "px' src='static/item" + itemID[i] + ".svg' />"; 
+
+            var string = ("user" + uID[i]);
+            // console.log(addElem);
+            // console.log($("#"+string))
+            // document.getElementById(string).style.display = 'inline';
+            $("#"+string).before(addElem);
 
         }
     });
