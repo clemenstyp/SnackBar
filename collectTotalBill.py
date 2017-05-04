@@ -4,14 +4,14 @@ from datetime import datetime
 from sendEmail import Bimail
 import os
 
-dbuser = 'coffee'
+user = 'coffee'
 password = 'ilikecoffee'
 db = 'coffeelist'
 host = 'localhost'
 port = 5432
 
-url = 'sqlite:///TestDB.db'
-#url = 'postgresql://{}:{}@{}:{}/{}'
+# url = 'sqlite:///TestDB.db'
+url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
 
 engine = create_engine(url)
