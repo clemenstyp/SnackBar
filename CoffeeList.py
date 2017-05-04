@@ -6,9 +6,14 @@ from flask_admin.contrib.sqla import ModelView
 import flask_login as loginflask
 from wtforms import form, fields, validators
 from datetime import datetime
+from sqlalchemy import *
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import func
 from jinja2 import Markup
 from hashlib import md5
 from math import sqrt
+import time
+
 
 user = 'coffee'
 password = 'ilikecoffee'
@@ -19,6 +24,10 @@ port = 5432
 url = 'sqlite:///TestDB.db'
 #url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(user, password, host, port, db)
+
+engine = create_engine(url)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 SecKey = 'supersecretpassword'
 
@@ -80,7 +89,6 @@ class history(db.Model):
     def __repr__(self):
         return 'User {} bought {} for {} on the {}'.format(self.user,self.item,self.price,self.date)
 
-
 class inpayment(db.Model):
 
     paymentID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -101,7 +109,6 @@ class inpayment(db.Model):
 
     def __repr__(self):
         return 'User {} paid {} on the {}'.format(self.userid, self.amount, self.date)
-
 
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -136,7 +143,6 @@ class item(db.Model):
     def __repr__(self):
         return self.name
 
-
 class coffeeadmin(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
@@ -155,7 +161,6 @@ class coffeeadmin(db.Model):
 
     def get_id(self):
         return self.id
-
 
 class LoginForm(form.Form):
     login = fields.StringField(validators=[validators.required()])
@@ -195,81 +200,100 @@ def init_login():
         return db.session.query(coffeeadmin).get(user_id)
 
 def getcurrbill(userid):
-    bill = history.query.filter(history.userid == userid).filter(history.paid == False)
-    currbill = 0
+    currBillNew = session.query(func.sum(history.price)).\
+                                filter(history.paid == False).\
+                                filter(history.userid == userid).scalar()
+    if currBillNew == None: 
+        currBillNew = 0
 
-    for entry in bill:
-        currbill += entry.price
-    return currbill
+    # bill = history.query.filter(history.userid == userid).filter(history.paid == False)
+    # currbill = 0
+
+    # for entry in bill:
+    #     currbill += entry.price
+
+    return currBillNew
 
 def getUsers():
 
     initusers = list()
-
     for instance in user.query:
-        items = list()
-        for entry in item.query:
-            items.append({entry.itemid: getunpaid(instance.userid, entry.itemid)})
-
         initusers.append({'firstName': '{}'.format(instance.firstName),
                           'lastName': '{}'.format(instance.lastName),
                           'id': '{}'.format(instance.userid),
-                          'bill': restBill(instance.userid),
                           'bgcolor': '{}'.format(button_background(instance.firstName)),
                           'fontcolor': '{}'.format(button_font_color(instance.firstName)),
-                          'counts': items
                               })
+
     return initusers
 
-def getLeader(data):
-    import numpy as np 
-    import json
+def getLeader(itemid):
 
-    itemID = [0] * len(data[0]['counts'])
-    uID = [0] * len(data)
-    maxima = np.zeros((len(data),len(data[0]['counts'])))
-
-    for j, elem in enumerate(data):
-      uID[j] = int(elem['id'])
-      for i, entry in enumerate(elem['counts']):
-        itemID[i] = list(entry.keys())[0]
-        maxima[j][i] = list(entry.values())[0]
-
-    leaderBoard = maxima.argsort(axis=0)[::-1].argsort(axis=0)+1
-    maximaID = np.argmax(maxima,axis=0)
-
-    # print(maxima)
-    # print(leaderBoard)
-
-    return {"maxID":maximaID.tolist(),  
-            "itemID": itemID,
-            "uID": uID,
-            "leaderBoard": leaderBoard.tolist()}
+    tmpQuery = session.query(user.userid, func.count(history.price)).\
+               outerjoin(history, and_(user.userid == history.userid,history.itemid == itemid,extract('month', history.date) == datetime.now().month)).\
+               group_by(user.userid).\
+               order_by(func.count(history.price).desc()).first()
 
 
-def getRank(leaderInfo, userid, itemid):
-    a = leaderInfo["uID"].index(userid)
-    b = leaderInfo["itemID"].index(itemid)
-    return leaderInfo["leaderBoard"][a][b]
+    return tmpQuery[0]
+
+def getRank(userid, itemid):
+
+    tmpQuery = session.query(user.userid, func.count(history.price)).\
+                   outerjoin(history, and_(user.userid == history.userid,history.itemid == itemid,extract('month', history.date) == datetime.now().month)).\
+                   group_by(user.userid).\
+                   order_by(func.count(history.price).desc()).all()
+
+    userID = [x[0] for x in tmpQuery]
+    itemSUM = [x[1] for x in tmpQuery]
+
+    idx = userID.index(userid)
+    rank = idx+1
+
+    if rank == len(userID):
+        upperbound = itemSUM[idx-1] - itemSUM[idx]+1
+        lowerbound = None
+        # print(itemSUM[idx-1])
+        # print(itemSUM[idx])
+
+    elif rank == 1:
+        upperbound = None
+        lowerbound = itemSUM[idx] - itemSUM[idx+1]+1
+    
+        # print(itemSUM[idx])
+        # print(itemSUM[idx+1])
+    else:
+        upperbound = itemSUM[idx-1] - itemSUM[idx]+1
+        lowerbound = itemSUM[idx] - itemSUM[idx+1]+1
+        # print(itemSUM[idx-1])
+        # print(itemSUM[idx])
+        # print(itemSUM[idx+1])
+
+
+    return {'rank': rank,
+            'upperbound' : upperbound,
+            'lowerbound' : lowerbound}
 
 def getunpaid(userid,itemid):
-    nUnpaid = 0
 
-    for entry in history.query.filter(history.userid == userid).filter(history.itemid == itemid).filter(history.paid == False).all():
-        if entry.date.month == datetime.now().month:
-            nUnpaid += 1
+    nUnpaid = session.query(history).\
+            filter(history.userid == userid).\
+            filter(history.itemid == itemid).\
+            filter(extract('month', history.date) == datetime.now().month).count()
+    
+    if nUnpaid == None:
+        nUnpaid = 0
 
     return nUnpaid
 
 def getPayment(userid):
 
-    payment = inpayment.query.filter(inpayment.userid == userid)
-    totalPayment = 0
+    totalPaymentNew = session.query(func.sum(inpayment.amount)).\
+                        filter(inpayment.userid == userid).scalar()
+    if totalPaymentNew == None:
+        totalPaymentNew = 0
 
-    for entry in payment:
-        totalPayment += entry.amount
-
-    return totalPayment
+    return totalPaymentNew
 
 def restBill(userid):
 
@@ -309,7 +333,6 @@ def makeXLSBill(filename,fullpath):
 
     return
 
-
 def button_background(user):
     """
         returns the background color based on the username md5
@@ -335,6 +358,7 @@ def button_font_color(user):
     else:
         return '#%02x%02x%02x' % (255, 255, 255)
 
+
 class AnalyticsView(BaseView):
 
     @expose('/')
@@ -356,7 +380,7 @@ class AnalyticsView(BaseView):
     def paid(self):
 
         userid = request.args.get('userid')
-        print(userid)
+        # print(userid)
         purchase = history.query.filter(history.userid == userid).filter(history.paid == False)
 
         for entry in purchase:
@@ -377,7 +401,6 @@ class AnalyticsView(BaseView):
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
-
 
 class MyPaymentModelView(ModelView):
     can_create = True
@@ -459,57 +482,44 @@ admin.add_view(MyItemModelView(item, db.session,'Items'))
 admin.add_view(MyHistoryModelView(history, db.session,'History'))
 
 @app.route('/')
-def hello():
+def initial():
 
     if request.args.get('password') != SecKey :
         return render_template('accessDenied.html')
 
-    # initusers = list()
-
-    # for instance in user.query:
-    #     items = list()
-    #     for entry in item.query:
-    #         items.append({entry.itemid: getunpaid(instance.userid, entry.itemid)})
-
-    #     initusers.append({'firstName': '{}'.format(instance.firstName),
-    #                       'lastName': '{}'.format(instance.lastName),
-    #                       'id': '{}'.format(instance.userid),
-    #                       'bill': restBill(instance.userid),
-    #                       'bgcolor': '{}'.format(button_background(instance.firstName)),
-    #                       'fontcolor': '{}'.format(button_font_color(instance.firstName)),
-    #                       'counts': items
-    #                           })
-
     initusers = getUsers()
     users = sorted(initusers, key=lambda k: k['lastName'])
-    leaderInfo = getLeader(users)
+    leaderInfo = list()
+
+    itemID = [int(instance.itemid) for instance in item.query]
+    userID = [int(getLeader(instance.itemid)) for instance in item.query]
+
+    leaderInfo = {"uID"   : userID,  
+                  "itemID": itemID}
 
     return render_template('index.html', users=users, pwd=SecKey, leaderID=leaderInfo)
 
-
 @app.route('/login/<int:userid>',methods = ['GET'])
 def login(userid):
+
     if request.args.get('password') != SecKey:
         return render_template('accessDenied.html')
 
     userName = '{} {}'.format(user.query.get(userid).firstName,user.query.get(userid).lastName)
     items = list()
 
-    initusers = getUsers()
-    users = sorted(initusers, key=lambda k: k['lastName'])
-    leaderInfo = getLeader(users)
-
     for instance in item.query:
+        rankInfo = getRank(userid, instance.itemid)
         items.append({'name'  : '{}'.format(instance.name),
                       'price' : instance.price,
                       'itemid': '{}'.format(instance.itemid),
                       'count' : getunpaid(userid,instance.itemid),
-                      'rank'  : getRank(leaderInfo, userid, instance.itemid)})
-                      #'count': len(history.query.filter(history.userid == userid ).filter(history.itemid == instance.itemid).filter(history.paid == False).all())})
-    
+                      'rank'  : rankInfo['rank'],
+                      'ub'    : rankInfo['upperbound'],
+                      'lb'    : rankInfo['lowerbound']})
+
+    noUsers = user.query.count()
     currbill = restBill(userid)
-    if currbill==None:
-        currbill = 0
 
     return render_template('choices.html',
                            currbill = currbill,
@@ -517,9 +527,7 @@ def login(userid):
                            userid = userid,
                            items = items,
                            pwd = SecKey,
-                           noOfUsers = len(leaderInfo["uID"]),
-                           leaderInfo = leaderInfo,
-
+                           noOfUsers = noUsers,
                            )
 
 @app.route('/change/<int:userid>')
@@ -577,7 +585,6 @@ def build_sample_db():
 
     db.session.commit()
     return
-
 
 if __name__ == "__main__":
     #build_sample_db()
