@@ -68,6 +68,8 @@
                     <tr>
                         <th>item</th>
                         <th>rank</th>
+                        <th> <i style = "color:green" class="caret up icon"></i></th>
+                        <th> <i style = "color:red" class="caret down icon"></i></th>
                         <th>price</th>
                         <th>#</th>
                     </tr>
@@ -80,6 +82,12 @@
                         </td>
                         <td class = "collapsing">
                             {{item.rank}}/{{noOfUsers}}
+                        </td>
+                        <td class = "collapsing">
+                            {{ item.ub if item.ub != None}}
+                        </td>
+                        <td class = "collapsing">
+                            {{ item.lb if item.lb != None}}
                         </td>
                         <td class="collapsing">
                             {{'%0.2f'|format(item.price|round(2))}} €
