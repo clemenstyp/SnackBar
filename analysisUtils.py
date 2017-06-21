@@ -25,59 +25,6 @@ def main():
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    itemid = 1
-
-    # get user information for front page 
-
-    userList = session.query(user.firstName, user.lastName, user.userid).all()
-
-    # get rank by userid 
-    userid = 37 
-    itemid = 3 
-    tmpQuery = session.query(user.userid, func.count(history.price)).\
-                       outerjoin(history, and_(user.userid == history.userid,\
-                                                history.itemid == itemid,\
-                                                extract('month', history.date) == 4)).\
-                       group_by(user.userid).\
-                       order_by(func.count(history.price).desc()).all()
-
-    # tmpQuery = session.query(history.userid, func.count(history.price)).\
-    #               outerjoin(history, user, user.userid == history.userid).\
-    #               filter(history.itemid == itemid).\
-    #               filter(extract('month', history.date) == 4).\
-    #               group_by(history.userid).\
-    #               order_by(func.count(history.price).desc()).all()
-
-    # print(tmpQuery)
-    # print(len(tmpQuery))
-    userID = [x[0] for x in tmpQuery]
-    itemSUM = [x[1] for x in tmpQuery]
-
-    # print(userID)
-    # print(itemSUM)
-
-    rank = userID.index(userid)+1
-    idx = userID.index(userid)
-
-    # get first by itemid
-    # itemid = 1 
-
-    itemList = session.query(item.itemid).order_by(item.itemid).all()
-    leaderID = list()
-
-    # print(itemList)
-    for itemid in itemList:
-        tmpQuery = session.query(history.userid, func.count(history.price)).\
-                        filter(history.itemid == itemid).\
-                        filter(extract('month', history.date) == 4).\
-                        group_by(history.userid).\
-                        order_by(func.count(history.price).desc()).first()
-
-        leaderID.append(tmpQuery[0])
-
-    # print(leaderID)
-
-
     # get no of users 
     noUsers = session.query(user).count()
     print('Number of users is: {}'.format(noUsers))
@@ -130,7 +77,7 @@ def main():
         
         # print(tagsHours)
         # print(amountRaw)
-        
+
         content[itemName]['amountHours'] = amountRaw
         content[itemName]['tagsHours'] = tagsHours
 
