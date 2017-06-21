@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <title>CoffeeList</title>
+    <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+    <script src="/static/stay_standalone.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+    <style>
+        body {
+            margin:20px;
+            text-align:center !important;
+        }
+    </style>
+</head>
+<body>
+<div >
+
+  <div class="container ui raised segment">
+    <canvas id="WeekHours"></canvas>
+  </div>
+  <div class="container ui raised segment">
+    <canvas id="Weekdays"></canvas>
+  </div>
+  <div class="container ui raised segment">
+    <canvas id="Month"></canvas>
+  </div>
+  
+</div>
+<script type="text/javascript">
+
+function djb2(str){
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
+  }
+  return hash;
+}
+
+function hashStringToColor(str) {
+  var hash = djb2(str);
+  console.log(str)
+  var r = (hash & 0xFF0000) >> 16;
+  var g = (hash & 0x00FF00) >> 8;
+  var b = hash & 0x0000FF;
+  return "rgb(" + r + "," + g + "," + b + ")"
+
+}
+
+var default_colors = ['#3366CC','#DC3912','#FF9900','#109618','#990099','#3B3EAC','#0099C6','#DD4477','#66AA00','#B82E2E','#316395','#994499','#22AA99','#AAAA11','#6633CC','#E67300','#8B0707','#329262','#5574A6','#3B3EAC']
+
+var ctx = document.getElementById('Weekdays').getContext('2d');
+var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'bar',
+    // The data for our dataset
+    data: {
+        labels: ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday' ,'Saturday' , 'Sunday' ],
+        datasets: [
+        {% for key, value in content.items() %}
+        {
+            label: "{{key}}",
+            backgroundColor: default_colors[{{loop.index}}],
+            data: {{value["amountDays"]|tojson}},
+        },
+        {% endfor %}
+        ]
+    },
+
+    // Configuration options go here
+    options : {
+        responsive: true,
+        title:{
+                display:true,
+                text:"Daily analysis"
+                },
+        hover: {
+            mode: 'index'
+        },
+        scales: {
+            xAxes: [{
+                display:true,
+                scaleLabel:{
+                    display:true,
+                    labelString: 'Day of the week'
+                }
+            }],
+            yAxes: [{
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Total Amount'
+                },
+                ticks: {
+                    suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+                    // OR //
+                    beginAtZero: true   // minimum value will be 0.
+                }
+            }]
+        }
+    },});
+
+var ctx = document.getElementById('Month').getContext('2d');
+var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'bar',
+    // The data for our dataset
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [
+        {% for key, value in content.items() %}
+        {
+            label: "{{key}}",
+            backgroundColor: default_colors[{{loop.index}}],
+            data: {{value["amountMonth"]|tojson}},
+        },
+        {% endfor %}
+        ]
+    },
+
+    // Configuration options go here
+      options : {
+        responsive: true,
+        title:{
+                display:true,
+                text:"Monthly analysis"
+                },
+        hover: {
+            mode: 'index'
+        },
+        scales: {
+            xAxes: [{
+                display:true,
+                scaleLabel:{
+                    display:true,
+                    labelString: 'Month of year'
+                }
+            }],
+            yAxes: [{
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Total Amount'
+                },
+                ticks: {
+                    suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+                    // OR //
+                    beginAtZero: true   // minimum value will be 0.
+                }
+            }]
+        }
+    },
+});
+
+var ctx = document.getElementById('WeekHours').getContext('2d');
+var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+    // The data for our dataset
+    data: {
+        labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','24:00'] ,
+        datasets: [
+        {% for key, value in content.items() %}
+        {
+            label: "{{key}}",
+            borderColor:default_colors[{{loop.index}}],
+            fill: false,
+            data: {{value["amountHours"]|tojson}},
+        },
+        {% endfor %}
+        ]
+    },
+
+    // Configuration options go here
+    options : {
+        responsive: true,
+        title:{
+                display:true,
+                text:"Hourly analysis"
+                },
+        hover: {
+            mode: 'index'
+        },
+        scales: {
+            xAxes: [{
+                display:true,
+                scaleLabel:{
+                    display:true,
+                    labelString: 'Hour of Day'
+                }
+            }],
+            yAxes: [{
+                display: true,
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Total Amount'
+                },
+                ticks: {
+                    suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+                    // OR //
+                    beginAtZero: true   // minimum value will be 0.
+                }
+            }]
+        }
+    },
+});
+
+
+</script>
+</body>
+</html>

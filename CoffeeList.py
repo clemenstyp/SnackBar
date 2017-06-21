@@ -545,6 +545,12 @@ def change(userid):
 
     return redirect(url_for('login',userid = userid, password = SecKey))
 
+@app.route('/analysis')
+def analysis():
+    from analysisUtils import main
+    content = main()
+    return render_template('analysis.html', content = content)
+                           
 def build_sample_db():
     import csv
     db.drop_all()
