@@ -2,7 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker, load_only
 from sqlalchemy.sql import func
 from datetime import datetime
-from CoffeeList import history, user, inpayment, item
+from CoffeeList import history, user, inpayment, item, db
 from collections import Counter
 import os
 import csv
@@ -11,22 +11,9 @@ import flask
 import json
 
 def main():
-    dbuser = 'coffee'
-    password = 'ilikecoffee'
-    database = 'coffeelist'
-    host = 'localhost'
-    port = 5432
-
-    #url = 'sqlite:///TestDB.db'
-    url = 'postgresql://{}:{}@{}:{}/{}'
-    url = url.format(dbuser, password, host, port, database)
-
-    engine = create_engine(url)
-    Session = sessionmaker(bind=engine)
-    session = Session()
 
     # get no of users 
-    noUsers = session.query(user).count()
+    noUsers = db.session.query(user).count()
     print('Number of users is: {}'.format(noUsers))
     content = dict()
 
@@ -34,12 +21,12 @@ def main():
     for itemID, t in enumerate(range(4),1):
         # itemID = 4
 
-        itemtmp = session.query(item.name).filter(item.itemid == itemID).one()
+        itemtmp = db.session.query(item.name).filter(item.itemid == itemID).one()
         itemName = itemtmp[0]
 
 
         content[itemName] = dict()
-        histogram = session.query(history.itemid, history.date, history.userid).\
+        histogram = db.session.query(history.itemid, history.date, history.userid).\
                                 filter(history.itemid == itemID).all()
         print("Total number of consumed {} is : {}".format(itemName,len(histogram)))
         content[itemName]['total'] = len(histogram)
