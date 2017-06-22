@@ -58,7 +58,7 @@
 
         <div class="ui container" style="">
         <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
-        <button class="ui icon button"><a href="/?password={{pwd}}"><i class="arrow left icon"> </i></a></button>
+        <button class="ui icon button"><a href="{{ url_for('initial', password=pwd) }}"><i class="arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
         <!-- <div class="ct-chart"></div> -->
@@ -102,7 +102,7 @@
         </div>
 
 
-<script>setTimeout(function(){window.location.href='/?password={{pwd}}'},5000);</script>
+<script>setTimeout(function(){window.location.href='{{ url_for('initial', password=pwd) }}'},5000);</script>
 <script>
 function changeButton(itemid) {
     document.getElementById(itemid).style.backgroundColor = 'green';

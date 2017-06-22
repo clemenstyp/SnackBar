@@ -40,9 +40,9 @@
             width: 30px;
             top: -10px;
         }
-        
     
     </style>
+
 </head>
 
 <body>
@@ -50,7 +50,7 @@
             <div class="buttons_container">
                 {% for user in users %}
                 <div class="button_user" >
-                    <a href="/login/{{user.id}}?password={{pwd}}" id="user{{user.id}}" class="ui coffee-button huge button"
+                    <a href="{{url_for('login',userid=user.id, password=pwd )}}" id="user{{user.id}}" class="ui coffee-button huge button"
                      style="color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
                      {{ user.firstName }}<br>{{ user.lastName }}
@@ -61,6 +61,7 @@
             <div class="ui divider" style="clear:both">
               <p style="text-align:center;margin:50px auto">
                 <a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
+                <a href="{{url_for('analysis')}}"><i class="huge bar chart icon"></i></a>
               </p>
             </div>
         </div>
