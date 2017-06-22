@@ -36,6 +36,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SECRET_KEY'] = '123456790'
 app.config['STATIC_FOLDER'] = 'static'
+app.config['DEBUG'] = True
+
 
 db = SQLAlchemy(app)
 
@@ -200,7 +202,7 @@ def init_login():
         return db.session.query(coffeeadmin).get(user_id)
 
 def getcurrbill(userid):
-    currBillNew = session.query(func.sum(history.price)).\
+    currBillNew = db.session.query(func.sum(history.price)).\
                                 filter(history.paid == False).\
                                 filter(history.userid == userid).scalar()
     if currBillNew == None: 
@@ -229,7 +231,7 @@ def getUsers():
 
 def getLeader(itemid):
 
-    tmpQuery = session.query(user.userid, func.count(history.price)).\
+    tmpQuery = db.session.query(user.userid, func.count(history.price)).\
                outerjoin(history, and_(user.userid == history.userid,history.itemid == itemid,extract('month', history.date) == datetime.now().month)).\
                group_by(user.userid).\
                order_by(func.count(history.price).desc()).first()
@@ -239,7 +241,7 @@ def getLeader(itemid):
 
 def getRank(userid, itemid):
 
-    tmpQuery = session.query(user.userid, func.count(history.price)).\
+    tmpQuery = db.session.query(user.userid, func.count(history.price)).\
                    outerjoin(history, and_(user.userid == history.userid,history.itemid == itemid,extract('month', history.date) == datetime.now().month)).\
                    group_by(user.userid).\
                    order_by(func.count(history.price).desc()).all()
@@ -276,7 +278,7 @@ def getRank(userid, itemid):
 
 def getunpaid(userid,itemid):
 
-    nUnpaid = session.query(history).\
+    nUnpaid = db.session.query(history).\
             filter(history.userid == userid).\
             filter(history.itemid == itemid).\
             filter(extract('month', history.date) == datetime.now().month).count()
@@ -288,7 +290,7 @@ def getunpaid(userid,itemid):
 
 def getPayment(userid):
 
-    totalPaymentNew = session.query(func.sum(inpayment.amount)).\
+    totalPaymentNew = db.session.query(func.sum(inpayment.amount)).\
                         filter(inpayment.userid == userid).scalar()
     if totalPaymentNew == None:
         totalPaymentNew = 0
@@ -474,7 +476,7 @@ class MyAdminIndexView(AdminIndexView):
         return redirect(url_for('.index'))
 
 init_login()
-admin = Admin(app, name = 'CoffeeList Admin Page',index_view=MyAdminIndexView(), base_template='my_master.html')
+admin = Admin(app, name = 'CoffeeList Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html')
 admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
 admin.add_view(MyPaymentModelView(inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(user, db.session, 'User'))
@@ -593,6 +595,6 @@ def build_sample_db():
     return
 
 if __name__ == "__main__":
-    #build_sample_db()
+    # build_sample_db()
     app.run()
 
