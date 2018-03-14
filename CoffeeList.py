@@ -677,7 +677,7 @@ def sendReminder(curuser):
             mymail = Bimail('SnackBar Reminder', ['{}'.format(curuser.email)])
             mymail.sendername = settingsFor('mailSender')
             mymail.sender = settingsFor('mailSender')
-            mymail.servername = 'smtp.fit.fraunhofer.de'
+            mymail.servername = settingsFor('mailServer')
             # start html body. Here we add a greeting.
             mymail.htmladd('Hallo {} {},<br><br>du hast nur noch wenig Geld auf deinem SnackBar Konto ({} €). Zahle bitte ein bisschen Geld ein, damit wir wieder neue Snacks kaufen können!<br><br>Ciao,<br>SnackBar Team [{}]<br><br><br><br>---------<br><br><br><br>Hello {} {},<br><br>your SnackBar balance is very low ({} €). Please top it up with some money!<br><br>Ciao,<br>SnackBar Team [{}]'.format(curuser.firstName,curuser.lastName, currbill, settingsFor('snackAdmin'),  curuser.firstName,curuser.lastName, currbill, settingsFor('snackAdmin')))
             # Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
@@ -699,7 +699,7 @@ def sendEmail(curuser, curitem):
         mymail = Bimail('SnackBar++', ['{}'.format(curuser.email)])
         mymail.sendername = settingsFor('mailSender')
         mymail.sender = settingsFor('mailSender')
-        mymail.servername = 'smtp.fit.fraunhofer.de'
+        mymail.servername = settingsFor('mailServer')
         # start html body. Here we add a greeting.
         mymail.htmladd(
             'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! <br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
