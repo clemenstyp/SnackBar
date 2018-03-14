@@ -1,3 +1,4 @@
+# coding: utf-8
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker, load_only
 from sqlalchemy.sql import func
@@ -14,7 +15,7 @@ def main():
 
     # get no of users 
     noUsers = db.session.query(user).count()
-    print('Number of users is: {}'.format(noUsers))
+    #print('Number of users is: {}'.format(noUsers))
     content = dict()
 
     # Info for Coffe 
@@ -28,7 +29,7 @@ def main():
         content[itemName] = dict()
         histogram = db.session.query(history.itemid, history.date, history.userid).\
                                 filter(history.itemid == itemID).all()
-        print("Total number of consumed {} is : {}".format(itemName,len(histogram)))
+        #print("Total number of consumed {} is : {}".format(itemName,len(histogram)))
         content[itemName]['total'] = len(histogram)
 
         # print(len(histogram))

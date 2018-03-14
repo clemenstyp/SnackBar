@@ -1,4 +1,5 @@
-# to query:
+# coding: utf-8
+#  to query:
 import sys
 import ast
 from datetime import datetime
@@ -38,8 +39,8 @@ class Bimail:
         msg.attach(MIMEText(self.htmlbody, 'html'))
         # send
         s = smtplib.SMTP(self.servername)
-        s.starttls()
-        s.login(self.sender, self.senderpass)
+        #s.starttls()
+        #s.login(self.sender, self.senderpass)
         s.sendmail(self.sender, self.recipients, msg.as_string())
         # test
         # print(msg)

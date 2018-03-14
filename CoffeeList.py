@@ -1,45 +1,51 @@
+# coding: utf-8
 import os, tablib, random
-from flask import Flask, redirect,url_for,render_template,request, send_from_directory,current_app
+from flask import Flask, redirect,url_for,render_template,request, send_from_directory,current_app, safe_join, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin,expose,helpers,AdminIndexView, BaseView
+from flask_admin.base import MenuLink
 from flask_admin.contrib.sqla import ModelView
+from flask_admin.form.upload import FileUploadField
 import flask_login as loginflask
 from wtforms import form, fields, validators
 from datetime import datetime
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import func
+from sqlalchemy.pool import SingletonThreadPool
 from jinja2 import Markup
 from hashlib import md5
 from math import sqrt
+from sendEmail import Bimail
 import time
+import csv
 
+from depot.manager import DepotManager
 
-user = 'coffee'
-password = 'ilikecoffee'
-db = 'coffeelist'
-host = 'localhost'
-port = 5432
-
-url = 'sqlite:///TestDB.db'
-#url = 'postgresql://{}:{}@{}:{}/{}'
-url = url.format(user, password, host, port, db)
-
-engine = create_engine(url)
+databaseName = 'CoffeeDB.db'
+url = 'sqlite:///' + databaseName
+engine = create_engine(url, poolclass=SingletonThreadPool)
 Session = sessionmaker(bind=engine)
 session = Session()
-
-SecKey = 'supersecretpassword'
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SECRET_KEY'] = '123456790'
 app.config['STATIC_FOLDER'] = 'static'
+app.config['IMAGE_FOLDER'] = 'static/images'
+app.config['ICON_FOLDER'] = 'static/icons'
 app.config['DEBUG'] = True
 
 
 db = SQLAlchemy(app)
+
+def settingsFor(key):
+    dbEntry = db.session.query(settings).filter_by(key=key).first()
+    if dbEntry is None:
+        return ''
+    else:
+        return dbEntry.value
 
 @app.template_filter("itemstrikes")
 def itemstrikes(value):
@@ -72,17 +78,12 @@ class history(db.Model):
     item = db.relationship('item',backref=db.backref('items',lazy='dynamic'))
 
     price = db.Column(db.Float)
-    paid = db.Column(db.Boolean)
     date = db.Column(db.DateTime)
 
-    def __init__(self,user,item,price,paid=None,date = None):
+    def __init__(self,user,item,price,date = None):
         self.user = user
         self.item = item
         self.price = price
-
-        if paid is None:
-            paid = False
-        self.paid = paid
 
         if date is None:
             date = datetime.now()
@@ -112,20 +113,28 @@ class inpayment(db.Model):
     def __repr__(self):
         return 'User {} paid {} on the {}'.format(self.userid, self.amount, self.date)
 
+
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     firstName = db.Column(db.String(80))
     lastName = db.Column(db.String(80))
-
+    imageName = db.Column(db.String(240))
     email = db.Column(db.String(120))
 
 
-    def __init__(self, firstName='', lastName='', email=''):
+    def __init__(self, firstName='', lastName='', email='', imageName= ''):
+        if not firstName:
+            firstName = ''
+        if not lastName:
+            lastName = ''
+        if not imageName:
+            imageName = ''
+        if not email:
+            email = 'example@example.org'
+
         self.firstName = firstName
         self.lastName = lastName
-        if not email:
-            email = 'test@†est.de'
-
+        self.imageName = imageName
         self.email = email
 
 
@@ -137,6 +146,7 @@ class item(db.Model):
     itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), unique=True)
     price = db.Column(db.Float)
+    icon = db.Column(db.String(300))
 
     def __init__(self, name='', price=0):
         self.name = name
@@ -163,6 +173,24 @@ class coffeeadmin(db.Model):
 
     def get_id(self):
         return self.id
+
+class settings(db.Model):
+    settingsid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    key = db.Column(db.String(80), unique=True)
+    value = db.Column(db.String(600))
+
+    def __init__(self, key='', value=''):
+        if not key:
+            key = ''
+        if not value:
+            value = ''
+
+        self.key = key
+        self.value = value
+
+    def __repr__(self):
+        return self.key
+
 
 class LoginForm(form.Form):
     login = fields.StringField(validators=[validators.required()])
@@ -203,9 +231,8 @@ def init_login():
 
 def getcurrbill(userid):
     currBillNew = db.session.query(func.sum(history.price)).\
-                                filter(history.paid == False).\
                                 filter(history.userid == userid).scalar()
-    if currBillNew == None: 
+    if currBillNew == None:
         currBillNew = 0
 
     # bill = history.query.filter(history.userid == userid).filter(history.paid == False)
@@ -222,9 +249,10 @@ def getUsers():
     for instance in user.query:
         initusers.append({'firstName': '{}'.format(instance.firstName),
                           'lastName': '{}'.format(instance.lastName),
+                          'imageName': '{}'.format(instance.imageName),
                           'id': '{}'.format(instance.userid),
-                          'bgcolor': '{}'.format(button_background(instance.firstName)),
-                          'fontcolor': '{}'.format(button_font_color(instance.firstName)),
+                          'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
+                          'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
                               })
 
     return initusers
@@ -261,7 +289,7 @@ def getRank(userid, itemid):
     elif rank == 1:
         upperbound = None
         lowerbound = itemSUM[idx] - itemSUM[idx+1]+1
-    
+
         # print(itemSUM[idx])
         # print(itemSUM[idx+1])
     else:
@@ -282,11 +310,23 @@ def getunpaid(userid,itemid):
             filter(history.userid == userid).\
             filter(history.itemid == itemid).\
             filter(extract('month', history.date) == datetime.now().month).count()
-    
+
     if nUnpaid == None:
         nUnpaid = 0
 
     return nUnpaid
+
+def gettotal(userid,itemid):
+
+    nUnpaid = db.session.query(history).\
+            filter(history.userid == userid).\
+            filter(history.itemid == itemid).count()
+
+    if nUnpaid == None:
+        nUnpaid = 0
+
+    return nUnpaid
+
 
 def getPayment(userid):
 
@@ -302,7 +342,7 @@ def restBill(userid):
     currBill = getcurrbill(userid)
     totalPayment = getPayment(userid)
 
-    restAmount = currBill-totalPayment
+    restAmount = -currBill+totalPayment
 
     return restAmount
 
@@ -378,18 +418,12 @@ class AnalyticsView(BaseView):
 
         return self.render('admin/test.html',users = users)
 
-    @expose('/paid/', methods=['GET'])
-    def paid(self):
+    @expose('/reminder/')
+    def reminder(self):
+        for aUser in user.query:
+            sendReminder(aUser)
+        return redirect(url_for('admin.index'))
 
-        userid = request.args.get('userid')
-        # print(userid)
-        purchase = history.query.filter(history.userid == userid).filter(history.paid == False)
-
-        for entry in purchase:
-            entry.paid = True
-
-        db.session.commit()
-        return redirect(url_for('.index'))
 
     @expose('/export/')
     def export(self):
@@ -417,9 +451,7 @@ class MyHistoryModelView(ModelView):
     can_create = False
     can_export = True
     export_types = ['csv']
-    column_descriptions = dict(
-        paid='Indicates if the purchase is already paid.'
-    )
+    column_descriptions = dict()
     column_labels = dict(user='Name')
 
     def is_accessible(self):
@@ -432,9 +464,17 @@ class MyUserModelView(ModelView):
     column_descriptions = dict(
         firstName='Name of the corresponding person'
     )
-    column_labels = dict(firstName='First Name',
-                         lastName = 'Last Name')
 
+    base_path = app.config['IMAGE_FOLDER']
+    form_overrides = dict(imageName=FileUploadField)
+    form_args = {
+        'imageName': {
+            'base_path': base_path
+        }
+    }
+    column_labels = dict(firstName='First Name',
+                         lastName = 'Last Name',
+                         imageName='User Image')
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
@@ -444,8 +484,73 @@ class MyItemModelView(ModelView):
     export_types =['csv','xls']
     form_excluded_columns = ('items')
 
+    base_path = app.config['ICON_FOLDER']
+    form_overrides = dict(icon=FileUploadField)
+    form_args = {
+        'icon': {
+            'base_path': base_path
+        }
+    }
+
+
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
+
+class MyAdminModelView(ModelView):
+    can_export = False
+    #can_delete = False
+    column_exclude_list = ['password', ]
+
+    form_excluded_columns = ('password')
+
+    def is_accessible(self):
+        return loginflask.current_user.is_authenticated
+
+    # On the form for creating or editing a User, don't display a field corresponding to the model's password field.
+    # There are two reasons for this. First, we want to encrypt the password before storing in the database. Second,
+    # we want to use a password field (with the input masked) rather than a regular text field.
+
+    def scaffold_form(self):
+        # Start with the standard form as provided by Flask-Admin. We've already told Flask-Admin to exclude the
+        # password field from this form.
+        form_class = super(MyAdminModelView, self).scaffold_form()
+
+        # Add a password field, naming it "password2" and labeling it "New Password".
+        form_class.password2 = fields.PasswordField('New Password')
+
+        return form_class
+
+    # This callback executes when the user saves changes to a newly-created or edited User -- before the changes are
+    # committed to the database.
+    def on_model_change(self, form, model, is_created):
+
+        # If the password field isn't blank...
+        if len(model.password2):
+
+            # ... then encrypt the new password prior to storing it in the database. If the password field is blank,
+            # the existing password in the database will be retained.
+            model.password = model.password2
+            #model.password = utils.encrypt_password(model.password2)
+
+    def delete_model(self, model):
+        if loginflask.current_user.id == model.id:
+            flash('You cannot delete your own account.')
+            return False
+        else:
+            return super(MyAdminModelView, self).delete_model(model)
+
+class MySettingsModelView(ModelView):
+    can_create = False
+    can_edit = False
+    can_delete = False
+    can_export = False
+    column_editable_list = ['value']
+
+    column_labels = dict(key='Name', value='Value')
+
+    def is_accessible(self):
+        return loginflask.current_user.is_authenticated
+
 
 class MyAdminIndexView(AdminIndexView):
 
@@ -476,36 +581,60 @@ class MyAdminIndexView(AdminIndexView):
         return redirect(url_for('.index'))
 
 init_login()
-admin = Admin(app, name = 'CoffeeList Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html')
+admin = Admin(app, name = 'SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html')
 admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
 admin.add_view(MyPaymentModelView(inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(user, db.session, 'User'))
 admin.add_view(MyItemModelView(item, db.session,'Items'))
 admin.add_view(MyHistoryModelView(history, db.session,'History'))
+admin.add_view(MyAdminModelView(coffeeadmin, db.session,'Admins'))
+admin.add_view(MySettingsModelView(settings, db.session,'Settings'))
+admin.add_link(MenuLink(name='Snack Bar', url='/'))
 
 @app.route('/')
 def initial():
-
-    if request.args.get('password') != SecKey :
-        return render_template('accessDenied.html')
 
     initusers = getUsers()
     users = sorted(initusers, key=lambda k: k['lastName'])
     leaderInfo = list()
 
-    itemID = [int(instance.itemid) for instance in item.query]
-    userID = [int(getLeader(instance.itemid)) for instance in item.query]
+    allItems = item.query.filter(item.icon != None , item.icon != '', item.icon != ' ')
+    itemID = [int(instance.itemid) for instance in allItems]
+    userID = [int(getLeader(instance.itemid)) for instance in allItems]
+    icon = [str(instance.icon) for instance in allItems]
 
-    leaderInfo = {"uID"   : userID,  
-                  "itemID": itemID}
+    leaderInfo = {"uID"   : userID,
+                  "itemID": itemID,
+                  "icon": icon}
 
-    return render_template('index.html', users=users, pwd=SecKey, leaderID=leaderInfo)
+    return render_template('index.html', users=users, leaderID=leaderInfo)
 
-@app.route('/login/<int:userid>',methods = ['GET'])
-def login(userid):
+@app.route('/image/<filename>')
+def image(filename):
+    return imageFromFolder(filename, os.path.join(current_app.root_path, app.config['IMAGE_FOLDER']), "unknown.png")
 
-    if request.args.get('password') != SecKey:
-        return render_template('accessDenied.html')
+
+@app.route('/icon/<icon>')
+def icon(icon):
+    return imageFromFolder(icon, os.path.join(current_app.root_path, app.config['ICON_FOLDER']), "unknown.svg")
+
+
+def imageFromFolder(filename, fullpath, defaultFilename):
+    fullFilePath = safe_join(fullpath, filename)
+    if not os.path.isabs(fullFilePath):
+        fullFilePath = os.path.join(current_app.root_path, fullFilePath)
+    try:
+        if not os.path.isfile(fullFilePath):
+            return send_from_directory(directory=fullpath, filename=defaultFilename, as_attachment=False)
+    except (TypeError, ValueError):
+        pass
+
+    return send_from_directory(directory=fullpath, filename=filename, as_attachment=False)
+    #return redirect(url)
+
+
+@app.route('/user/<int:userid>',methods = ['GET'])
+def userPage(userid):
 
     userName = '{} {}'.format(user.query.get(userid).firstName,user.query.get(userid).lastName)
     items = list()
@@ -515,7 +644,9 @@ def login(userid):
         items.append({'name'  : '{}'.format(instance.name),
                       'price' : instance.price,
                       'itemid': '{}'.format(instance.itemid),
+                      'icon' : '{}'.format(instance.icon),
                       'count' : getunpaid(userid,instance.itemid),
+                      'total': gettotal(userid, instance.itemid),
                       'rank'  : rankInfo['rank'],
                       'ub'    : rankInfo['upperbound'],
                       'lb'    : rankInfo['lowerbound']})
@@ -528,14 +659,64 @@ def login(userid):
                            chosenuser = userName,
                            userid = userid,
                            items = items,
-                           pwd = SecKey,
                            noOfUsers = noUsers,
                            )
 
+def sendReminder(curuser):
+    if curuser.email:
+        curnbilFloat = restBill(curuser.userid)
+        minimumBalance = float(settingsFor('minimumBalance'))
+        if curnbilFloat <= minimumBalance:
+            currbill = '{0:.2f}'.format(restBill(curuser.userid))
+            #print(instance.firstName)
+            #print(currbill)
+            mymail = Bimail('SnackBar Reminder', ['{}'.format(curuser.email)])
+            mymail.sendername = settingsFor('mailSender')
+            mymail.sender = settingsFor('mailSender')
+            mymail.servername = 'smtp.fit.fraunhofer.de'
+            # start html body. Here we add a greeting.
+            mymail.htmladd('Hallo {} {},<br><br>du hast nur noch wenig Geld auf deinem SnackBar Konto ({} €). Zahle bitte ein bisschen Geld ein, damit wir wieder neue Snacks kaufen können!<br><br>Ciao,<br>SnackBar Team [{}]<br><br><br><br>---------<br><br><br><br>Hello {} {},<br><br>your SnackBar balance is very low ({} €). Please top it up with some money!<br><br>Ciao,<br>SnackBar Team [{}]'.format(curuser.firstName,curuser.lastName, currbill, settingsFor('snackAdmin'),  curuser.firstName,curuser.lastName, currbill, settingsFor('snackAdmin')))
+            # Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
+            # here we add a line of text and an html table previously stored in the variable
+            # add image chart title
+            # attach another file
+            # mymail.htmladd('Ciao,<br>SnackBar Team [Clemens Putschli (C5-315)]')
+            #mymail.addattach([os.path.join(fullpath, filename)])
+            # send!
+            #print(mymail.htmlbody)
+            mymail.send()
+
+def sendEmail(curuser, curitem):
+    if curuser.email:
+
+        currbill = '{0:.2f}'.format(restBill(curuser.userid))
+        #print(instance.firstName)
+        #print(currbill)
+        mymail = Bimail('SnackBar++', ['{}'.format(curuser.email)])
+        mymail.sendername = settingsFor('mailSender')
+        mymail.sender = settingsFor('mailSender')
+        mymail.servername = 'smtp.fit.fraunhofer.de'
+        # start html body. Here we add a greeting.
+        mymail.htmladd(
+            'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! <br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
+                curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
+        mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settingsFor('snackAdmin')))
+        mymail.htmladd('<br><br>---------<br><br>')
+        mymail.htmladd('Hello {} {}, <br>SnackBar has just REGISTERED an other {} ({} €) for you! <br><br> Your balance is now {} € <br><br> '.format(curuser.firstName,curuser.lastName,curitem.name,curitem.price, currbill))
+        # Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
+        # here we add a line of text and an html table previously stored in the variable
+        # add image chart title
+        # attach another file
+        mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settingsFor('snackAdmin')))
+        #mymail.addattach([os.path.join(fullpath, filename)])
+        # send!
+        #print(mymail.htmlbody)
+        mymail.send()
+
+
+
 @app.route('/change/<int:userid>')
 def change(userid):
-    if request.args.get('password') != SecKey:
-        return render_template('accessDenied.html')
 
     itemid = request.args.get('itemid')
     curuser = user.query.get(userid)
@@ -545,25 +726,26 @@ def change(userid):
     db.session.add(userPurchase)
     db.session.commit()
 
-    return redirect(url_for('login',userid = userid, password = SecKey))
+    sendEmail(curuser, curitem)
+    return redirect(url_for('userPage',userid = userid))
 
 @app.route('/analysis')
 def analysis():
     from analysisUtils import main
     content = main()
     return render_template('analysis.html', content = content)
-                           
+
+
 def build_sample_db():
-    import csv
     db.drop_all()
     db.create_all()
 
-
-    with open('static/userList.csv') as csvfile:
+    with open('userList.csv') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             newuser = user(firstName='{}'.format(row['FirstName']),
                            lastName='{}'.format(row['LastName']),
+                           imageName='{}'.format(row['ImageName']),
                            email='{}'.format(row['email']))
             db.session.add(newuser)
     '''
@@ -580,21 +762,64 @@ def build_sample_db():
 
 
     itemname = ['Coffee','Water','Snacks','Cola']
-    price   = [0.5,0.9,0.6,0.3]
+    price   = [0.2,0.55,0.2,0.4]
 
     for i in range(len(itemname)):
         newitem = item(name='{}'.format(itemname[i]),price = '{}'.format(price[i]))
+        newitem.icon = "item" + str(i+1) + ".svg"
        # newitem.name = itemname[i]
         #newitem.price = price[i]
         db.session.add(newitem)
 
-    newadmin = coffeeadmin(name = 'admin', password = 'secretpassword')
+    newadmin = coffeeadmin(name = 'admin', password = 'admin')
     db.session.add(newadmin)
 
     db.session.commit()
     return
 
+
+def set_default_settings():
+    with open('defaultSettings.csv') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            key = '{}'.format(row['key'])
+            dbEntry = db.session.query(settings).filter_by(key=key).first()
+            if dbEntry is None:
+                newsettingitem = settings(key='{}'.format(row['key']), value='{}'.format(row['value']))
+                db.session.add(newsettingitem)
+
+
+    db.session.commit()
+
+
+def send_reminder_to_all():
+    try:
+        for aUser in user.query:
+            sendReminder(aUser)
+    except:
+        pass
+
+
+import schedule
+import time
+import threading
+
+def run_schedule():
+    while 1:
+        schedule.run_pending()
+        time.sleep(10)
+
+
 if __name__ == "__main__":
-    # build_sample_db()
-    app.run()
+
+    schedule.every().monday.at("10:30").do(send_reminder_to_all)
+    schedule_thread = threading.Thread(target=run_schedule).start()
+
+    if not os.path.isfile(databaseName):
+        build_sample_db()
+
+    set_default_settings()
+    # app.run()
+    app.run(host='0.0.0.0', port=5000, debug=False)
+
 

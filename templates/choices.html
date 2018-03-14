@@ -2,7 +2,7 @@
 <html lang="en-US">
 
 <head>
-    <title>CoffeeList</title>
+    <title>SnackBar</title>
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
@@ -12,10 +12,28 @@
     <script src="/static/stay_standalone.js" type="text/javascript"></script>
     <style>
 
-        div.item_button {
-            margin:5px;
+        body {
+            margin:20px;
+        }
+
+        .items_container {
+            text-align:center;
+        }
+        .button_item{
+            display:inline-block !important;
+            position: relative;
+            width: 170px;
+            height: 190px;
+        }
+        a.item-button {
+            overflow: visible !important;
+            margin:5px !important;
             display:inline-block;
-            width:150px;
+            width:160px !important;
+            height:180px !important;
+            background-color: #e6efff;
+            padding-left: 2px !important;;
+            padding-right: 2px !important;;
         }
 
         .items_container {
@@ -27,7 +45,12 @@
             stroke-width: 30px;
             stroke: #5D8AA8;
         }
-
+        .circle
+        {
+            border-radius:50% 50% 50% 50%;
+            width:100px;
+            height:100px;
+        }
     </style>
 
 </head>
@@ -41,14 +64,14 @@
 
               {% for item in items %}
 
-                <div class="item_button">
-                    <a onclick="changeButton({{item.itemid}})"
+                <div class="button_item">
+                    <a onclick="buyItem({{userid}}, {{item.itemid}}, '{{item.name}}', '{{'%0.2f'|format(item.price|round(2))}}', '{{ url_for('change', userid=userid, itemid=item.itemid) }}')"
                        id="{{item.itemid}}"
-                       style = "width:154px;
-                                height:95px;
-                                background-color: #e6efff;"
-                       href="{{ url_for('change', userid=userid, itemid=item.itemid, password=pwd) }}"
-                       class="ui massive button">{{ item.name }} <br> {{'%0.2f'|format(item.price|round(2))}} €</a>
+                       style = ""
+                       href="#"
+                       class="ui massive button item-button">{{ item.name }} <br>
+                        <img src="{{url_for('icon',icon=item.icon)}}" class="circle">
+                        <br> {{'%0.2f'|format(item.price|round(2))}} €</a>
                 </div>
 
               {% endfor %}
@@ -57,8 +80,8 @@
         </div>
 
         <div class="ui container" style="">
-        <h2 class="ui center aligned header"> Your current bill is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
-        <button class="ui icon button"><a href="{{ url_for('initial', password=pwd) }}"><i class="arrow left icon"> </i></a></button>
+        <h2 class="ui center aligned header"> Your current balance is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
+        <button class="ui icon button"><a href="{{ url_for('initial') }}"><i class="arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
         <!-- <div class="ct-chart"></div> -->
@@ -71,7 +94,8 @@
                         <th> <i style = "color:green" class="caret up icon"></i></th>
                         <th> <i style = "color:red" class="caret down icon"></i></th>
                         <th>price</th>
-                        <th>#</th>
+                        <th>this month</th>
+                         <th>total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,6 +119,9 @@
                         <td class="collapsing">
                             {{ item.count|itemstrikes }}
                         </td>
+                        <td class="collapsing">
+                            {{ item.total }}
+                        </td>
                       </tr>
                     {% endfor %}
                 </tbody>
@@ -102,12 +129,34 @@
         </div>
 
 
-<script>setTimeout(function(){window.location.href='{{ url_for('initial', password=pwd) }}'},5000);</script>
+<script>setTimeout(function(){window.location.href='{{ url_for('initial') }}'},20000);</script>
 <script>
-function changeButton(itemid) {
-    document.getElementById(itemid).style.backgroundColor = 'green';
-    document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
+function buyItem(userid, itemid, itemName, itemPrice, confirmURL){
+
+    //document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
+    //window.location=confirmURL;
+
+    $.ajax({
+        url: confirmURL,
+        success: function(result){
+           document.getElementById(itemid).style.backgroundColor = 'green';
+           setTimeout(function(){window.location.href='{{ url_for('initial') }}'},2000);
+        }
+    });
+
     return;
+}
+
+
+function askTobuyItem(userid, itemid, itemName, itemPrice, confirmURL){
+//    document.getElementById(itemid).style.backgroundColor = 'green';
+//    document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
+//    window.location=confirmURL;
+
+    var ask=confirm("Do you really want to buy \""+ itemName + "\" for " + itemPrice +"€?");
+    if(ask){
+     window.location=confirmURL;
+    }
 }
 </script>
 </body>

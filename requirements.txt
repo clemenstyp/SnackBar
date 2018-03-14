@@ -1,0 +1,13 @@
+# Install all the requirements by calling: pip install --user -r requirements.txt
+# Update them by calling: pip install --user --upgrade -r requirements.txt
+#
+
+psycopg2
+flask
+Flask-SQLAlchemy
+Flask-Login
+Flask-Admin
+tablib
+numpy
+filedepot
+schedule

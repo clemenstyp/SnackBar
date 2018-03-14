@@ -2,7 +2,7 @@
 <html lang="en-US">
 
 <head>
-    <title>CoffeeList</title>
+    <title>SnackBar</title>
     <meta charset="UTF-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
@@ -21,7 +21,7 @@
             margin:5px !important;
             display:inline-block !important;
             width:160px !important;
-            height:80px !important;
+            height:180px !important;
         }
         a.coffee-button:active {
             background-color:gray;
@@ -32,15 +32,22 @@
             display:inline-block !important;
             position: relative;
             width: 170px;
-            height: 90px;
+            height: 190px;
         }
 
         .flag{
+            border-radius:50% 50% 50% 50%;
             position: absolute;
             width: 30px;
+            height: 30px;
             top: -10px;
         }
-    
+        .circle
+        {
+            border-radius:50% 50% 50% 50%;
+            width:100;
+            height:100px;
+        }
     </style>
 
 </head>
@@ -50,9 +57,10 @@
             <div class="buttons_container">
                 {% for user in users %}
                 <div class="button_user" >
-                    <a href="{{url_for('login',userid=user.id, password=pwd )}}" id="user{{user.id}}" class="ui coffee-button huge button"
+                    <a href="{{url_for('userPage',userid=user.id)}}" id="user{{user.id}}" class="ui coffee-button huge button"
                      style="color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
+                            <img src="{{url_for('image',filename=user.imageName)}}" class="circle">
                      {{ user.firstName }}<br>{{ user.lastName }}
                     </a>
                 </div>
@@ -68,19 +76,21 @@
 </body>
 <script>
     $('a').click(function(){
-        $(this).css('background-color','#ccc');
-        $(this).css('color','#ccc');
-        $('body').css('background-color','green');
+        //$(this).css('background-color','#ccc');
+        //$(this).css('color','#ccc');
+        //$('body').css('background-color','green');
     });
 </script>
 <script type="text/javascript">
     var itemID  = {{leaderID.itemID}};
+    var icon =  [{% for iconName in leaderID.icon %}"{{url_for('icon',icon=iconName)}}",{% endfor %}];
     var uID = {{leaderID.uID}};
 
     $('document').ready(function(){
-        for (i = 0; i < uID.length; i++) { 
-            position = (-7 + (itemID[i]-1) * 34)
-            addElem = "<img class='flag' id='item" + itemID[i] + "user" + uID[i] + "' style='right:" + position + "px' src='static/item" + itemID[i] + ".svg' />"; 
+        for (i = 0; i < uID.length; i++) {
+            // position = (-7 + (itemID[i]-1) * 34)
+            position = (-7 + (i * 34))
+            addElem = "<img class='flag' id='item" + itemID[i] + "user" + uID[i] + "' style='right:" + position + "px' src='" + icon[i] + "' />";
 
             var string = ("user" + uID[i]);
             // console.log(addElem);
