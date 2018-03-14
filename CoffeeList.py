@@ -613,21 +613,23 @@ def initial():
 
 @app.route('/image/<filename>')
 def image(filename):
-    return imageFromFolder(filename, os.path.join(current_app.root_path, app.config['IMAGE_FOLDER']), "unknown.png")
+    return imageFromFolder(filename, app.config['IMAGE_FOLDER'], "static/unknown_image.png")
 
 
 @app.route('/icon/<icon>')
 def icon(icon):
-    return imageFromFolder(icon, os.path.join(current_app.root_path, app.config['ICON_FOLDER']), "unknown.svg")
+    return imageFromFolder(icon, app.config['ICON_FOLDER'], "static/unknown_icon.svg")
 
 
-def imageFromFolder(filename, fullpath, defaultFilename):
+def imageFromFolder(filename, imageFolder, defaultImage):
+    fullpath = os.path.join(current_app.root_path, imageFolder)
+
     fullFilePath = safe_join(fullpath, filename)
     if not os.path.isabs(fullFilePath):
         fullFilePath = os.path.join(current_app.root_path, fullFilePath)
     try:
         if not os.path.isfile(fullFilePath):
-            return send_from_directory(directory=fullpath, filename=defaultFilename, as_attachment=False)
+            return send_from_directory(directory=current_app.root_path, filename=defaultImage, as_attachment=False)
     except (TypeError, ValueError):
         pass
 
