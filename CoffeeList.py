@@ -308,8 +308,10 @@ def getunpaid(userid,itemid):
 
     nUnpaid = db.session.query(history).\
             filter(history.userid == userid).\
-            filter(history.itemid == itemid).\
-            filter(extract('month', history.date) == datetime.now().month).count()
+            filter(history.itemid == itemid). \
+            filter(extract('month', history.date) == datetime.now().month). \
+            filter(extract('year', history.date) == datetime.now().year) \
+            .count()
 
     if nUnpaid == None:
         nUnpaid = 0
