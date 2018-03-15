@@ -120,7 +120,7 @@ class user(db.Model):
     lastName = db.Column(db.String(80))
     imageName = db.Column(db.String(240))
     email = db.Column(db.String(120))
-
+    hidden = db.Column(db.Boolean)
 
     def __init__(self, firstName='', lastName='', email='', imageName= ''):
         if not firstName:
@@ -132,6 +132,7 @@ class user(db.Model):
         if not email:
             email = 'example@example.org'
 
+        self.hidden = False
         self.firstName = firstName
         self.lastName = lastName
         self.imageName = imageName
@@ -246,7 +247,7 @@ def getcurrbill(userid):
 def getUsers():
 
     initusers = list()
-    for instance in user.query:
+    for instance in user.query.filter(user.hidden != True):
         initusers.append({'firstName': '{}'.format(instance.firstName),
                           'lastName': '{}'.format(instance.lastName),
                           'imageName': '{}'.format(instance.imageName),
@@ -362,7 +363,7 @@ def makeXLSBill(filename,fullpath):
     excelData = tablib.Dataset()
     excelData.headers = header
 
-    for instance in user.query:
+    for instance in user.query.filter(user.hidden != True):
         firstline = list()
         firstline.append('{} {}'.format(instance.firstName, instance.lastName))
 
@@ -410,7 +411,7 @@ class AnalyticsView(BaseView):
 
         initusers = list()
 
-        for instance in user.query:
+        for instance in user.query.filter(user.hidden != True):
 
             initusers.append({'name': '{} {}'.format(instance.firstName,instance.lastName),
                           'userid':'{}'.format(instance.userid),
@@ -422,7 +423,7 @@ class AnalyticsView(BaseView):
 
     @expose('/reminder/')
     def reminder(self):
-        for aUser in user.query:
+        for aUser in user.query.filter(user.hidden != True):
             sendReminder(aUser)
         return redirect(url_for('admin.index'))
 
@@ -442,19 +443,64 @@ class AnalyticsView(BaseView):
 
 class MyPaymentModelView(ModelView):
     can_create = True
+    can_delete = False
+    can_edit = False
     can_export = True
     form_excluded_columns = ('date')
-    export_types = ['csv']
+    export_types = ['csv', 'xls']
+    column_default_sort = ('date', True)
+    column_filters = ('user', 'amount', 'date')
+    list_template = 'admin/custom_list.html'
+
+    def date_format(view, context, model, name):
+        field = getattr(model, name)
+        return field.strftime('%Y-%m-%d %H:%M')
+
+    column_formatters = dict(date=date_format)
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
 
+
+    def page_sum(self, current_page):
+        # this should take into account any filters/search inplace
+        _query = self.session.query(inpayment).limit(self.page_size).offset(current_page * self.page_size)
+        page_sum = sum([payment.amount for payment in _query])
+        return '{0:.2f}'.format(page_sum)
+
+    def total_sum(self):
+        # this should take into account any filters/search inplace
+        total_sum = self.session.query(func.sum(inpayment.amount)).scalar()
+        return '{0:.2f}'.format(total_sum)
+
+    def render(self, template, **kwargs):
+        # we are only interested in the list page
+        if template == 'admin/custom_list.html':
+            # append a summary_data dictionary into kwargs
+            _current_page = kwargs['page']
+            kwargs['summary_data'] = [
+                {'title': 'Page Total', 'amount': self.page_sum(_current_page)},
+                {'title': 'Grand Total', 'amount': self.total_sum()},
+            ]
+            kwargs['summary_title'] = [{'title': ''}, {'title': 'Amount'},]
+        return super(MyPaymentModelView, self).render(template, **kwargs)
+
+
 class MyHistoryModelView(ModelView):
     can_create = False
     can_export = True
-    export_types = ['csv']
+    can_delete = False
+    can_edit = False
+    export_types = ['csv', 'xls']
     column_descriptions = dict()
     column_labels = dict(user='Name')
+    column_default_sort =  ('date', True)
+
+    def date_format(view, context, model, name):
+        field = getattr(model, name)
+        return field.strftime('%Y-%m-%d %H:%M')
+
+    column_formatters = dict(date = date_format)
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
@@ -666,7 +712,7 @@ def userPage(userid):
                       'ub'    : rankInfo['upperbound'],
                       'lb'    : rankInfo['lowerbound']})
 
-    noUsers = user.query.count()
+    noUsers = user.query.filter(user.hidden != True).count()
     currbill = restBill(userid)
 
     return render_template('choices.html',
@@ -824,7 +870,7 @@ def set_default_settings():
 
 def send_reminder_to_all():
     try:
-        for aUser in user.query:
+        for aUser in user.query.filter(user.hidden != True):
             sendReminder(aUser)
     except:
         pass

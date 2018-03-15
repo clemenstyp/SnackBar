@@ -13,8 +13,9 @@ import json
 
 def main():
 
-    # get no of users 
-    noUsers = db.session.query(user).count()
+    # get no of users
+
+    #noUsers = db.session.query(user).count()
     #print('Number of users is: {}'.format(noUsers))
     content = dict()
 
