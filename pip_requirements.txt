@@ -1,7 +1,0 @@
-psycopg2
-flask
-Flask-SQLAlchemy
-Flask-Login
-Flask-Admin
-tablib
-numpy

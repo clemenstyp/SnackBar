@@ -17,3 +17,4 @@ _mailinglist
 sqlite
 *.db
 *.bak
+CoffeeDB.db

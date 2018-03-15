@@ -807,6 +807,7 @@ def send_reminder_to_all():
 import schedule
 import time
 import threading
+from flaskrun import flaskrun
 
 def run_schedule():
     while 1:
@@ -824,6 +825,7 @@ if __name__ == "__main__":
 
     set_default_settings()
     # app.run()
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    #app.run(host='0.0.0.0', port=5000, debug=False)
+    flaskrun(app)
 
 

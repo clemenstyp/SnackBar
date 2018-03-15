@@ -7,17 +7,28 @@ it is based on CoffeeList from duscheln: https://github.com/duscheln/CoffeeList
 
 # Installation
 
-* Install the pip requirements as denoted in pip-requirements.txt
-* Go into CoffeeList.py and change the database path. This Webapp was tested with sqlite and postgresql
-* Change the admin password in Line 501
-* Change the userList.csv in the static folder as shown in the template
+* Install the pip requirements as denoted in requirements.txt:
+
+pip install --user -r requirements.txt
+
+* You can change the userList.csv as shown in the template. These users will be imported, when a database is created. You can add or remove useres at a later time
 * Standard items will be created at start. You can change the price and names in the admin panel later.
-* At the first run: Go into CoffeeList.py and uncomment line 513 \('build\_sample\_db\(\)'\)
-* Your App should run on localhost at port 5000
-* Remember to set the comment line 513 or the database will be rebuild at every start
+
+* To start the CoffeeList with the folowing command:
+python CoffeeList.py --port 8000
+
+* you can add --port and -- host to change port and host.
+python CoffeeList.py --host 127.0.1.1 --port 8000
+
+* The initial username and password for the admin interface are:
+username: admin
+password: admin
+
+* you can change the password in the "Admins" section.
 
 # Screenshots
 
-![alt tag](https://cloud.githubusercontent.com/assets/20201737/20141250/c9264674-a68f-11e6-9e6c-24ccb540a13d.png)  
-![alt tag](https://cloud.githubusercontent.com/assets/20201737/20141251/c92f8874-a68f-11e6-9ac9-5661d08d78e2.png)  
-![alt tag](https://cloud.githubusercontent.com/assets/20201737/20141248/c910eebe-a68f-11e6-8942-05f3d5c3d386.png)
+![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/overview.png)
+![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/buy.png)
+![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/user.png)
+![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/bill.png)
