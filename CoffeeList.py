@@ -611,10 +611,18 @@ def initial():
 
     return render_template('index.html', users=users, leaderID=leaderInfo)
 
+@app.route('/image/')
+def defaultImage():
+    return image(None)
+
+
 @app.route('/image/<filename>')
 def image(filename):
     return imageFromFolder(filename, app.config['IMAGE_FOLDER'], "static/unknown_image.png")
 
+@app.route('/icon/')
+def defaultIcon():
+    return icon(None)
 
 @app.route('/icon/<icon>')
 def icon(icon):
@@ -622,6 +630,9 @@ def icon(icon):
 
 
 def imageFromFolder(filename, imageFolder, defaultImage):
+    if filename is None:
+        return send_from_directory(directory=current_app.root_path, filename=defaultImage, as_attachment=False)
+
     fullpath = os.path.join(current_app.root_path, imageFolder)
 
     fullFilePath = safe_join(fullpath, filename)
@@ -736,8 +747,8 @@ def change(userid):
 @app.route('/analysis')
 def analysis():
     from analysisUtils import main
-    content = main()
-    return render_template('analysis.html', content = content)
+    content, tagsHours = main()
+    return render_template('analysis.html', content = content, tagsHours = tagsHours)
 
 
 def build_sample_db():
@@ -752,6 +763,21 @@ def build_sample_db():
                            imageName='{}'.format(row['ImageName']),
                            email='{}'.format(row['email']))
             db.session.add(newuser)
+            initialBalance = '{}'.format(row['InitialBalance'])
+            try:
+                initialBalanceFloat = float(initialBalance)
+                if initialBalanceFloat != 0:
+                    initialPayment = inpayment(amount=initialBalance)
+                    initialPayment.user = newuser
+                    db.session.add(initialPayment)
+            except:
+                pass
+
+
+
+
+
+
     '''
     name = [
         'Wilhelm Müller', 'Franz Meier', 'Berta Schmitt', 'Fritz Hase']

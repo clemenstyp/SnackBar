@@ -20,6 +20,15 @@
 </head>
 <body>
 <div >
+    <div class="ui text container" style = "margin-top:30px">
+            <h2 class="ui center aligned dividing header"> Snackbar Analysis!</h2>
+        </div>
+
+    <div class="ui container" style="">
+        <h2 class="ui center aligned header">  </h2>
+        <button class="ui icon button"><a href="{{ url_for('initial') }}"><i class="arrow left icon"> </i></a></button>
+        </div>
+
 
   <div class="container ui raised segment">
     <canvas id="WeekHours"></canvas>
@@ -30,8 +39,40 @@
   <div class="container ui raised segment">
     <canvas id="Month"></canvas>
   </div>
+    <br>
+    <br>
 
 </div>
+<script>setTimeout(function(){window.location.href='{{ url_for('initial') }}'},60000);</script>
+
+<script type="text/javascript">
+function idleOpenURL(timeout, url) {
+    var t;
+
+    window.onload = resetTimer;
+    window.onmousemove = resetTimer;
+    window.onmousedown = resetTimer; // catches touchscreen presses
+    window.ontouchstart = resetTimer;
+    window.onclick = resetTimer;     // catches touchpad clicks
+    window.onscroll = resetTimer;    // catches scrolling with arrow keys
+    window.onkeypress = resetTimer;
+
+    function logout() {
+        //alert("You are now logged out. " + url)
+        //location.href = 'logout.php'
+        window.location.href= url
+    }
+
+    function resetTimer() {
+        clearTimeout(t);
+        t = setTimeout(logout, timeout * 1000)
+        // 1000 milisec = 1 sec
+    }
+};
+
+idleOpenURL(20, '{{ url_for('initial') }}');
+</script>
+
 <script type="text/javascript">
 
 function djb2(str){
@@ -163,7 +204,8 @@ var chart = new Chart(ctx, {
     type: 'line',
     // The data for our dataset
     data: {
-        labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','24:00'] ,
+        labels: {{tagsHours|safe}},
+        //labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','24:00'] ,
         datasets: [
         {% for key, value in content.items() %}
         {

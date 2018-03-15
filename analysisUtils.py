@@ -18,7 +18,38 @@ def main():
     #print('Number of users is: {}'.format(noUsers))
     content = dict()
 
-    # Info for Coffe 
+    tagsHours = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00',
+                 '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00',
+                 '22:00', '23:00', '24:00']
+    minTag = len(tagsHours)
+    maxTag = 0
+
+    # Info for Coffe
+    for itemID, t in enumerate(range(4), 1):
+        histogram = db.session.query(history.itemid, history.date, history.userid). \
+            filter(history.itemid == itemID).all()
+
+        # Info item on weekhours
+        histogramHours = [x[1].time().replace(minute=0, second=0, microsecond=0) for x in histogram]
+        bla = list(sorted(Counter(histogramHours).items()))
+        timeStamp = [x[0].strftime('%H:%M') for x in bla]
+
+        for j, elem in enumerate(timeStamp):
+            index = tagsHours.index(elem)
+            minTag = min(minTag, index)
+            maxTag = max(maxTag, index)
+
+    minTag = max(minTag -1 , 0)
+    maxTag = min(maxTag + 2, len(tagsHours))
+
+    minTag = min(minTag, 9)
+    maxTag = max(maxTag, 17)
+
+    if minTag < maxTag:
+        tagsHours = tagsHours[minTag:maxTag]
+
+
+    # Info for Coffe
     for itemID, t in enumerate(range(4),1):
         # itemID = 4
 
@@ -57,7 +88,6 @@ def main():
         # print(timeStamp)
         # print(amount)
 
-        tagsHours = ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','24:00'] 
         amountRaw = [0 for x in range(len(tagsHours))]
 
         for j,elem in enumerate(timeStamp):
@@ -80,7 +110,7 @@ def main():
         content[itemName]['amountMonth'] = amount
         content[itemName]['tagsMonth'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    return (content)
+    return (content, tagsHours)
 
 
 if __name__ == "__main__":
