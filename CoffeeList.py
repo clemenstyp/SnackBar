@@ -101,10 +101,12 @@ class inpayment(db.Model):
 
     amount = db.Column(db.Float)
     date = db.Column(db.DateTime)
+    notes = db.Column(db.String(120))
 
-    def __init__(self, user=None, amount=None, date=None):
+    def __init__(self, user=None, amount=None, date=None, notes=None):
         self.userid = user
         self.amount = amount
+        self.notes = notes
 
         if date is None:
             date = datetime.now()
