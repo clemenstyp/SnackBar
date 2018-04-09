@@ -116,10 +116,10 @@ class inpayment(db.Model):
 
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    firstName = db.Column(db.String(80))
-    lastName = db.Column(db.String(80))
-    imageName = db.Column(db.String(240))
-    email = db.Column(db.String(120))
+    firstName = db.Column(db.String(80),nullable=False)
+    lastName = db.Column(db.String(80),nullable=False)
+    imageName = db.Column(db.String(240),nullable=False)
+    email = db.Column(db.String(120),nullable=False)
     hidden = db.Column(db.Boolean)
 
     def __init__(self, firstName='', lastName='', email='', imageName= ''):
@@ -145,7 +145,7 @@ class user(db.Model):
 
 class item(db.Model):
     itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(80), unique=True,nullable=False)
     price = db.Column(db.Float)
     icon = db.Column(db.String(300))
 
@@ -159,7 +159,7 @@ class item(db.Model):
 class coffeeadmin(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(80), unique=True,nullable=False)
     password = db.Column(db.String(64))
 
     # Flask-Login integration
@@ -643,7 +643,7 @@ admin.add_link(MenuLink(name='Snack Bar', url='/'))
 def initial():
 
     initusers = getUsers()
-    users = sorted(initusers, key=lambda k: k['lastName'])
+    users = sorted(initusers, key=lambda k: k['firstName'])
     leaderInfo = list()
 
     allItems = item.query.filter(item.icon != None , item.icon != '', item.icon != ' ')
