@@ -118,7 +118,7 @@ class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
     firstName = db.Column(db.String(80),nullable=False)
     lastName = db.Column(db.String(80),nullable=False)
-    imageName = db.Column(db.String(240),nullable=False)
+    imageName = db.Column(db.String(240))
     email = db.Column(db.String(120),nullable=False)
     hidden = db.Column(db.Boolean)
 
