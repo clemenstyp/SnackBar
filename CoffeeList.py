@@ -80,7 +80,7 @@ class history(db.Model):
     price = db.Column(db.Float)
     date = db.Column(db.DateTime)
 
-    def __init__(self,user,item,price,date = None):
+    def __init__(self,user=None,item=None,price=0,date = None):
         self.user = user
         self.item = item
         self.price = price
@@ -753,7 +753,7 @@ def sendEmail(curuser, curitem):
         currbill = '{0:.2f}'.format(restBill(curuser.userid))
         #print(instance.firstName)
         #print(currbill)
-        mymail = Bimail('SnackBar++', ['{}'.format(curuser.email)])
+        mymail = Bimail('SnackBar++ ({} {})'.format(curuser.firstName, curuser.lastName), ['{}'.format(curuser.email)])
         mymail.sendername = settingsFor('mailSender')
         mymail.sender = settingsFor('mailSender')
         mymail.servername = settingsFor('mailServer')
