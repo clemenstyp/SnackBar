@@ -145,7 +145,7 @@ class user(db.Model):
 
 class item(db.Model):
     itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), unique=True,nullable=False)
+    name = db.Column(db.String(80), unique=True)
     price = db.Column(db.Float)
     icon = db.Column(db.String(300))
 
