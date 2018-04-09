@@ -116,10 +116,10 @@ class inpayment(db.Model):
 
 class user(db.Model):
     userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    firstName = db.Column(db.String(80),nullable=False)
-    lastName = db.Column(db.String(80),nullable=False)
+    firstName = db.Column(db.String(80),nullable=False,default = '')
+    lastName = db.Column(db.String(80),nullable=False,default = '')
     imageName = db.Column(db.String(240))
-    email = db.Column(db.String(120),nullable=False)
+    email = db.Column(db.String(120),nullable=False,default = '')
     hidden = db.Column(db.Boolean)
 
     def __init__(self, firstName='', lastName='', email='', imageName= ''):
@@ -145,7 +145,7 @@ class user(db.Model):
 
 class item(db.Model):
     itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), unique=True,nullable=False)
+    name = db.Column(db.String(80), unique=True,nullable=False,default = '')
     price = db.Column(db.Float)
     icon = db.Column(db.String(300))
 
@@ -159,7 +159,7 @@ class item(db.Model):
 class coffeeadmin(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True,nullable=False)
+    name = db.Column(db.String(80), unique=True,nullable=False,default = '')
     password = db.Column(db.String(64))
 
     # Flask-Login integration
