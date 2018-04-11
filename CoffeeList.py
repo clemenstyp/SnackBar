@@ -504,7 +504,7 @@ class MyHistoryModelView(ModelView):
     column_descriptions = dict()
     column_labels = dict(user='Name')
     column_default_sort =  ('date', True)
-
+    form_args = dict(date=dict(default=datetime.now()),price=dict(default=0) )
     def date_format(view, context, model, name):
         field = getattr(model, name)
         if field is not None:
