@@ -507,7 +507,10 @@ class MyHistoryModelView(ModelView):
 
     def date_format(view, context, model, name):
         field = getattr(model, name)
-        return field.strftime('%Y-%m-%d %H:%M')
+        if field is not None:
+            return field.strftime('%Y-%m-%d %H:%M')
+        else:
+            return ""
 
     column_formatters = dict(date = date_format)
 
