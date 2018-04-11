@@ -56,6 +56,26 @@
 
 <body>
         <div class = "container">
+                <div class="ui text container" style = "margin-top:30px">
+              <h2 class="ui center aligned dividing header">
+                Name:
+                  <a href="{{url_for('sort',sorting='az')}}">
+                      {% if current_sorting == 'az' %}<i class="sort alphabet ascending icon"></i>{% else %}<i class="sort alphabet ascending icon black"></i>{% endif %}
+                  </a>
+                <a href="{{url_for('sort',sorting='za')}}">
+                    {% if current_sorting == 'za' %}<i class="sort alphabet descending icon"></i>{% else %}<i class="sort alphabet descending icon black"></i>{% endif %}
+                 </a>
+               &nbsp;&nbsp; |  &nbsp;&nbsp; Coffee:
+                <a href="{{url_for('sort',sorting='coffee91')}}">
+                    {% if current_sorting == 'coffee91' %}<i class="sort numeric descending icon"></i>{% else %}<i class="sort numeric descending icon black"></i>{% endif %}
+                </a>
+                <a href="{{url_for('sort',sorting='coffee19')}}">
+                    {% if current_sorting == 'coffee19' %}<i class="sort numeric ascending icon"></i>{% else %}<i class="sort numeric ascending icon black"></i>{% endif %}
+                </a>
+              </h2>
+        </div>
+            <br>
+             <div class="ui divider" style="clear:both">
             <div class="buttons_container">
                 {% for user in users %}
                 <div class="button_user" >

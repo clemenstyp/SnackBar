@@ -249,6 +249,10 @@ def getcurrbill(userid):
 def getUsers():
 
     initusers = list()
+    allItems = item.query.filter(item.icon != None , item.icon != '', item.icon != ' ')
+    allItemID = [int(instance.itemid) for instance in allItems]
+    itemid = allItemID[0]
+
     for instance in user.query.filter(user.hidden != True):
         initusers.append({'firstName': '{}'.format(instance.firstName),
                           'lastName': '{}'.format(instance.lastName),
@@ -256,15 +260,18 @@ def getUsers():
                           'id': '{}'.format(instance.userid),
                           'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
                           'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
+                          'coffeeMonth': getunpaid(instance.userid,itemid),
                               })
 
     return initusers
 
 def getLeader(itemid):
 
-    tmpQuery = db.session.query(user.userid, func.count(history.price)).\
-               outerjoin(history, and_(user.userid == history.userid,history.itemid == itemid,extract('month', history.date) == datetime.now().month)).\
-               group_by(user.userid).\
+    tmpQuery = db.session.query(user.userid, func.count(history.price)). \
+        outerjoin(history, and_(user.userid == history.userid, history.itemid == itemid,
+                                extract('month', history.date) == datetime.now().month,
+                  extract('year', history.date) == datetime.now().year)). \
+            group_by(user.userid).\
                order_by(func.count(history.price).desc()).first()
 
 
@@ -273,7 +280,7 @@ def getLeader(itemid):
 def getRank(userid, itemid):
 
     tmpQuery = db.session.query(user.userid, func.count(history.price)).\
-                   outerjoin(history, and_(user.userid == history.userid,history.itemid == itemid,extract('month', history.date) == datetime.now().month)).\
+                   outerjoin(history, and_(user.userid == history.userid,history.itemid == itemid,extract('month', history.date) == datetime.now().month,extract('year', history.date) == datetime.now().year)).\
                    group_by(user.userid).\
                    order_by(func.count(history.price).desc()).all()
 
@@ -415,11 +422,11 @@ class AnalyticsView(BaseView):
 
         for instance in user.query.filter(user.hidden != True):
 
-            initusers.append({'name': '{} {}'.format(instance.firstName,instance.lastName),
+            initusers.append({'firstName': '{} {}'.format(instance.firstName,instance.lastName),
                           'userid':'{}'.format(instance.userid),
                           'bill': restBill(instance.userid)})
 
-        users = sorted(initusers, key=lambda k: k['name'])
+        users = sorted(initusers, key=lambda k: k['firstName'])
 
         return self.render('admin/test.html',users = users)
 
@@ -641,11 +648,27 @@ admin.add_view(MyAdminModelView(coffeeadmin, db.session,'Admins'))
 admin.add_view(MySettingsModelView(settings, db.session,'Settings'))
 admin.add_link(MenuLink(name='Snack Bar', url='/'))
 
+current_sorting = ""
+
 @app.route('/')
 def initial():
-
+    global current_sorting
     initusers = getUsers()
-    users = sorted(initusers, key=lambda k: k['firstName'])
+
+    if current_sorting == "az":
+        users = sorted(initusers, key=lambda k: k['firstName'])
+    elif current_sorting == "za":
+        users = sorted(initusers, key=lambda k: k['firstName'])
+        users.reverse()
+    elif current_sorting == "coffee19":
+        users = sorted(initusers, key=lambda k: k['coffeeMonth'])
+    elif current_sorting == "coffee91":
+        users = sorted(initusers, key=lambda k: k['coffeeMonth'])
+        users.reverse()
+    else:
+        current_sorting = "az"
+        users = sorted(initusers, key=lambda k: k['firstName'])
+
     leaderInfo = list()
 
     allItems = item.query.filter(item.icon != None , item.icon != '', item.icon != ' ')
@@ -657,7 +680,17 @@ def initial():
                   "itemID": itemID,
                   "icon": icon}
 
-    return render_template('index.html', users=users, leaderID=leaderInfo)
+    return render_template('index.html', users=users, leaderID=leaderInfo, current_sorting=current_sorting)
+
+
+
+
+@app.route('/sort/<sorting>')
+def sort(sorting):
+    global current_sorting
+    current_sorting = sorting
+    return redirect(url_for('initial'))
+
 
 @app.route('/image/')
 def defaultImage():
