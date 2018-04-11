@@ -19,15 +19,28 @@
             text-align:center;
         }
         a.coffee-button {
+           overflow: visible !important;
             margin:5px !important;
-            display:inline-block !important;
+            display:inline-block;
             width:160px !important;
             height:180px !important;
+            background-color: #e6efff;
+            padding-left: 2px !important;;
+            padding-right: 2px !important;;
         }
         a.coffee-button:active {
             background-color:gray;
             color:gray;
             border:3px solid black;
+            overflow: visible !important;
+            margin:5px !important;
+            display:inline-block;
+            width:160px !important;
+            height:180px !important;
+            background-color: #e6efff;
+            padding-left: 2px !important;;
+            padding-right: 2px !important;;
+
         }
         .button_user{
             display:inline-block !important;
@@ -42,13 +55,34 @@
             width: 30px;
             height: 30px;
             top: -10px;
+            z-index: 100;
+
         }
         .circle
         {
             border-radius:50% 50% 50% 50%;
             object-fit: cover;
             width: 100%;
-            height: 100px;
+            height: 100px !important;;
+        }
+
+        .imageBorder
+        {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translate(-50%, 0%);
+            width:100px !important;
+            height:100px !important;
+        }
+         .textBorder
+        {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translate(-50%, 0%);
+            width:100px !important;
+            height:100px !important;
         }
     </style>
 
@@ -82,8 +116,8 @@
                     <a href="{{url_for('userPage',userid=user.id)}}" id="user{{user.id}}" class="ui coffee-button huge button"
                      style="color:{{user.fontcolor}};
                             background-color:{{ user.bgcolor }}">
-                            <img src="{{url_for('image',filename=user.imageName)}}" class="circle">
-                     {{ user.firstName }}<br>{{ user.lastName }}
+                         <span class="imageBorder"><img src="{{url_for('image',filename=user.imageName)}}" class="circle"></span>
+                        <span class="textBorder">{{ user.firstName }}<br>{{ user.lastName }}</span>
                     </a>
                 </div>
                 {% endfor %}
