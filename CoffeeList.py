@@ -499,7 +499,7 @@ class MyHistoryModelView(ModelView):
     can_create = True
     can_export = True
     can_delete = True
-    can_edit = False
+    can_edit = True
     export_types = ['csv', 'xls']
     column_descriptions = dict()
     column_labels = dict(user='Name')
