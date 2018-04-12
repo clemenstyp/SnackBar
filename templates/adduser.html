@@ -141,43 +141,6 @@ function idleOpenURL(timeout, url) {
     }
 };
 
-
-function buyItem(userid, itemid, itemName, itemPrice, confirmURL){
-
-    buyItemNow(userid, itemid, itemName, itemPrice, confirmURL);
- }
-
-function askTobuyItem(userid, itemid, itemName, itemPrice, confirmURL){
-    var ask=confirm("Do you really want to buy \""+ itemName + "\" for " + itemPrice +"€?");
-    if(ask){
-     buyItemNow(userid, itemid, itemName, itemPrice, confirmURL);
-    }
-}
-
-function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
-
-    //document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
-    //window.location=confirmURL;
-    document.getElementById(itemid).style.backgroundColor = '#aaa';
-
-    balance = document.getElementById('balance').innerHTML;
-
-    balance = balance - itemPrice;
-
-    document.getElementById('balance').innerHTML = balance.toFixed(2);
-
-    $.ajax({
-        url: confirmURL,
-        success: function(result){
-           document.getElementById(itemid).style.backgroundColor = 'green';
-           //idleOpenURL(2, '{{ url_for('initial') }}');
-           setTimeout(function(){window.location.href='{{ url_for('initial') }}'},2000);
-        }
-    });
-
-    return;
-}
-
 idleOpenURL(60, '{{ url_for('initial') }}');
 
 </script>

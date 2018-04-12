@@ -183,7 +183,8 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
         url: confirmURL,
         success: function(result){
            document.getElementById(itemid).style.backgroundColor = 'green';
-           idleOpenURL(2, '{{ url_for('initial') }}');
+           //idleOpenURL(2, '{{ url_for('initial') }}');
+           setTimeout(function(){window.location.href='{{ url_for('initial') }}'},2000);
         }
     });
 
