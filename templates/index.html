@@ -107,7 +107,7 @@
               </h2>
         </div>
             <br>
-             <div class="ui divider" style="clear:both">
+             <div class="ui divider" style="clear:both"></div>
             <div class="buttons_container">
                 {% for user in users %}
                 <div class="button_user" >
@@ -123,13 +123,28 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="ui divider" style="clear:both">
+
+            <div class="ui divider" style="clear:both"></div>
               <p style="text-align:center;margin:50px auto">
-                <a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
                 <a href="{{url_for('analysis')}}"><i class="huge bar chart icon"></i></a>
               </p>
+                 <p style="text-align:center;margin:50px auto">
+                <a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
+                   <a href="{{url_for('adduser')}}"><i class="huge add icon"></i></a>
+              </p>
+
+
+             <div class="ui divider" style="clear:both">
+              <p style="text-align:center;margin:50px auto">
+                  Fork SnackBar on <a  target="_blank" href="https://github.com/clemenstyp/CoffeeList">GitHub (github.com/clemenstyp/CoffeeList)</a>
+              </p>
+
+                 <br/>
             </div>
-        </div>
+
+
+
+
 </body>
 <script>
     $('a').click(function(){

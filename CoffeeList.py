@@ -19,12 +19,13 @@ from math import sqrt
 from sendEmail import Bimail
 import time
 import csv
+from werkzeug.utils import secure_filename
 
 from depot.manager import DepotManager
 
 databaseName = 'CoffeeDB.db'
 url = 'sqlite:///' + databaseName
-engine = create_engine(url, poolclass=SingletonThreadPool)
+engine = create_engine(url,  connect_args={'check_same_thread':False}, poolclass=SingletonThreadPool)
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -39,6 +40,8 @@ app.config['DEBUG'] = True
 
 
 db = SQLAlchemy(app)
+
+
 
 def settingsFor(key):
     dbEntry = db.session.query(settings).filter_by(key=key).first()
@@ -557,6 +560,7 @@ class MyUserModelView(ModelView):
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
 
+
 class MyItemModelView(ModelView):
     can_export = True
     export_types =['csv','xls']
@@ -703,6 +707,63 @@ def sort(sorting):
     return redirect(url_for('initial'))
 
 
+@app.route('/adduser', methods=('GET', 'POST'))
+def adduser():
+
+    if request.method == 'POST':
+        firstNameError = False
+        firstName = ''
+        if request.form['firstname'] == None or request.form['firstname'] == '' :
+            firstNameError = true
+        else:
+            firstName = request.form['firstname']
+
+        lastNameError = False
+        lastName = ''
+        if request.form['lastname'] == None or request.form['lastname'] == '':
+            lastNameError = true
+        else:
+            lastName = request.form['lastname']
+
+        from email.utils import parseaddr
+        emailError = False
+        email = ''
+        if request.form['email'] == None or request.form['email'] == '':
+            emailError = true
+        else:
+            email = parseaddr(request.form['email'])[1]
+            if email == '':
+                emailError = true
+
+
+        if not firstNameError and not lastNameError and not emailError:
+            with app.app_context():
+                filename = ''
+                if 'image'  in request.files:
+                    file = request.files['image']
+                    if file.filename != '' and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        fullPath = os.path.join(app.config['IMAGE_FOLDER'], filename)
+                        file.save(fullPath)
+
+                newUser = user(firstName=firstName, lastName=lastName, email=email, imageName= filename)
+
+                db.session.add(newUser)
+                db.session.commit()
+                sendEmailNewUser(newUser)
+
+                return redirect(url_for('initial'))
+        else:
+            return render_template('adduser.html', firstNameError=firstNameError, firstName=firstName, lastNameError=lastNameError, lastName=lastName,
+                                   emailError=emailError, email=email)
+    else:
+        return render_template('adduser.html', firstNameError=False, firstName='', lastNameError=False, lastName='',emailError=False, email='' )
+
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/image/')
 def defaultImage():
     return image(None)
@@ -768,6 +829,27 @@ def userPage(userid):
                            items = items,
                            noOfUsers = noUsers,
                            )
+
+def sendEmailNewUser(curuser):
+    if curuser.email:
+        mymail = Bimail('SnackBar User Created', ['{}'.format(curuser.email)])
+        mymail.sendername = settingsFor('mailSender')
+        mymail.sender = settingsFor('mailSender')
+        mymail.servername = settingsFor('mailServer')
+        # start html body. Here we add a greeting.
+        mymail.htmladd(
+            'Hallo {} {},<br><br>ein neuer Benutzer wurde mit dieser E-Mail Adresse erstellt. Solltest du diesen Acocunt nicht erstellt habe, melde dich bitte bei {}.<br><br>Ciao,<br>SnackBar Team [{}]<br><br><br><br>---------<br><br><br><br>Hello {} {},<br><br>a new user has been created with this mail address. If you have not created this Acocunt, please contact {}.<br><br>Ciao,<br>SnackBar Team [{}]'.format(
+                curuser.firstName, curuser.lastName, settingsFor('snackAdmin'), settingsFor('snackAdmin'), curuser.firstName,
+                curuser.lastName, settingsFor('snackAdmin'), settingsFor('snackAdmin')))
+        # Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
+        # here we add a line of text and an html table previously stored in the variable
+        # add image chart title
+        # attach another file
+        # mymail.htmladd('Ciao,<br>SnackBar Team [Clemens Putschli (C5-315)]')
+        # mymail.addattach([os.path.join(fullpath, filename)])
+        # send!
+        # print(mymail.htmlbody)
+        mymail.send()
 
 def sendReminder(curuser):
     if curuser.email:
