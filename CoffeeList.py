@@ -247,6 +247,9 @@ def getcurrbill(userid):
     return currBillNew
 
 def getUsers():
+    getUsers(false)
+
+def getUsers(withLeader):
 
     initusers = list()
     allItems = item.query.filter(item.icon != None , item.icon != '', item.icon != ' ')
@@ -261,9 +264,24 @@ def getUsers():
                           'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
                           'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
                           'coffeeMonth': getunpaid(instance.userid,itemid),
+                          'leader' : getLeaderData(instance.userid, not withLeader),
                               })
-
     return initusers
+
+def getLeaderData(userid, skip):
+    leaderInfo = list()
+    if not skip:
+        allItems = item.query.filter(item.icon != None, item.icon != '', item.icon != ' ')
+        i = 0
+        for aItem in allItems:
+            leaderID = int(getLeader(aItem.itemid))
+            if leaderID == userid:
+                itemID = int(aItem.itemid)
+                icon = str(aItem.icon)
+                position = (-7 + (i * 34))
+                leaderInfo.append({"itemID": itemID, "icon": icon, "position": position})
+                i = i +1
+    return leaderInfo
 
 def getLeader(itemid):
 
@@ -656,7 +674,7 @@ current_sorting = ""
 @app.route('/')
 def initial():
     global current_sorting
-    initusers = getUsers()
+    initusers = getUsers(true)
 
     if current_sorting == "az":
         users = sorted(initusers, key=lambda k: k['firstName'])
@@ -672,18 +690,8 @@ def initial():
         current_sorting = "az"
         users = sorted(initusers, key=lambda k: k['firstName'])
 
-    leaderInfo = list()
 
-    allItems = item.query.filter(item.icon != None , item.icon != '', item.icon != ' ')
-    itemID = [int(instance.itemid) for instance in allItems]
-    userID = [int(getLeader(instance.itemid)) for instance in allItems]
-    icon = [str(instance.icon) for instance in allItems]
-
-    leaderInfo = {"uID"   : userID,
-                  "itemID": itemID,
-                  "icon": icon}
-
-    return render_template('index.html', users=users, leaderID=leaderInfo, current_sorting=current_sorting)
+    return render_template('index.html', users=users, current_sorting=current_sorting)
 
 
 

@@ -81,7 +81,7 @@
         </div>
 
         <div class="ui container" style="">
-        <h2 class="ui center aligned header"> Your current balance is: {{ '%0.2f'|format(currbill|round(2))}} €</h2>
+        <h2 class="ui center aligned header"> Your current balance is: <span  id="balance">{{'%0.2f'|format(currbill|round(2))}}</span>  €</h2>
         <button class="ui icon button"><a href="{{ url_for('initial') }}"><i class="huge arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
@@ -154,37 +154,44 @@ function idleOpenURL(timeout, url) {
     }
 };
 
-idleOpenURL(20, '{{ url_for('initial') }}');
-</script>
-<script>//setTimeout(function(){window.location.href='{{ url_for('initial') }}'},20000);</script>
-<script>
+
 function buyItem(userid, itemid, itemName, itemPrice, confirmURL){
+
+    buyItemNow(userid, itemid, itemName, itemPrice, confirmURL);
+ }
+
+function askTobuyItem(userid, itemid, itemName, itemPrice, confirmURL){
+    var ask=confirm("Do you really want to buy \""+ itemName + "\" for " + itemPrice +"€?");
+    if(ask){
+     buyItemNow(userid, itemid, itemName, itemPrice, confirmURL);
+    }
+}
+
+function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
 
     //document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
     //window.location=confirmURL;
+    document.getElementById(itemid).style.backgroundColor = '#aaa';
+
+    balance = document.getElementById('balance').innerHTML;
+
+    balance = balance - itemPrice;
+
+    document.getElementById('balance').innerHTML = balance.toFixed(2);
 
     $.ajax({
         url: confirmURL,
         success: function(result){
            document.getElementById(itemid).style.backgroundColor = 'green';
-           setTimeout(function(){window.location.href='{{ url_for('initial') }}'},2000);
+           idleOpenURL(2, '{{ url_for('initial') }}');
         }
     });
 
     return;
 }
 
+idleOpenURL(20, '{{ url_for('initial') }}');
 
-function askTobuyItem(userid, itemid, itemName, itemPrice, confirmURL){
-//    document.getElementById(itemid).style.backgroundColor = 'green';
-//    document.getElementById(itemid).innerHTML = '<i class="checkmark icon"></i>';
-//    window.location=confirmURL;
-
-    var ask=confirm("Do you really want to buy \""+ itemName + "\" for " + itemPrice +"€?");
-    if(ask){
-     window.location=confirmURL;
-    }
-}
 </script>
 </body>
 </html>

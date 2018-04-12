@@ -25,13 +25,21 @@ def main():
     minTag = len(tagsHours)
     maxTag = 0
 
-    # Info for Coffe
-    for itemID, t in enumerate(range(4), 1):
+
+    allItems = item.query.filter(item.name != None , item.name != '')
+    allItemID = [int(instance.itemid) for instance in allItems]
+
+    # Info for Coffee
+    for itemID in allItemID:
         histogram = db.session.query(history.itemid, history.date, history.userid). \
             filter(history.itemid == itemID).all()
 
         # Info item on weekhours
-        histogramHours = [x[1].time().replace(minute=0, second=0, microsecond=0) for x in histogram]
+        histogramHours = list()
+        for x in histogram:
+            if x[1] is not None:
+                histogramHours.append(x[1].time().replace(minute=0, second=0, microsecond=0))
+
         bla = list(sorted(Counter(histogramHours).items()))
         timeStamp = [x[0].strftime('%H:%M') for x in bla]
 
@@ -51,7 +59,7 @@ def main():
 
 
     # Info for Coffe
-    for itemID, t in enumerate(range(4),1):
+    for itemID in allItemID:
         # itemID = 4
 
         itemtmp = db.session.query(item.name).filter(item.itemid == itemID).one()
@@ -66,7 +74,12 @@ def main():
 
         # print(len(histogram))
         # Info item on weekday
-        histogramDays = [x[1].isoweekday() for x in histogram]
+
+        histogramDays = list()
+        for x in histogram:
+            if x[1] is not None:
+                histogramDays.append(x[1].isoweekday())
+
         bla = list(sorted(Counter(histogramDays).items()))
         amount = [0 for x in range(7)]
         for elem in bla:
@@ -79,7 +92,11 @@ def main():
         content[itemName]['amountDays'] = amount
 
         # Info item on weekhours
-        histogramHours = [x[1].time().replace(minute = 0,second=0,microsecond = 0) for x in histogram]
+        histogramHours = list()
+        for x in histogram:
+            if x[1] is not None:
+                histogramHours.append(x[1].time().replace(minute=0, second=0, microsecond=0))
+
         bla = list(sorted(Counter(histogramHours).items()))
         amount = [x[1] for x in bla]
         timeStamp = [x[0].strftime('%H:%M') for x in bla]
@@ -101,7 +118,11 @@ def main():
         content[itemName]['tagsHours'] = tagsHours
 
         # Info item on month
-        histogramMonth = [x[1].month for x in histogram]
+
+        histogramMonth = list()
+        for x in histogram:
+            if x[1] is not None:
+                histogramMonth.append(x[1].month)
         bla = list(sorted(Counter(histogramMonth).items()))
         timeStamp = [x for x in range(12)]
         # print(timeStamp)
