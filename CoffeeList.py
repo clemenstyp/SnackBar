@@ -443,7 +443,7 @@ class AnalyticsView(BaseView):
 
         for instance in user.query.filter(user.hidden != True):
 
-            initusers.append({'firstName': '{} {}'.format(instance.firstName,instance.lastName),
+            initusers.append({'name': '{} {}'.format(instance.firstName,instance.lastName),
                           'userid':'{}'.format(instance.userid),
                           'bill': restBill(instance.userid)})
 
