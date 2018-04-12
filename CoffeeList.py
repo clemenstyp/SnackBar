@@ -447,7 +447,7 @@ class AnalyticsView(BaseView):
                           'userid':'{}'.format(instance.userid),
                           'bill': restBill(instance.userid)})
 
-        users = sorted(initusers, key=lambda k: k['firstName'])
+        users = sorted(initusers, key=lambda k: k['name'])
 
         return self.render('admin/test.html',users = users)
 
