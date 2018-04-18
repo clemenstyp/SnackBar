@@ -886,6 +886,8 @@ def sendEmail(curuser, curitem):
         mymail.sender = settingsFor('mailSender')
         mymail.servername = settingsFor('mailServer')
         # start html body. Here we add a greeting.
+
+        time = datetime.now().time().strftime('%Y-%m-%d %H:%M')
         mymail.htmladd(
             'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! <br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
                 curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
@@ -897,6 +899,10 @@ def sendEmail(curuser, curitem):
         # add image chart title
         # attach another file
         mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settingsFor('snackAdmin')))
+
+        mymail.htmladd('<br><br>Registered at: {}'.format(time))
+
+
         #mymail.addattach([os.path.join(fullpath, filename)])
         # send!
         #print(mymail.htmlbody)
