@@ -88,8 +88,7 @@ def main():
         # amount = [x[1] for x in bla]
         timeStamp = [x[0] for x in bla]
         timeStamp = [x+1 for x in range(7)]
-        content[itemName]['tagsDays'] = ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday' ]
-        #content[itemName]['tagsDays'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        content[itemName]['tagsDays'] = ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday' ,'Saturday' , 'Sunday' ]
         content[itemName]['amountDays'] = amount
 
         # Info item on weekhours

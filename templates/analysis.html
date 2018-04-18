@@ -101,7 +101,8 @@ var chart = new Chart(ctx, {
     type: 'bar',
     // The data for our dataset
     data: {
-        labels: ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday' ,'Saturday' , 'Sunday' ],
+        //labels: ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday' ,'Saturday' , 'Sunday' ],
+        labels: ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday'],
         datasets: [
         {% for key, value in content.items() %}
         {
