@@ -1,6 +1,6 @@
 # coding: utf-8
 from sqlalchemy import *
-from CoffeeList import makeXLSBill,user,restBill
+from SnackBar import makeXLSBill,user,restBill
 from datetime import datetime
 from sendEmail import Bimail
 import os

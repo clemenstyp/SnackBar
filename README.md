@@ -16,7 +16,7 @@ pip install --user -r requirements.txt
 * You can change the userList.csv as shown in the template. These users will be imported, when a database is created. You can add or remove useres at a later time
 * Standard items will be created at start. You can change the price and names in the admin panel later.
 
-* To start the CoffeeList with the folowing command:
+* To start the SnackBar with the folowing command:
 
 ```
 python SnackBar.py --port 8000
@@ -39,7 +39,7 @@ password: admin
 
 # Screenshots
 
-![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/overview.png)
-![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/buy.png)
-![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/user.png)
-![alt tag](https://github.com/clemenstyp/CoffeeList/raw/master/screenshots/bill.png)
+![alt tag](https://github.com/clemenstyp/SnackBar/raw/master/screenshots/overview.png)
+![alt tag](https://github.com/clemenstyp/SnackBar/raw/master/screenshots/buy.png)
+![alt tag](https://github.com/clemenstyp/SnackBar/raw/master/screenshots/user.png)
+![alt tag](https://github.com/clemenstyp/SnackBar/raw/master/screenshots/bill.png)
