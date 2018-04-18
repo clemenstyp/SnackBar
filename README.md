@@ -1,4 +1,4 @@
-# CoffeeList
+# SnackBar
 
 This is a web app for a digital coffee list hosted on an IPad.
 
@@ -19,13 +19,13 @@ pip install --user -r requirements.txt
 * To start the CoffeeList with the folowing command:
 
 ```
-python CoffeeList.py --port 8000
+python SnackBar.py --port 8000
 ```
 
 * you can add --port and -- host to change port and host.
 
 ```
-python CoffeeList.py --host 127.0.1.1 --port 8000
+python SnackBar.py --host 127.0.1.1 --port 8000
 ```
 
 * The initial username and password for the admin interface are:
