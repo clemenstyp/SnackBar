@@ -36,7 +36,7 @@ app.config['SECRET_KEY'] = '123456790'
 app.config['STATIC_FOLDER'] = 'static'
 app.config['IMAGE_FOLDER'] = 'static/images'
 app.config['ICON_FOLDER'] = 'static/icons'
-app.config['DEBUG'] = True
+app.config['DEBUG'] = False
 
 
 db = SQLAlchemy(app)
