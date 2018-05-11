@@ -6,6 +6,7 @@ from datetime import datetime
 
 import smtplib
 import mimetypes
+import email.utils
 from email.mime.multipart import MIMEMultipart
 from email import encoders
 from email.message import Message
@@ -37,6 +38,8 @@ class Bimail:
             self.attach(msg)
             # add html body after attachments
         msg.attach(MIMEText(self.htmlbody, 'html'))
+        if msg.get('Date', None) is None:
+            msg['Date'] = email.utils.formatdate()
         # send
         s = smtplib.SMTP(self.servername)
         #s.starttls()
