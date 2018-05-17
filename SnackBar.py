@@ -931,7 +931,25 @@ def analysis():
     content, tagsHoursLabels = main()
     return render_template('analysis.html', content = content, tagsHoursLabels = tagsHoursLabels)
 
+@app.route('/changeImage', methods=(['POST']))
+def changeImage():
+	with app.app_context():
+		filename = ''
+		if 'image' in request.files:
+			file = request.files['image']
+			if file.filename != '' and allowed_file(file.filename):
+				filename = secure_filename(file.filename)
+				fullPath = os.path.join(app.config['IMAGE_FOLDER'], filename)
+				file.save(fullPath)
 
+				userid = request.form["userid"]
+				currentUser = user.query.get(userid)
+				currentUser.imageName = filename
+
+				db.session.commit()
+
+	return redirect(url_for('initial'))
+    
 def build_sample_db():
     db.drop_all()
     db.create_all()
