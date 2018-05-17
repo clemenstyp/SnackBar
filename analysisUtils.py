@@ -95,7 +95,7 @@ def main():
         histogramHours = list()
         for x in histogram:
             if x[1] is not None:
-                histogramHours.append(x[1].time().replace(minute=0, second=0, microsecond=0))
+                histogramHours.append(x[1].time().replace(minute=30, second=0, microsecond=0))
 
         bla = list(sorted(Counter(histogramHours).items()))
         amount = [x[1] for x in bla]
