@@ -103,7 +103,7 @@ def main():
         histogramHours = list()
         for x in histogram:
             if x[1] is not None:
-                histogramHours.append(x[1].time().replace(minute=00, second=0, microsecond=0))
+                histogramHours.append(x[1].time().replace(minute=30, second=0, microsecond=0))
 
         bla = list(sorted(Counter(histogramHours).items()))
         amount = [x[1] for x in bla]
@@ -114,7 +114,7 @@ def main():
         # print(timeStamp)
         # print(amount)
 
-        amountRaw = [None for x in range(len(tagsHours))]
+        amountRaw = ['-' for x in range(len(tagsHours))]
 
         for j,elem in enumerate(timeStamp):
             amountRaw[tagsHours.index(elem)] = amount[j]
