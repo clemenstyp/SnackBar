@@ -19,9 +19,16 @@ def main():
     #print('Number of users is: {}'.format(noUsers))
     content = dict()
 
-    tagsHours = ['00:30', '01:30', '02:30', '03:30', '04:30', '05:30', '06:30', '07:30', '08:30', '09:30', '10:30',
-                 '11:30', '12:30', '13:30', '14:30', '15:30', '16:30', '17:30', '18:30', '19:30', '20:30', '21:30',
-                 '22:30', '23:30', '24:30']
+    tagsHours = ['00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00', '03:30', '04:00', '04:30',
+                       '05:00', '05:30', '06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+                       '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+                       '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
+                       '20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00', '23:30', '24:00']
+
+    tagsHoursLabels = ['00:00', '', '01:00', '', '02:00', '', '03:00', '', '04:00', '', '05:00', '', '06:00', '',
+                       '07:00', '', '08:00', '', '09:00', '', '10:00', '', '11:00', '', '12:00', '', '13:00', '',
+                       '14:00', '', '15:00', '', '16:00', '', '17:00', '', '18:00', '', '19:00', '', '20:00', '',
+                       '21:00', '', '22:00', '', '23:00', '', '24:00']
     minTag = len(tagsHours)
     maxTag = 0
 
@@ -38,7 +45,7 @@ def main():
         histogramHours = list()
         for x in histogram:
             if x[1] is not None:
-                histogramHours.append(x[1].time().replace(minute=30, second=0, microsecond=0))
+                histogramHours.append(x[1].time().replace(minute=00, second=0, microsecond=0))
 
         bla = list(sorted(Counter(histogramHours).items()))
         timeStamp = [x[0].strftime('%H:%M') for x in bla]
@@ -56,6 +63,7 @@ def main():
 
     if minTag < maxTag:
         tagsHours = tagsHours[minTag:maxTag]
+        tagsHoursLabels = tagsHoursLabels[minTag:maxTag]
 
 
     # Info for Coffe
@@ -95,7 +103,7 @@ def main():
         histogramHours = list()
         for x in histogram:
             if x[1] is not None:
-                histogramHours.append(x[1].time().replace(minute=30, second=0, microsecond=0))
+                histogramHours.append(x[1].time().replace(minute=00, second=0, microsecond=0))
 
         bla = list(sorted(Counter(histogramHours).items()))
         amount = [x[1] for x in bla]
@@ -109,7 +117,7 @@ def main():
         amountRaw = [0 for x in range(len(tagsHours))]
 
         for j,elem in enumerate(timeStamp):
-            amountRaw[tagsHours.index(elem)] = amount[j] 
+            amountRaw[tagsHours.index(elem)] = amount[j]
         
         # print(tagsHours)
         # print(amountRaw)
@@ -132,7 +140,7 @@ def main():
         content[itemName]['amountMonth'] = amount
         content[itemName]['tagsMonth'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    return (content, tagsHours)
+    return (content, tagsHoursLabels)
 
 
 if __name__ == "__main__":
