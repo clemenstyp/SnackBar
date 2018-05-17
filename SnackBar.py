@@ -928,7 +928,7 @@ def change(userid):
 @app.route('/analysis')
 def analysis():
     from analysisUtils import main
-    content, tagsHours = main()
+    content, tagsHoursLabels = main()
     return render_template('analysis.html', content = content, tagsHoursLabels = tagsHoursLabels)
 
 
