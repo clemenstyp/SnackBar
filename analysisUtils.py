@@ -114,7 +114,7 @@ def main():
         # print(timeStamp)
         # print(amount)
 
-        amountRaw = ['-' for x in range(len(tagsHours))]
+        amountRaw = [None for x in range(len(tagsHours))]
 
         for j,elem in enumerate(timeStamp):
             amountRaw[tagsHours.index(elem)] = amount[j]

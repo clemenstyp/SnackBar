@@ -216,6 +216,7 @@ var chart = new Chart(ctx, {
             borderColor:default_colors[{{loop.index}}],
             fill: false,
             data: {{value["amountHours"]|tojson}},
+            spanGaps : true,
         },
         {% endfor %}
         ]
