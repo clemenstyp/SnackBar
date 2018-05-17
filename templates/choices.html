@@ -131,7 +131,7 @@
 
         <div class="ui divider"></div>
 
-        <div class="container ui raised segment">
+        <div class="container ui raised segment" id = "changeImage">
 
             <form class="ui form" method="POST" action="{{ url_for('changeImage') }}" enctype="multipart/form-data">
             <h4 class="ui dividing header">Change Image</h4>
@@ -206,6 +206,10 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
     return;
 }
 
+function displayChangeImage (canChangeImage) {
+    $( "#changeImage" ).toggle(canChangeImage === "true");
+}
+displayChangeImage('{{canChangeImage}}')
 idleOpenURL(20, '{{ url_for('initial') }}');
 
 </script>

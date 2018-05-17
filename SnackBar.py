@@ -38,7 +38,6 @@ app.config['IMAGE_FOLDER'] = 'static/images'
 app.config['ICON_FOLDER'] = 'static/icons'
 app.config['DEBUG'] = False
 
-
 db = SQLAlchemy(app)
 
 if not os.path.exists(app.config['IMAGE_FOLDER']):
@@ -823,13 +822,14 @@ def userPage(userid):
 
     noUsers = user.query.filter(user.hidden != True).count()
     currbill = restBill(userid)
-
+    canChangeImage = settingsFor('usersCanChangeImage')
     return render_template('choices.html',
                            currbill = currbill,
                            chosenuser = userName,
                            userid = userid,
                            items = items,
                            noOfUsers = noUsers,
+                           canChangeImage = canChangeImage
                            )
 
 def sendEmailNewUser(curuser):
@@ -1035,6 +1035,7 @@ import time
 import threading
 from flaskrun import flaskrun
 
+
 def run_schedule():
     while 1:
         schedule.run_pending()
@@ -1053,5 +1054,6 @@ if __name__ == "__main__":
     # app.run()
     #app.run(host='0.0.0.0', port=5000, debug=False)
     flaskrun(app)
+
 
 
