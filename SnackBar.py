@@ -41,7 +41,8 @@ app.config['DEBUG'] = False
 
 db = SQLAlchemy(app)
 
-
+if not os.path.exists(app.config['IMAGE_FOLDER']):
+    os.makedirs(app.config['IMAGE_FOLDER'])
 
 def settingsFor(key):
     dbEntry = db.session.query(settings).filter_by(key=key).first()
