@@ -929,7 +929,7 @@ def change(userid):
 def analysis():
     from analysisUtils import main
     content, tagsHours = main()
-    return render_template('analysis.html', content = content, tagsHours = tagsHours)
+    return render_template('analysis.html', content = content, tagsHoursLabels = tagsHoursLabels)
 
 
 def build_sample_db():
