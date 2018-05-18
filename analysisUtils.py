@@ -123,12 +123,18 @@ def main():
 
         for j,elem in enumerate(timeStamp):
             amountRaw[tagsHours.index(elem)] = amount[j]
-        
+
+
+        amountRawFull = ['0' for x in range(len(tagsHoursFull))]
+
+        for j,elem in enumerate(amountRaw):
+            amountRawFull[tagsHoursFull.index(elem)] = amount[j]
+
         # print(tagsHours)
         # print(amountRaw)
 
-        content[itemName]['amountHours'] = amountRaw
-        content[itemName]['tagsHours'] = tagsHours
+        content[itemName]['amountHours'] = amountRawFull
+        content[itemName]['tagsHours'] = tagsHoursFull
 
         # Info item on month
 

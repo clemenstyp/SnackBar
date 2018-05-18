@@ -216,7 +216,6 @@ var chart = new Chart(ctx, {
             borderColor:default_colors[{{loop.index}}],
             fill: false,
             data: {{value["amountHours"]|tojson}},
-            spanGaps : true,
         },
         {% endfor %}
         ]
@@ -226,6 +225,7 @@ var chart = new Chart(ctx, {
     options : {
         responsive: true,
         animation: false,
+        spanGaps : true,
         title:{
                 display:true,
                 text:"Hourly analysis"
