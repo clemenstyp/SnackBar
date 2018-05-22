@@ -109,7 +109,7 @@ def main():
             after = timeStamp.replace(minute=0, second=0, microsecond=0, month=1, day=1, year=2000)
             after = after + timedelta(hours=1)
 
-            if before is not hourAfter and hourAfter is not None:
+            if before != hourAfter and hourAfter is not None:
                 allMinuteCoffee.append((hourAfter, 0))
                 allMinuteCoffee.append((before,0))
 
@@ -140,7 +140,7 @@ def main():
             timeString = timeStamp.strftime('%H:%M')
             amountPoints.append({'y': element[1], 'x': timeString})
 
-        print(amountPoints)
+        # print(amountPoints)
         # print(amountRaw)
 
 
