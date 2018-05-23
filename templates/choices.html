@@ -129,6 +129,21 @@
             </table>
         </div>
 
+        <div class="ui divider"></div>
+
+        <div class="container ui raised segment" id = "changeImage">
+
+            <form class="ui form" method="POST" action="{{ url_for('changeImage') }}" enctype="multipart/form-data">
+            <h4 class="ui dividing header">Change Image</h4>
+            <input type="hidden" id="userid" name="userid" value="{{userid}}">
+                <div class="field">
+                <label>Image</label>
+                   <input type="file" name="image">
+                </div>
+                <button class="ui button" type="submit">Change Image</button>
+            </form>
+        </div>
+
 <script type="text/javascript">
 function idleOpenURL(timeout, url) {
     var t;
@@ -191,6 +206,10 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
     return;
 }
 
+function displayChangeImage (canChangeImage) {
+    $( "#changeImage" ).toggle(canChangeImage === "true");
+}
+displayChangeImage('{{canChangeImage}}')
 idleOpenURL(20, '{{ url_for('initial') }}');
 
 </script>

@@ -38,10 +38,10 @@ app.config['IMAGE_FOLDER'] = 'static/images'
 app.config['ICON_FOLDER'] = 'static/icons'
 app.config['DEBUG'] = False
 
-
 db = SQLAlchemy(app)
 
-
+if not os.path.exists(app.config['IMAGE_FOLDER']):
+    os.makedirs(app.config['IMAGE_FOLDER'])
 
 def settingsFor(key):
     dbEntry = db.session.query(settings).filter_by(key=key).first()
@@ -822,13 +822,14 @@ def userPage(userid):
 
     noUsers = user.query.filter(user.hidden != True).count()
     currbill = restBill(userid)
-
+    canChangeImage = settingsFor('usersCanChangeImage')
     return render_template('choices.html',
                            currbill = currbill,
                            chosenuser = userName,
                            userid = userid,
                            items = items,
                            noOfUsers = noUsers,
+                           canChangeImage = canChangeImage
                            )
 
 def sendEmailNewUser(curuser):
@@ -931,7 +932,25 @@ def analysis():
     content, tagsHoursLabels = main()
     return render_template('analysis.html', content = content, tagsHoursLabels = tagsHoursLabels)
 
+@app.route('/changeImage', methods=(['POST']))
+def changeImage():
+	with app.app_context():
+		filename = ''
+		if 'image' in request.files:
+			file = request.files['image']
+			if file.filename != '' and allowed_file(file.filename):
+				filename = secure_filename(file.filename)
+				fullPath = os.path.join(app.config['IMAGE_FOLDER'], filename)
+				file.save(fullPath)
 
+				userid = request.form["userid"]
+				currentUser = user.query.get(userid)
+				currentUser.imageName = filename
+
+				db.session.commit()
+
+	return redirect(url_for('initial'))
+    
 def build_sample_db():
     db.drop_all()
     db.create_all()
@@ -1016,6 +1035,7 @@ import time
 import threading
 from flaskrun import flaskrun
 
+
 def run_schedule():
     while 1:
         schedule.run_pending()
@@ -1034,5 +1054,6 @@ if __name__ == "__main__":
     # app.run()
     #app.run(host='0.0.0.0', port=5000, debug=False)
     flaskrun(app)
+
 
 
