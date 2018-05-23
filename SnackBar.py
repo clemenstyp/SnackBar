@@ -842,7 +842,7 @@ def user_page(userid):
     can_change_image = settings_for('usersCanChangeImage')
 
     last_purchase = "-"
-    last_purchase_item = History.query.filter(History.userid == userid).order_by(History.date).first()
+    last_purchase_item = History.query.filter(History.userid == userid).order_by(History.date.desc()).first()
     if last_purchase_item is not None:
         last_purchase = last_purchase_item.date.strftime('%H:%M')
     return render_template('choices.html',
