@@ -25,7 +25,7 @@
             width: 170px;
             height: 190px;
         }
-        a.item-button {
+        a.Item-button {
             overflow: visible !important;
             margin:5px !important;
             display:inline-block;
@@ -63,16 +63,16 @@
         </div>
         <div class="items_container" >
 
-              {% for item in items %}
+              {% for Item in items %}
 
                 <div class="button_item">
-                    <a onclick="buyItem({{userid}}, {{item.itemid}}, '{{item.name}}', '{{'%0.2f'|format(item.price|round(2))}}', '{{ url_for('change', userid=userid, itemid=item.itemid) }}')"
-                       id="{{item.itemid}}"
+                    <a onclick="buyItem({{userid}}, {{Item.itemid}}, '{{Item.name}}', '{{'%0.2f'|format(Item.price|round(2))}}', '{{ url_for('change', userid=userid, itemid=Item.itemid) }}')"
+                       id="{{Item.itemid}}"
                        style = ""
                        href="#"
-                       class="ui massive button item-button">{{ item.name }} <br>
-                        <img src="{{url_for('icon',icon=item.icon)}}" class="circle">
-                        <br> {{'%0.2f'|format(item.price|round(2))}} €</a>
+                       class="ui massive button Item-button">{{ Item.name }} <br>
+                        <img src="{{url_for('icon',icon=Item.icon)}}" class="circle">
+                        <br> {{'%0.2f'|format(Item.price|round(2))}} €</a>
                 </div>
 
               {% endfor %}
@@ -82,6 +82,7 @@
 
         <div class="ui container" style="">
         <h2 class="ui center aligned header"> Your current balance is: <span  id="balance">{{'%0.2f'|format(currbill|round(2))}}</span>  €</h2>
+        <h4 class="ui center aligned"> Last purchase at: <span  id="last_purchase">{{last_purchase}}</span></h4>
         <button class="ui icon button"><a href="{{ url_for('initial') }}"><i class="huge arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
@@ -90,7 +91,7 @@
             <table class="ui center aligned celled table" style="width:800px;margin:50px auto">
                 <thead>
                     <tr>
-                        <th>item</th>
+                        <th>Item</th>
                         <th>rank</th>
                         <th> <i style = "color:green" class="caret up icon"></i></th>
                         <th> <i style = "color:red" class="caret down icon"></i></th>
@@ -100,28 +101,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in items %}
+                    {% for Item in items %}
                     <tr>
                         <td class = "collapsing">
-                            {{item.name}}
+                            {{Item.name}}
                         </td>
                         <td class = "collapsing">
-                            {{item.rank}}/{{noOfUsers}}
+                            {{Item.rank}}/{{noOfUsers}}
                         </td>
                         <td class = "collapsing">
-                            {{ item.ub if item.ub != None}}
+                            {{ Item.ub if Item.ub != None}}
                         </td>
                         <td class = "collapsing">
-                            {{ item.lb if item.lb != None}}
+                            {{ Item.lb if Item.lb != None}}
                         </td>
                         <td class="collapsing">
-                            {{'%0.2f'|format(item.price|round(2))}} €
+                            {{'%0.2f'|format(Item.price|round(2))}} €
                         </td>
                         <td class="collapsing">
-                            {{ item.count|itemstrikes }}
+                            {{ Item.count|itemstrikes }}
                         </td>
                         <td class="collapsing">
-                            {{ item.total }}
+                            {{ Item.total }}
                         </td>
                       </tr>
                     {% endfor %}
@@ -131,9 +132,9 @@
 
         <div class="ui divider"></div>
 
-        <div class="container ui raised segment" id = "changeImage">
+        <div class="container ui raised segment" id = "change_image">
 
-            <form class="ui form" method="POST" action="{{ url_for('changeImage') }}" enctype="multipart/form-data">
+            <form class="ui form" method="POST" action="{{ url_for('change_image') }}" enctype="multipart/form-data">
             <h4 class="ui dividing header">Change Image</h4>
             <input type="hidden" id="userid" name="userid" value="{{userid}}">
                 <div class="field">
@@ -143,7 +144,8 @@
                 <button class="ui button" type="submit">Change Image</button>
             </form>
         </div>
-
+        <br/>
+        <br/>
 <script type="text/javascript">
 function idleOpenURL(timeout, url) {
     var t;
@@ -194,6 +196,10 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
 
     document.getElementById('balance').innerHTML = balance.toFixed(2);
 
+    var date = new Date();
+
+    document.getElementById('last_purchase').innerHTML = date.getHours() + ":" + date.getMinutes()
+
     $.ajax({
         url: confirmURL,
         success: function(result){
@@ -207,7 +213,7 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
 }
 
 function displayChangeImage (canChangeImage) {
-    $( "#changeImage" ).toggle(canChangeImage === "true");
+    $( "#change_image" ).toggle(canChangeImage === "true");
 }
 displayChangeImage('{{canChangeImage}}')
 idleOpenURL(20, '{{ url_for('initial') }}');

@@ -1,172 +1,149 @@
 # coding: utf-8
-from sqlalchemy import *
-from sqlalchemy.orm import sessionmaker, load_only
-from sqlalchemy.sql import func
-from datetime import datetime, timedelta
-from SnackBar import history, user, inpayment, item, db
 from collections import Counter
-import os
-import csv
-import flask
+from datetime import timedelta
+
+from SnackBar import History, Item, db
+
+
 # from scipy.signal import savgol_filter
-import json
-import time
 
+
+# noinspection PyUnusedLocal
 def main():
-
     # get no of users
 
-    #noUsers = db.session.query(user).count()
-    #print('Number of users is: {}'.format(noUsers))
+    # noUsers = db.session.query(User).count()
+    # print('Number of users is: {}'.format(noUsers))
     content = dict()
 
-    tagsHours = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00',
-                 '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00',
-                 '22:00', '23:00']
-    minTag = len(tagsHours)
-    maxTag = 0
+    tags_hours = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00',
+                  '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00',
+                  '22:00', '23:00']
+    min_tag = len(tags_hours)
+    max_tag = 0
 
-
-    allItems = item.query.filter(item.name != None , item.name != '')
-    allItemID = [int(instance.itemid) for instance in allItems]
+    all_items = Item.query.filter(Item.name is not None, Item.name != '')
+    all_item_id = [int(instance.itemid) for instance in all_items]
 
     # Info for Coffee
-    for itemID in allItemID:
-        histogram = db.session.query(history.itemid, history.date, history.userid). \
-            filter(history.itemid == itemID).all()
+    for itemID in all_item_id:
+        histogram = db.session.query(History.itemid, History.date, History.userid). \
+            filter(History.itemid == itemID).all()
 
-        # Info item on weekhours
-        histogramHours = list()
+        # Info Item on weekhours
+        histogram_hours = list()
         for x in histogram:
             if x[1] is not None:
-                histogramHours.append(x[1].time().replace(minute=0, second=0, microsecond=0))
+                histogram_hours.append(x[1].time().replace(minute=0, second=0, microsecond=0))
 
-        bla = list(sorted(Counter(histogramHours).items()))
-        timeStamp = [x[0].strftime('%H:%M') for x in bla]
+        bla = list(sorted(Counter(histogram_hours).items()))
+        time_stamp = [x[0].strftime('%H:%M') for x in bla]
 
-        for j, elem in enumerate(timeStamp):
-            index = tagsHours.index(elem)
-            minTag = min(minTag, index)
-            maxTag = max(maxTag, index)
+        for j, elem in enumerate(time_stamp):
+            index = tags_hours.index(elem)
+            min_tag = min(min_tag, index)
+            max_tag = max(max_tag, index)
 
-    minTag = max(minTag -1 , 0)
-    maxTag = min(maxTag + 2, len(tagsHours))
+    min_tag = max(min_tag - 1, 0)
+    max_tag = min(max_tag + 2, len(tags_hours))
 
-    minTag = min(minTag, 9)
-    maxTag = max(maxTag, 17)
+    min_tag = min(min_tag, 9)
+    max_tag = max(max_tag, 17)
 
-    if minTag < maxTag:
-        tagsHours = tagsHours[minTag:maxTag]
-
+    if min_tag < max_tag:
+        tags_hours = tags_hours[min_tag:max_tag]
 
     # Info for Coffe
-    for itemID in allItemID:
+    for itemID in all_item_id:
         # itemID = 4
 
-        itemtmp = db.session.query(item.name).filter(item.itemid == itemID).one()
-        itemName = itemtmp[0]
+        itemtmp = db.session.query(Item.name).filter(Item.itemid == itemID).one()
+        item_name = itemtmp[0]
 
-
-        content[itemName] = dict()
-        histogram = db.session.query(history.itemid, history.date, history.userid).\
-                                filter(history.itemid == itemID).all()
-        #print("Total number of consumed {} is : {}".format(itemName,len(histogram)))
-        content[itemName]['total'] = len(histogram)
+        content[item_name] = dict()
+        histogram = db.session.query(History.itemid, History.date, History.userid). \
+            filter(History.itemid == itemID).all()
+        # print("Total number of consumed {} is : {}".format(itemName,len(histogram)))
+        content[item_name]['total'] = len(histogram)
 
         # print(len(histogram))
-        # Info item on weekday
+        # Info Item on weekday
 
-        histogramDays = list()
+        histogram_days = list()
         for x in histogram:
             if x[1] is not None:
-                histogramDays.append(x[1].isoweekday())
+                histogram_days.append(x[1].isoweekday())
 
-        bla = list(sorted(Counter(histogramDays).items()))
+        bla = list(sorted(Counter(histogram_days).items()))
+        # noinspection PyUnusedLocal
         amount = [0 for x in range(7)]
         for elem in bla:
-            amount[elem[0]-1] = elem[1]
+            amount[elem[0] - 1] = elem[1]
 
         # amount = [x[1] for x in bla]
-        timeStamp = [x[0] for x in bla]
-        timeStamp = [x+1 for x in range(7)]
-        content[itemName]['tagsDays'] = ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday' ,'Saturday' , 'Sunday' ]
-        content[itemName]['amountDays'] = amount
+        time_stamp = [x[0] for x in bla]
+        time_stamp = [x + 1 for x in range(7)]
+        content[item_name]['tagsDays'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        content[item_name]['amountDays'] = amount
 
-        # Info item on weekhours
-        histogramMinutes = list()
+        # Info Item on weekhours
+        histogram_minutes = list()
         for x in histogram:
             if x[1] is not None:
-                histogramMinutes.append(x[1].replace(minute=30, second=0, microsecond=0, month=1, day=1, year = 2000))
+                histogram_minutes.append(x[1].replace(minute=30, second=0, microsecond=0, month=1, day=1, year=2000))
 
-        histogramMinutesSorted = list(sorted(Counter(histogramMinutes).items()))
+        histogram_minutes_sorted = list(sorted(Counter(histogram_minutes).items()))
 
-        allMinuteCoffee = list()
-        hourAfter = None
+        all_minute_coffee = list()
+        hour_after = None
 
-        for j, element in enumerate(histogramMinutesSorted):
-            timeStamp = element[0]
-            before = timeStamp.replace(minute=0, second=0, microsecond=0, month=1, day=1, year=2000)
-            after = timeStamp.replace(minute=0, second=0, microsecond=0, month=1, day=1, year=2000)
+        for j, element in enumerate(histogram_minutes_sorted):
+            time_stamp = element[0]
+            before = time_stamp.replace(minute=0, second=0, microsecond=0, month=1, day=1, year=2000)
+            after = time_stamp.replace(minute=0, second=0, microsecond=0, month=1, day=1, year=2000)
             after = after + timedelta(hours=1)
 
-            if before != hourAfter and hourAfter is not None:
-                allMinuteCoffee.append((hourAfter, 0))
-                allMinuteCoffee.append((before,0))
+            if before != hour_after and hour_after is not None:
+                all_minute_coffee.append((hour_after, 0))
+                all_minute_coffee.append((before, 0))
 
-            if hourAfter is None:
-                allMinuteCoffee.append((before,0))
+            if hour_after is None:
+                all_minute_coffee.append((before, 0))
 
-            hourAfter = after
-            allMinuteCoffee.append((timeStamp,element[1]))
+            hour_after = after
+            all_minute_coffee.append((time_stamp, element[1]))
 
+        if hour_after is not None:
+            all_minute_coffee.append((hour_after, 0))
 
-        if hourAfter is not None:
-            allMinuteCoffee.append((hourAfter, 0))
-
-
-        #amount = [x[1] for x in bla]
-        #timeStamp = [x[0].strftime('%H:%M') for x in bla]
-        # amountFiltered = savgol_filter(amount,51,3).tolist()
-        # print(amountFiltered[0::2])
-        # print(timeStamp[0::2])
-        # print(timeStamp)
-        # print(amount)
-
-
-
-        amountPoints = []
-        for j,element in enumerate(allMinuteCoffee):
-            timeStamp = element[0]
-            timeString = timeStamp.strftime('%H:%M')
-            amountPoints.append({'y': element[1], 'x': timeString})
+        amount_points = []
+        for j, element in enumerate(all_minute_coffee):
+            time_stamp = element[0]
+            time_string = time_stamp.strftime('%H:%M')
+            amount_points.append({'y': element[1], 'x': time_string})
 
         # print(amountPoints)
         # print(amountRaw)
 
+        content[item_name]['amountPoints'] = amount_points
 
-        content[itemName]['amountPoints'] = amountPoints
+        # Info Item on month
 
-        # Info item on month
-
-        histogramMonth = list()
+        histogram_month = list()
         for x in histogram:
             if x[1] is not None:
-                histogramMonth.append(x[1].month)
-        bla = list(sorted(Counter(histogramMonth).items()))
-        timeStamp = [x for x in range(12)]
-        # print(timeStamp)
+                histogram_month.append(x[1].month)
+        bla = list(sorted(Counter(histogram_month).items()))
+        time_stamp = [x for x in range(12)]
         amount = [0 for x in range(12)]
         for elem in bla:
-            amount[elem[0]-1] = elem[1]
-        content[itemName]['amountMonth'] = amount
-        content[itemName]['tagsMonth'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            amount[elem[0] - 1] = elem[1]
+        content[item_name]['amountMonth'] = amount
+        content[item_name]['tagsMonth'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
+                                           'Dec']
 
-    return (content, tagsHours)
+    return content, tags_hours
 
 
 if __name__ == "__main__":
     main()
-
-
-
-

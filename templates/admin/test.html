@@ -12,14 +12,14 @@
         </tr>
     </thead>
     <tbody>
-      {% for user in users %}
+      {% for User in users %}
 
         <tr>
             <td>
-              {{ user.name }}
+              {{ User.name }}
             </td>
             <td>
-              {{ '%0.2f'|format(user.bill) }}
+              {{ '%0.2f'|format(User.bill) }}
             </td>
 
         </tr>

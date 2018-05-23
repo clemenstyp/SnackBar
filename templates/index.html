@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent black">
     <link rel="apple-touch-icon" href="/static/app_icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
     <script src="/static/stay_standalone.js" type="text/javascript"></script>
@@ -82,67 +82,73 @@
             width:160px !important;
             height:60px !important;
         }
+
     </style>
 
 </head>
 
 <body>
-        <div class = "container">
-                <div class="ui text container" style = "margin-top:30px">
-              <h2 class="ui center aligned dividing header">
-                Name:
-                  <a href="{{url_for('sort',sorting='az')}}">
-                      {% if current_sorting == 'az' %}<i class="sort alphabet ascending icon"></i>{% else %}<i class="sort alphabet ascending icon black"></i>{% endif %}
-                  </a>
-                <a href="{{url_for('sort',sorting='za')}}">
-                    {% if current_sorting == 'za' %}<i class="sort alphabet descending icon"></i>{% else %}<i class="sort alphabet descending icon black"></i>{% endif %}
-                 </a>
-               &nbsp;&nbsp; |  &nbsp;&nbsp; Coffee:
-                <a href="{{url_for('sort',sorting='coffee91')}}">
-                    {% if current_sorting == 'coffee91' %}<i class="sort numeric descending icon"></i>{% else %}<i class="sort numeric descending icon black"></i>{% endif %}
-                </a>
-                <a href="{{url_for('sort',sorting='coffee19')}}">
-                    {% if current_sorting == 'coffee19' %}<i class="sort numeric ascending icon"></i>{% else %}<i class="sort numeric ascending icon black"></i>{% endif %}
-                </a>
-              </h2>
+<div class="container">
+    <div class="ui text container" style="margin-top:30px">
+        <h2 class="ui center aligned dividing header">
+            Name:
+            <a href="{{url_for('sort',sorting='az')}}">
+                {% if current_sorting == 'az' %}<i class="sort alphabet ascending icon"></i>{% else %}<i
+                    class="sort alphabet ascending icon black"></i>{% endif %}
+            </a>
+            <a href="{{url_for('sort',sorting='za')}}">
+                {% if current_sorting == 'za' %}<i class="sort alphabet descending icon"></i>{% else %}<i
+                    class="sort alphabet descending icon black"></i>{% endif %}
+            </a>
+            &nbsp;&nbsp; | &nbsp;&nbsp; Coffee:
+            <a href="{{url_for('sort',sorting='coffee91')}}">
+                {% if current_sorting == 'coffee91' %}<i class="sort numeric descending icon"></i>{% else %}<i
+                    class="sort numeric descending icon black"></i>{% endif %}
+            </a>
+            <a href="{{url_for('sort',sorting='coffee19')}}">
+                {% if current_sorting == 'coffee19' %}<i class="sort numeric ascending icon"></i>{% else %}<i
+                    class="sort numeric ascending icon black"></i>{% endif %}
+            </a>
+        </h2>
+    </div>
+    <br>
+    <div class="ui divider" style="clear:both"></div>
+    <div class="buttons_container">
+        {% for User in users %}
+        <div class="button_user">
+            {% for Item in User.leader %}
+            <img class="flag" id="Item{{Item.item_id}}User{{User.id}}" style="right: {{Item.position}}px"
+                 src="{{url_for('icon',icon=Item.icon)}}"/>
+            {% endfor %}
+            <a href="{{url_for('user_page',userid=User.id)}}" id="User{{User.id}}" class="ui coffee-button huge button"
+               style="color:{{User.fontcolor}};
+                            background-color:{{ User.bgcolor }}">
+                <span class="imageBorder"><img src="{{url_for('image',filename=User.imageName)}}" class="circle"></span>
+                <span class="textBorder">{{ User.firstName }}<br>{{ User.lastName }}</span>
+            </a>
         </div>
-            <br>
-             <div class="ui divider" style="clear:both"></div>
-            <div class="buttons_container">
-                {% for user in users %}
-                <div class="button_user" >
-                      {% for item in user.leader %}
-                        <img class="flag" id="item{{item.itemID}}user{{user.id}}" style="right: {{item.position}}px" src="{{url_for('icon',icon=item.icon)}}" />
-                      {% endfor %}
-                    <a href="{{url_for('userPage',userid=user.id)}}" id="user{{user.id}}" class="ui coffee-button huge button"
-                     style="color:{{user.fontcolor}};
-                            background-color:{{ user.bgcolor }}">
-                         <span class="imageBorder"><img src="{{url_for('image',filename=user.imageName)}}" class="circle"></span>
-                        <span class="textBorder">{{ user.firstName }}<br>{{ user.lastName }}</span>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
+        {% endfor %}
+    </div>
 
-            <div class="ui divider" style="clear:both"></div>
-              <p style="text-align:center;margin:50px auto">
-                <a href="{{url_for('analysis')}}"><i class="huge bar chart icon"></i></a>
-              </p>
-                 <p style="text-align:center;margin:50px auto">
-                <a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
-                   <a href="{{url_for('adduser')}}"><i class="huge add icon"></i></a>
-              </p>
+    <div class="ui divider" style="clear:both"></div>
+    <p style="text-align:center;margin:50px auto">
+        <a href="{{url_for('analysis')}}"><i class="huge bar chart icon"></i></a>
+    </p>
+    <p style="text-align:center;margin:50px auto">
+        <a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
+        <a href="{{url_for('adduser')}}"><i class="huge add icon"></i></a>
+    </p>
 
 
-             <div class="ui divider" style="clear:both">
-              <p style="text-align:center;margin:50px auto">
-                  Fork SnackBar on <a  target="_blank" href="https://github.com/clemenstyp/SnackBar">GitHub (github.com/clemenstyp/SnackBar)</a>
-              </p>
+    <div class="ui divider" style="clear:both">
+        <p style="text-align:center;margin:50px auto">
+            Fork SnackBar on <a target="_blank" href="https://github.com/clemenstyp/SnackBar">GitHub
+            (github.com/clemenstyp/SnackBar)</a>
+        </p>
 
-                 <br/>
-            </div>
-
-
+        <br/>
+    </div>
+</div>
 
 
 </body>
@@ -153,6 +159,7 @@
         $('body').css('background-color','#ccc');
         // $('body').css('background-color','green');
     });
+
 </script>
 
 </html>

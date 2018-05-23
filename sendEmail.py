@@ -1,18 +1,14 @@
 # coding: utf-8
 #  to query:
-import sys
-import ast
-from datetime import datetime
-
-import smtplib
-import mimetypes
 import email.utils
-from email.mime.multipart import MIMEMultipart
+import mimetypes
+import smtplib
+from datetime import datetime
 from email import encoders
-from email.message import Message
 from email.mime.audio import MIMEAudio
 from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
@@ -42,8 +38,8 @@ class Bimail:
             msg['Date'] = email.utils.formatdate()
         # send
         s = smtplib.SMTP(self.servername)
-        #s.starttls()
-        #s.login(self.sender, self.senderpass)
+        # s.starttls()
+        # s.login(self.sender, self.senderpass)
         s.sendmail(self.sender, self.recipients, msg.as_string())
         # test
         # print(msg)
@@ -94,8 +90,8 @@ if __name__ == '__main__':
     mymail = Bimail(' ' + datetime.now().strftime('%Y/%m/%d'), ['recipient@provider.com'])
     # start html body. Here we add a greeting.
     mymail.htmladd('Add html text')
-    # Further things added to body are separated by a paragraph, so you do not need to worry about newlines for new sentences
-    # here we add a line of text and an html table previously stored in the variable
+    # Further things added to body are separated by a paragraph, so you do not need to worry about
+    # newlines for new sentences here we add a line of text and an html table previously stored in the variable
     # add image chart title
     # attach another file
     mymail.addattach(['attachedfile.txt'])
