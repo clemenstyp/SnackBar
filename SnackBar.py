@@ -844,7 +844,7 @@ def user_page(userid):
     last_purchase = "-"
     last_purchase_item = History.query.filter(History.userid == userid).order_by(History.date.desc()).first()
     if last_purchase_item is not None:
-        last_purchase = last_purchase_item.date.strftime('%H:%M')
+        last_purchase = last_purchase_item.date.strftime('%Y-%m-%d %H:%M')
     return render_template('choices.html',
                            currbill=currbill,
                            chosenuser=user_name,
