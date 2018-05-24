@@ -71,7 +71,7 @@
                        style = ""
                        href="#"
                        class="ui massive button Item-button">{{ Item.name }} <br>
-                        <img src="{{url_for('icon',icon=Item.icon)}}" class="circle">
+                        <img src="{{url_for('get_icon',icon=Item.icon)}}" class="circle">
                         <br> {{'%0.2f'|format(Item.price|round(2))}} €</a>
                 </div>
 

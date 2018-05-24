@@ -793,12 +793,12 @@ def image(filename):
 
 @app.route('/icon/')
 def default_icon():
-    return icon(None)
+    return get_icon(None)
 
 
 @app.route('/icon/<icon>')
-def icon(an_icon):
-    return image_from_folder(an_icon, app.config['ICON_FOLDER'], "static/unknown_icon.svg")
+def get_icon(icon):
+    return image_from_folder(icon, app.config['ICON_FOLDER'], "static/unknown_icon.svg")
 
 
 def image_from_folder(filename, image_folder, the_default_image):
