@@ -110,33 +110,11 @@
         <div class="ui divider"></div>
         <!-- <div class="ct-chart"></div> -->
 
-
+<script src="/static/idleTimer.js"></script>
 <script type="text/javascript">
-function idleOpenURL(timeout, url) {
-    var t;
 
-    window.onload = resetTimer;
-    window.onmousemove = resetTimer;
-    window.onmousedown = resetTimer; // catches touchscreen presses
-    window.ontouchstart = resetTimer;
-    window.onclick = resetTimer;     // catches touchpad clicks
-    window.onscroll = resetTimer;    // catches scrolling with arrow keys
-    window.onkeypress = resetTimer;
-
-    function logout() {
-        //alert("You are now logged out. " + url)
-        //location.href = 'logout.php'
-        window.location.href= url
-    }
-
-    function resetTimer() {
-        clearTimeout(t);
-        t = setTimeout(logout, timeout * 1000)
-        // 1000 milisec = 1 sec
-    }
-};
-
-idleOpenURL(60, '{{ url_for('initial') }}');
+var idleTimer = new IdleTimerOpenURL();
+idleTimer.setupTimer(60, '{{ url_for('initial') }}');
 
 </script>
 </body>

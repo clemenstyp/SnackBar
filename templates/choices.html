@@ -83,6 +83,7 @@
         <div class="ui container" style="">
         <h2 class="ui center aligned header"> Your current balance is: <span  id="balance">{{'%0.2f'|format(currbill|round(2))}}</span>  €</h2>
         <h4 class="ui center aligned"> Last purchase at: <span  id="last_purchase">{{last_purchase}}</span></h4>
+       <!-- <p>timeout in <span  id="timeout_in_top"></span></p>-->
         <button class="ui icon button"><a href="{{ url_for('initial') }}"><i class="huge arrow left icon"> </i></a></button>
         </div>
         <div class="ui divider"></div>
@@ -132,45 +133,28 @@
 
         <div class="ui divider"></div>
 
-        <div class="container ui raised segment" id = "change_image">
+        <div onclick="extendTimerTo(90)" class="container ui raised segment" id = "change_image">
 
             <form class="ui form" method="POST" action="{{ url_for('change_image') }}" enctype="multipart/form-data">
             <h4 class="ui dividing header">Change Image</h4>
             <input type="hidden" id="userid" name="userid" value="{{userid}}">
                 <div class="field">
                 <label>Image</label>
-                   <input type="file" name="image">
+                   <input onclick="extendTimerTo(90)" type="file" name="image">
                 </div>
-                <button class="ui button" type="submit">Change Image</button>
+                <button onclick="extendTimerTo(90)" class="ui button" type="submit">Change Image</button>
             </form>
         </div>
         <br/>
+        <div class="ui container" style="">
+            <span  id="timeout_in"></span>
+        </div>
         <br/>
+
+<script src="/static/idleTimer.js"></script>
 <script type="text/javascript">
-function idleOpenURL(timeout, url) {
-    var t;
-
-    window.onload = resetTimer;
-    window.onmousemove = resetTimer;
-    window.onmousedown = resetTimer; // catches touchscreen presses
-    window.ontouchstart = resetTimer;
-    window.onclick = resetTimer;     // catches touchpad clicks
-    window.onscroll = resetTimer;    // catches scrolling with arrow keys
-    window.onkeypress = resetTimer;
-
-    function logout() {
-        //alert("You are now logged out. " + url)
-        //location.href = 'logout.php'
-        window.location.href= url
-    }
-
-    function resetTimer() {
-        clearTimeout(t);
-        t = setTimeout(logout, timeout * 1000)
-        // 1000 milisec = 1 sec
-    }
-};
-
+var idleTimer = new IdleTimerOpenURL();
+idleTimer.setupTimer(20, '{{ url_for('initial') }}');
 
 function buyItem(userid, itemid, itemName, itemPrice, confirmURL){
 
@@ -204,19 +188,24 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
         url: confirmURL,
         success: function(result){
            document.getElementById(itemid).style.backgroundColor = 'green';
-           //idleOpenURL(2, '{{ url_for('initial') }}');
-           setTimeout(function(){window.location.href='{{ url_for('initial') }}'},2000);
+           self.idleTimer.changeTimeout(2);
+           //setTimeout(function(){window.location.href='{{ url_for('initial') }}'},2000);
         }
     });
 
     return;
 }
 
+function extendTimerTo(newTimer){
+    self.idleTimer.changeTimeout(newTimer);
+}
+
 function displayChangeImage (canChangeImage) {
     $( "#change_image" ).toggle(canChangeImage === "true");
 }
 displayChangeImage('{{canChangeImage}}')
-idleOpenURL(20, '{{ url_for('initial') }}');
+
+
 
 </script>
 </body>
