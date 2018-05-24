@@ -36,6 +36,7 @@ def flaskrun(app, default_host="127.0.0.1",
     # If the User selects the profiling option, then we need
     # to do a little extra setup
     if options.profile:
+        # noinspection PyPackageRequirements
         from werkzeug.contrib.profiler import ProfilerMiddleware
 
         app.config['PROFILE'] = True

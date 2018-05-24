@@ -1,11 +1,15 @@
 # coding: utf-8
 import csv
+import math
 import os
+import threading
+import time
 from datetime import datetime
 from hashlib import md5
 from math import sqrt
 
 import flask_login as loginflask
+import schedule
 import tablib
 from flask import Flask, redirect, url_for, render_template, request, send_from_directory, current_app, safe_join, flash
 from flask_admin import Admin, expose, helpers, AdminIndexView, BaseView
@@ -18,14 +22,12 @@ from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
 from sqlalchemy.sql import func
+# noinspection PyPackageRequirements
 from werkzeug.utils import secure_filename
+# noinspection PyPackageRequirements
 from wtforms import form, fields, validators
 
-import schedule
-import time
-import threading
 from flaskrun import flaskrun
-
 from sendEmail import Bimail
 
 databaseName = 'CoffeeDB.db'
@@ -84,11 +86,11 @@ class History(db.Model):
 
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
     user = db.relationship('User', backref=db.backref('history', lazy='dynamic'))
-    #user = db.relationship('User', foreign_keys=userid)
+    # user = db.relationship('User', foreign_keys=userid)
 
     itemid = db.Column(db.Integer, db.ForeignKey('item.itemid'))
     item = db.relationship('Item', backref=db.backref('items', lazy='dynamic'))
-    #item = db.relationship('Item', foreign_keys=itemid)
+    # item = db.relationship('Item', foreign_keys=itemid)
 
     price = db.Column(db.Float)
     date = db.Column(db.DateTime)
@@ -111,7 +113,7 @@ class Inpayment(db.Model):
 
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
     user = db.relationship('User', backref=db.backref('inpayment', lazy='dynamic'))
-    #user = db.relationship('User', foreign_keys=userid)
+    # user = db.relationship('User', foreign_keys=userid)
 
     amount = db.Column(db.Float)
     date = db.Column(db.DateTime)
@@ -497,6 +499,7 @@ class MyPaymentModelView(ModelView):
     column_filters = ('user', 'amount', 'date')
     list_template = 'admin/custom_list.html'
 
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def date_format(self, context, model, name):
         field = getattr(model, name)
         return field.strftime('%Y-%m-%d %H:%M')
@@ -542,6 +545,7 @@ class MyHistoryModelView(ModelView):
     column_filters = ('user', 'item', 'date')
     form_args = dict(date=dict(default=datetime.now()), price=dict(default=0))
 
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def date_format(self, context, model, name):
         field = getattr(model, name)
         if field is not None:
@@ -820,6 +824,83 @@ def image_from_folder(filename, image_folder, the_default_image):
     # return redirect(url)
 
 
+# from https://gist.github.com/deontologician/3503910
+def reltime(date, compare_to=None, at='@'):
+    """Takes a datetime and returns a relative representation of the
+    time.
+    :param date: The date to render relatively
+    :param compare_to: what to compare the date to. Defaults to datetime.now()
+    :param at: date/time separator. defaults to "@". "at" is also reasonable.
+    """
+
+    def ordinal(n):
+        r"""Returns a string ordinal representation of a number
+        Taken from: http://stackoverflow.com/a/739301/180718
+        """
+        if 10 <= n % 100 < 20:
+            return str(n) + 'th'
+        else:
+            return str(n) + {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, "th")
+
+    compare_to = compare_to or datetime.now()
+    if date > compare_to:
+        return NotImplementedError('reltime only handles dates in the past')
+    # get timediff values
+    diff = compare_to - date
+    if diff.seconds < 60 * 60 * 8:  # less than a business day?
+        days_ago = diff.days
+    else:
+        days_ago = diff.days + 1
+    months_ago = compare_to.month - date.month
+    years_ago = compare_to.year - date.year
+    weeks_ago = int(math.ceil(days_ago / 7.0))
+    # get a non-zero padded 12-hour hour
+    hr = date.strftime('%I')
+    if hr.startswith('0'):
+        hr = hr[1:]
+    wd = compare_to.weekday()
+    # calculate the time string
+    if date.minute == 0:
+        _time = '{0}{1}'.format(hr, date.strftime('%p').lower())
+    else:
+        _time = '{0}:{1}'.format(hr, date.strftime('%M%p').lower())
+    # calculate the date string
+    if days_ago == 0:
+        datestr = 'today {at} {time}'
+    elif days_ago == 1:
+        datestr = 'yesterday {at} {time}'
+    elif (wd in (5, 6) and days_ago in (wd + 1, wd + 2)) or \
+            wd + 3 <= days_ago <= wd + 8:
+        # this was determined by making a table of wd versus days_ago and
+        # divining a relationship based on everyday speech. This is somewhat
+        # subjective I guess!
+        datestr = 'last {weekday} {at} {time} ({days_ago} days ago)'
+    elif days_ago <= wd + 2:
+        datestr = '{weekday} {at} {time} ({days_ago} days ago)'
+    elif years_ago == 1:
+        datestr = '{month} {day}, {year} {at} {time} (last year)'
+    elif years_ago > 1:
+        datestr = '{month} {day}, {year} {at} {time} ({years_ago} years ago)'
+    elif months_ago == 1:
+        datestr = '{month} {day} {at} {time} (last month)'
+    elif months_ago > 1:
+        datestr = '{month} {day} {at} {time} ({months_ago} months ago)'
+    else:
+        # not last week, but not last month either
+        datestr = '{month} {day} {at} {time} ({days_ago} days ago)'
+    return datestr.format(time=_time,
+                          weekday=date.strftime('%A'),
+                          day=ordinal(date.day),
+                          days=diff.days,
+                          days_ago=days_ago,
+                          month=date.strftime('%B'),
+                          years_ago=years_ago,
+                          months_ago=months_ago,
+                          weeks_ago=weeks_ago,
+                          year=date.year,
+                          at=at)
+
+
 @app.route('/user/<int:userid>', methods=['GET'])
 def user_page(userid):
     user_name = '{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
@@ -844,7 +925,9 @@ def user_page(userid):
     last_purchase = "-"
     last_purchase_item = History.query.filter(History.userid == userid).order_by(History.date.desc()).first()
     if last_purchase_item is not None:
-        last_purchase = last_purchase_item.date.strftime('%Y-%m-%d %H:%M')
+        # last_purchase = last_purchase_item.date.strftime('%Y-%m-%d %H:%M')
+        last_purchase = reltime(last_purchase_item.date)
+
     return render_template('choices.html',
                            currbill=currbill,
                            chosenuser=user_name,
