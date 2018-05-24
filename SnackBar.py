@@ -854,16 +854,14 @@ def reltime(date, compare_to=None, at='@'):
     months_ago = compare_to.month - date.month
     years_ago = compare_to.year - date.year
     weeks_ago = int(math.ceil(days_ago / 7.0))
-    # get a non-zero padded 12-hour hour
-    hr = date.strftime('%I')
+    # get a non-zero padded 24-hour hour
+    hr = date.strftime('%H')
     if hr.startswith('0'):
         hr = hr[1:]
     wd = compare_to.weekday()
     # calculate the time string
-    if date.minute == 0:
-        _time = '{0}{1}'.format(hr, date.strftime('%p').lower())
-    else:
-        _time = '{0}:{1}'.format(hr, date.strftime('%M%p').lower())
+    _time = '{0}:{1}'.format(hr, date.strftime('%M').lower())
+
     # calculate the date string
     if days_ago == 0:
         datestr = 'today {at} {time}'
