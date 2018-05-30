@@ -182,7 +182,7 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
 
     var date = new Date();
 
-    document.getElementById('last_purchase').innerHTML = date.getHours() + ":" + date.getMinutes()
+    document.getElementById('last_purchase').innerHTML = "today @ " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
     $.ajax({
         url: confirmURL,
