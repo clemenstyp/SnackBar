@@ -1055,6 +1055,12 @@ def analysis():
     content, tags_hours_labels = main()
     return render_template('analysis.html', content=content, tagsHoursLabels=tags_hours_labels)
 
+@app.route('/analysis/slide')
+def analysis_slide():
+    from analysisUtils import main
+    content, tags_hours_labels = main()
+    return render_template('analysisSlide.html', content=content, tagsHoursLabels=tags_hours_labels)
+
 
 @app.route('/change_image', methods=(['POST']))
 def change_image():
