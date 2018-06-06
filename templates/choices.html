@@ -182,7 +182,7 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
 
     var date = new Date();
 
-    var hours = date.getHours()
+    var hours = date.getHours();
     // getMinutes returns the minutes in local time zone from 0 to 59
     var minutes =  date.getMinutes()
 
@@ -195,7 +195,7 @@ function buyItemNow(userid, itemid, itemName, itemPrice, confirmURL){
     if (minutes < 10) {
       minutes = "0" + minutes.toString()
     }
-    document.getElementById('last_purchase').innerHTML = "today @ " + hours + ":" + minutes);
+    document.getElementById('last_purchase').innerHTML = "today @ " + hours + ":" + minutes;
 
     $.ajax({
         url: confirmURL,
