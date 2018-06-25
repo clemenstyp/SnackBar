@@ -1,8 +1,14 @@
 import optparse
+from werkzeug.serving import run_simple
+from werkzeug.wsgi import DispatcherMiddleware
 
+
+def simple(env, resp):
+    resp(b'200 OK', [(b'Content-Type', b'text/plain')])
+    return [b'You have to call the url_prefix']
 
 def flaskrun(app, default_host="127.0.0.1",
-             default_port="5000"):
+             default_port="5000", url_prefix=""):
     """
     Takes a flask.Flask instance and runs it. Parses
     command-line flags to configure the app.
@@ -18,6 +24,11 @@ def flaskrun(app, default_host="127.0.0.1",
                       help="Port for the Flask app " +
                            "[default %s]" % default_port,
                       default=default_port)
+
+    parser.add_option("-U", "--url_prefix",
+                      help="Url Prefix for the Flask app " +
+                           "[default %s]" % url_prefix,
+                      default=url_prefix)
 
     # Two options useful for debugging purposes, but
     # a bit dangerous so not exposed in the help message.
@@ -43,6 +54,10 @@ def flaskrun(app, default_host="127.0.0.1",
         app.wsgi_app = ProfilerMiddleware(app.wsgi_app,
                                           restrictions=[30])
         options.debug = True
+
+    app.wsgi_app = DispatcherMiddleware(simple, {options.url_prefix: app.wsgi_app})
+
+    app.config["APPLICATION_ROOT"] = options.url_prefix
 
     app.run(
         debug=options.debug,

@@ -696,7 +696,7 @@ admin.add_view(MyItemModelView(Item, db.session, 'Items'))
 admin.add_view(MyHistoryModelView(History, db.session, 'History'))
 admin.add_view(MyAdminModelView(Coffeeadmin, db.session, 'Admins'))
 admin.add_view(MySettingsModelView(Settings, db.session, 'Settings'))
-admin.add_link(MenuLink(name='Snack Bar', url='/'))
+admin.add_link(MenuLink(name='Snack Bar', url='../'))
 
 current_sorting = ""
 
@@ -721,6 +721,9 @@ def initial():
         users = sorted(initusers, key=lambda k: k['firstName'])
 
     return render_template('index.html', users=users, current_sorting=current_sorting)
+
+
+
 
 
 @app.route('/sort/<sorting>')
