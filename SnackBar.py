@@ -279,7 +279,10 @@ def get_users_with_leaders(with_leader):
     initusers = list()
     all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
     all_items_id = [int(instance.itemid) for instance in all_items]
-    itemid = all_items_id[0]
+    if len(all_items_id) > 0:
+        itemid = all_items_id[0]
+    else:
+        itemid = ''
 
     for instance in User.query.filter(User.hidden is not True):
         initusers.append({'firstName': '{}'.format(instance.firstName),
@@ -1120,7 +1123,7 @@ def build_sample_db():
     price = [0.2, 0.55, 0.2, 0.4]
 
     for i in range(len(itemname)):
-        newitem = Item(name='{}'.format(itemname[i]), price=int('{}'.format(price[i])))
+        newitem = Item(name='{}'.format(itemname[i]), price=float('{}'.format(price[i])))
         newitem.icon = "Item" + str(i + 1) + ".svg"
         # newitem.name = itemname[i]
         # newitem.price = price[i]
