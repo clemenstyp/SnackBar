@@ -1131,7 +1131,7 @@ def build_sample_db():
 
     for i in range(len(itemname)):
         newitem = Item(name='{}'.format(itemname[i]), price=float('{}'.format(price[i])))
-        newitem.icon = "Item" + str(i + 1) + ".svg"
+        newitem.icon = "item" + str(i + 1) + ".svg"
         # newitem.name = itemname[i]
         # newitem.price = price[i]
         db.session.add(newitem)
