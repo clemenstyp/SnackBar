@@ -516,11 +516,15 @@ class MyPaymentModelView(ModelView):
         # this should take into account any filters/search inplace
         _query = self.session.query(Inpayment).limit(self.page_size).offset(current_page * self.page_size)
         page_sum = sum([payment.amount for payment in _query])
+        if page_sum is None:
+            page_sum = 0
         return '{0:.2f}'.format(page_sum)
 
     def total_sum(self):
         # this should take into account any filters/search inplace
         total_sum = self.session.query(func.sum(Inpayment.amount)).scalar()
+        if total_sum is None:
+            total_sum = 0
         return '{0:.2f}'.format(total_sum)
 
     def render(self, template, **kwargs):
