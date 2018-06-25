@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
-    <script src="/static/stay_standalone.js" type="text/javascript"></script>
+    <script src="{{url_for('static', filename='stay_standalone.js')}" type="text/javascript"></script>
     <style>
         body {
             margin:20px;
@@ -30,7 +30,7 @@
     <div class = 'ui message main'>
         <h1> You shall drink no coffe!</h1>
     </div>
-    <img class="ui centered large image" alt = "You Shall not Pass!" src="/static/you_shall_not_pass1.jpg"/>
+    <img class="ui centered large image" alt = "You Shall not Pass!" src="{{url_for('static', filename='you_shall_not_pass1.jpg')}"/>
 
 </div>
 </body>
