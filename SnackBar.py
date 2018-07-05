@@ -496,7 +496,7 @@ class AnalyticsView(BaseView):
 class MyPaymentModelView(ModelView):
     can_create = True
     can_delete = False
-    can_edit = False
+    can_edit = True
     can_export = True
     form_excluded_columns = 'date'
     export_types = ['csv', 'xls']
