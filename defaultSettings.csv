@@ -4,3 +4,4 @@ mailSender,snackbar-noreply@fit.fraunhofer.de
 mailServer,smtp.fit.fraunhofer.de
 minimumBalance,-5
 usersCanChangeImage,true
+instantMail,true

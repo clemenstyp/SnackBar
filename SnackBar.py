@@ -284,16 +284,16 @@ def get_users_with_leaders(with_leader):
     else:
         itemid = ''
 
-    for instance in User.query.filter(User.hidden is not True):
+    for instance in User.query.filter(User.hidden.is_(False)):
         initusers.append({'firstName': '{}'.format(instance.firstName),
-                          'lastName': '{}'.format(instance.lastName),
-                          'imageName': '{}'.format(instance.imageName),
-                          'id': '{}'.format(instance.userid),
-                          'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
-                          'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
-                          'coffeeMonth': get_unpaid(instance.userid, itemid),
-                          'leader': get_leader_data(instance.userid, not with_leader),
-                          })
+                              'lastName': '{}'.format(instance.lastName),
+                              'imageName': '{}'.format(instance.imageName),
+                              'id': '{}'.format(instance.userid),
+                              'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
+                              'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
+                              'coffeeMonth': get_unpaid(instance.userid, itemid),
+                              'leader': get_leader_data(instance.userid, not with_leader),
+                              })
     return initusers
 
 
@@ -412,7 +412,7 @@ def make_xls_bill(filename, fullpath):
     excel_data = tablib.Dataset()
     excel_data.headers = header
 
-    for instance in User.query.filter(User.hidden is not True):
+    for instance in User.query.filter(User.hidden.is_(False)):
         firstline = list()
         firstline.append('{} {}'.format(instance.firstName, instance.lastName))
 
@@ -462,7 +462,7 @@ class AnalyticsView(BaseView):
 
         initusers = list()
 
-        for instance in User.query.filter(User.hidden is not True):
+        for instance in User.query.filter(User.hidden.is_(False)):
             initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
                               'userid': '{}'.format(instance.userid),
                               'bill': rest_bill(instance.userid)})
@@ -473,7 +473,7 @@ class AnalyticsView(BaseView):
 
     @expose('/reminder/')
     def reminder(self):
-        for aUser in User.query.filter(User.hidden is not True):
+        for aUser in User.query.filter(User.hidden.is_(False)):
             send_reminder(aUser)
         return redirect(url_for('admin.index'))
 
@@ -931,7 +931,7 @@ def user_page(userid):
                       'ub': rank_info['upperbound'],
                       'lb': rank_info['lowerbound']})
 
-    no_users = User.query.filter(User.hidden is not True).count()
+    no_users = User.query.filter(User.hidden.is_(False)).count()
     currbill = rest_bill(userid)
     can_change_image = settings_for('usersCanChangeImage')
 
@@ -1015,39 +1015,40 @@ def send_reminder(curuser):
 
 def send_email(curuser, curitem):
     if curuser.email:
-        currbill = '{0:.2f}'.format(rest_bill(curuser.userid))
-        # print(instance.firstName)
-        # print(currbill)
-        mymail = Bimail('SnackBar++ ({} {})'.format(curuser.firstName, curuser.lastName), ['{}'.format(curuser.email)])
-        mymail.sendername = settings_for('mailSender')
-        mymail.sender = settings_for('mailSender')
-        mymail.servername = settings_for('mailServer')
-        # start html body. Here we add a greeting.
+        if settings_for('instantMail') == 'true':
+            currbill = '{0:.2f}'.format(rest_bill(curuser.userid))
+            # print(instance.firstName)
+            # print(currbill)
+            mymail = Bimail('SnackBar++ ({} {})'.format(curuser.firstName, curuser.lastName), ['{}'.format(curuser.email)])
+            mymail.sendername = settings_for('mailSender')
+            mymail.sender = settings_for('mailSender')
+            mymail.servername = settings_for('mailServer')
+            # start html body. Here we add a greeting.
 
-        today = datetime.now().strftime('%Y-%m-%d %H:%M')
-        mymail.htmladd(
-            'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! '
-            '<br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
-                curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
-        mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settings_for('snackAdmin')))
-        mymail.htmladd('<br><br>---------<br><br>')
-        mymail.htmladd(
-            'Hello {} {}, <br>SnackBar has just REGISTERED an other {} ({} €) for you! '
-            '<br><br> Your balance is now {} € <br><br> '.format(
-                curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
-        # Further things added to body are separated by a paragraph, so you do not need to worry
-        # about newlines for new sentences here we add a line of text and an html table previously
-        # stored in the variable
-        # add image chart title
-        # attach another file
-        mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settings_for('snackAdmin')))
+            today = datetime.now().strftime('%Y-%m-%d %H:%M')
+            mymail.htmladd(
+                'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! '
+                '<br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
+                    curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
+            mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settings_for('snackAdmin')))
+            mymail.htmladd('<br><br>---------<br><br>')
+            mymail.htmladd(
+                'Hello {} {}, <br>SnackBar has just REGISTERED an other {} ({} €) for you! '
+                '<br><br> Your balance is now {} € <br><br> '.format(
+                    curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
+            # Further things added to body are separated by a paragraph, so you do not need to worry
+            # about newlines for new sentences here we add a line of text and an html table previously
+            # stored in the variable
+            # add image chart title
+            # attach another file
+            mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settings_for('snackAdmin')))
 
-        mymail.htmladd('<br><br>---------<br>Registered at: {}'.format(today))
+            mymail.htmladd('<br><br>---------<br>Registered at: {}'.format(today))
 
-        # mymail.addattach([os.path.join(fullpath, filename)])
-        # send!
-        # print(mymail.htmlbody)
-        mymail.send()
+            # mymail.addattach([os.path.join(fullpath, filename)])
+            # send!
+            # print(mymail.htmlbody)
+            mymail.send()
 
 
 @app.route('/change/<int:userid>')
@@ -1164,7 +1165,7 @@ def set_default_settings():
 # noinspection PyBroadException,PyPep8
 def send_reminder_to_all():
     try:
-        for aUser in User.query.filter(User.hidden is not True):
+        for aUser in User.query.filter(User.hidden.is_(False)):
             send_reminder(aUser)
     except:
         pass
