@@ -314,15 +314,17 @@ def get_leader_data(userid, skip):
 
 
 def get_leader(itemid):
-    tmp_query = db.session.query(User.userid, func.count(History.price)). \
-        outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
+    tmp_query = db.session.query(User.userid, func.count(History.price))
+    tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
                                 extract('month', History.date) == datetime.now().month,
-                                extract('year', History.date) == datetime.now().year)). \
-        group_by(User.userid). \
-        order_by(func.count(History.price).desc()).first()
+                                extract('year', History.date) == datetime.now().year))
+    tmp_query = tmp_query.group_by(User.userid)
+    tmp_query = tmp_query.order_by(func.count(History.price).desc()).first()
 
-    return tmp_query[0]
-
+    if tmp_query[1] != 0:
+        return tmp_query[0]
+    else:
+        return -1
 
 def get_rank(userid, itemid):
     tmp_query = db.session.query(User.userid, func.count(History.price)). \
