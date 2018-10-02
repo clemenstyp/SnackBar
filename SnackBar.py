@@ -295,6 +295,7 @@ def get_users_with_leaders(with_leader):
                               'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
                               'coffeeMonth': get_unpaid(instance.userid, itemid),
                               'leader': get_leader_data(instance.userid, not with_leader),
+                               'email': '{}'.format(instance.email),
                               })
     return initusers
 
