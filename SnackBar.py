@@ -853,7 +853,7 @@ def monster_image_for_id(userID):
     returnValue = send_from_directory(directory=current_app.root_path, filename="static/unknown_image.png", as_attachment=False)
     try:
         proxyResponse = requests.get(requestURL, timeout=5)
-        returnValue = proxyResponse.text
+        returnValue = proxyResponse.raw
     except:
         pass
     return returnValue
