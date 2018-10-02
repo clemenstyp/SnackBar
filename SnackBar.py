@@ -850,15 +850,13 @@ def monster_image_for_id(userID):
         userID = "example@example.org"
     userHash = hashlib.md5(str(userID).encode('utf-8').lower()).hexdigest()
     requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=monsterid"
-    return requests.get(requestURL, stream=True)
-
-    # returnValue = send_from_directory(directory=current_app.root_path, filename="static/unknown_image.png", as_attachment=False)
-    # try:
-    #     proxyResponse = requests.get(requestURL, timeout=5)
-    #     returnValue = proxyResponse
-    # except:
-    #     pass
-    # return returnValue
+    returnValue = send_from_directory(directory=current_app.root_path, filename="static/unknown_image.png", as_attachment=False)
+    try:
+        proxyResponse = requests.get(requestURL, timeout=5)
+        returnValue = Response(proxyResponse)
+    except:
+        pass
+    return returnValue
 
 
 def image_from_folder(filename, image_folder, the_default_image):
