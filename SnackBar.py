@@ -11,7 +11,7 @@ from math import sqrt
 import flask_login as loginflask
 import schedule
 import tablib
-from flask import Flask, redirect, url_for, render_template, request, send_from_directory, current_app, safe_join, flash
+from flask import Flask, redirect, url_for, render_template, request, send_from_directory, current_app, safe_join, flash, Response
 from flask_admin import Admin, expose, helpers, AdminIndexView, BaseView
 from flask_admin.base import MenuLink
 from flask_admin.contrib.sqla import ModelView
@@ -26,9 +26,11 @@ from sqlalchemy.sql import func
 from werkzeug.utils import secure_filename
 # noinspection PyPackageRequirements
 from wtforms import form, fields, validators
-
+import requests
 from flaskrun import flaskrun
 from sendEmail import Bimail
+# import code for encoding urls and generating md5 hashes
+import urllib, hashlib
 
 databaseName = 'CoffeeDB.db'
 url = 'sqlite:///' + databaseName
@@ -804,12 +806,14 @@ def allowed_file(filename):
 
 @app.route('/image/')
 def default_image():
-    return image(None)
+    userID = request.args.get('userID')
+    return monster_image(None, userID)
 
 
 @app.route('/image/<filename>')
 def image(filename):
-    return image_from_folder(filename, app.config['IMAGE_FOLDER'], "static/unknown_image.png")
+    userID = request.args.get('userID')
+    return monster_image(filename, userID)
 
 
 @app.route('/icon/')
@@ -820,6 +824,38 @@ def default_icon():
 @app.route('/icon/<icon>')
 def get_icon(icon):
     return image_from_folder(icon, app.config['ICON_FOLDER'], "static/unknown_icon.svg")
+
+
+def monster_image(filename, userID):
+    if filename is None:
+        return monster_image_for_id(userID)
+
+    fullpath = os.path.join(current_app.root_path, app.config['IMAGE_FOLDER'])
+
+    full_file_path = safe_join(fullpath, filename)
+    if not os.path.isabs(full_file_path):
+        full_file_path = os.path.join(current_app.root_path, full_file_path)
+    try:
+        if not os.path.isfile(full_file_path):
+            return  monster_image_for_id(userID)
+    except (TypeError, ValueError):
+        pass
+
+    return send_from_directory(directory=fullpath, filename=filename, as_attachment=False)
+
+
+def monster_image_for_id(userID):
+    if userID is None:
+        userID = "example@example.org"
+    userHash = hashlib.md5(userID.lower()).hexdigest()
+    requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=monsterid"
+    returnValue = send_from_directory(directory=current_app.root_path, filename="static/unknown_image.png", as_attachment=False)
+    try:
+        proxyResponse = requests.get(requestURL, timeout=5)
+        returnValue = proxyResponse.text
+    except:
+        pass
+    return returnValue
 
 
 def image_from_folder(filename, image_folder, the_default_image):

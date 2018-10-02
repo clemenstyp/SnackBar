@@ -123,7 +123,7 @@
             <a href="{{url_for('user_page',userid=User.id)}}" id="User{{User.id}}" class="ui coffee-button huge button"
                style="color:{{User.fontcolor}};
                             background-color:{{ User.bgcolor }}">
-                <span class="imageBorder"><img src="{{url_for('image',filename=User.imageName)}}" class="circle"></span>
+                <span class="imageBorder"><img src="{{url_for('image',filename=User.imageName)}}?userID={{User.email}}" class="circle"></span>
                 <span class="textBorder">{{ User.firstName }}<br>{{ User.lastName }}</span>
             </a>
         </div>

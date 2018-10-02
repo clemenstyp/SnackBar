@@ -11,3 +11,4 @@ tablib
 numpy
 filedepot
 schedule
+requests
