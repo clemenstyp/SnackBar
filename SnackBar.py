@@ -847,7 +847,7 @@ def monster_image(filename, userID):
 def monster_image_for_id(userID):
     if userID is None:
         userID = "example@example.org"
-    userHash = hashlib.md5(userID.lower()).hexdigest()
+    userHash = hashlib.md5(str(userID).lower()).hexdigest()
     requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=monsterid"
     returnValue = send_from_directory(directory=current_app.root_path, filename="static/unknown_image.png", as_attachment=False)
     try:
