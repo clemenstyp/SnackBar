@@ -507,7 +507,7 @@ class MyPaymentModelView(ModelView):
     can_edit = True
     can_export = True
     form_excluded_columns = 'date'
-    export_types = ['csv', 'xls']
+    export_types = ['csv']
     column_default_sort = ('date', True)
     column_filters = ('user', 'amount', 'date')
     list_template = 'admin/custom_list.html'
@@ -555,7 +555,7 @@ class MyHistoryModelView(ModelView):
     can_export = True
     can_delete = True
     can_edit = True
-    export_types = ['csv', 'xls']
+    export_types = ['csv']
     column_descriptions = dict()
     column_labels = dict(user='Name')
     column_default_sort = ('date', True)
@@ -578,7 +578,7 @@ class MyHistoryModelView(ModelView):
 
 class MyUserModelView(ModelView):
     can_export = True
-    export_types = ['csv', 'xls']
+    export_types = ['csv']
     column_exclude_list = ['history', 'inpayment',]
     form_excluded_columns = ['history', 'inpayment']
     column_descriptions = dict(
@@ -602,7 +602,7 @@ class MyUserModelView(ModelView):
 
 class MyItemModelView(ModelView):
     can_export = True
-    export_types = ['csv', 'xls']
+    export_types = ['csv']
     form_excluded_columns = 'items'
 
     base_path = app.config['ICON_FOLDER']
