@@ -709,7 +709,7 @@ class SnackBarIndexView(BaseView):
 init_login()
 
 
-admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html', url=options.url_prefix+'/admin')
+admin = Admin(app, name='', index_view=MyAdminIndexView(), base_template='my_master.html')
 admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
 admin.add_view(MyPaymentModelView(Inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(User, db.session, 'User'))
