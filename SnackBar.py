@@ -862,18 +862,19 @@ def monster_image_for_id(userID):
     returnValue = send_from_directory(directory=current_app.root_path, filename="static/unknown_image.png",
                                       as_attachment=False)
 
-    mail_parts = userID.split("@")
-    if len(mail_parts) == 2:
-        prefix = mail_parts[0]
-        domain = mail_parts[1]
-        if domain == "fit.fraunhofer.de":
-            use_gravatar = False
-            requestURL = "https://chat.fit.fraunhofer.de/avatar/" + prefix
-            try:
-                proxyResponse = requests.get(requestURL, timeout=5)
-                returnValue = Response(proxyResponse)
-            except:
-                pass
+    # mail_parts = userID.split("@")
+    # if len(mail_parts) == 2:
+    #     prefix = mail_parts[0]
+    #     domain = mail_parts[1]
+    #     if domain == "fit.fraunhofer.de":
+    #         use_gravatar = False
+    #         requestURL = "https://chat.fit.fraunhofer.de/avatar/" + prefix
+    #         try:
+    #             proxyResponse = requests.get(requestURL, timeout=5)
+    #
+    #             returnValue = Response(proxyResponse)
+    #         except:
+    #             pass
 
     if use_gravatar:
         userHash = hashlib.md5(str(userID).encode('utf-8').lower()).hexdigest()
