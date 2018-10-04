@@ -574,6 +574,7 @@ class MyHistoryModelView(ModelView):
 class MyUserModelView(ModelView):
     can_export = True
     export_types = ['csv', 'xls']
+    column_exclude_list = ('History', 'Inpayment')
     form_excluded_columns = ('History', 'Inpayment')
     column_descriptions = dict(
         firstName='Name of the corresponding person'
