@@ -2,16 +2,14 @@ import optparse
 from werkzeug.serving import run_simple
 from werkzeug.wsgi import DispatcherMiddleware
 
-
 def simple(env, resp):
     resp(b'200 OK', [(b'Content-Type', b'text/plain')])
     return [b'You have to call the url_prefix']
 
-def flaskrun(app, default_host="127.0.0.1",
+def load_options(default_host="127.0.0.1",
              default_port="5000", url_prefix=""):
     """
-    Takes a flask.Flask instance and runs it. Parses
-    command-line flags to configure the app.
+    Parses command-line flags to configure the app.
     """
 
     # Set up the command-line options
@@ -40,6 +38,16 @@ def flaskrun(app, default_host="127.0.0.1",
                       help=optparse.SUPPRESS_HELP)
 
     options, _ = parser.parse_args()
+    return options
+
+def flaskrun(app, options=None):
+    """
+    Takes a flask.Flask instance and runs it.
+    """
+
+    # Set up the command-line options
+    if options is None:
+        options = load_options()
 
     if not options.debug:
         options.debug = False

@@ -27,10 +27,11 @@ from werkzeug.utils import secure_filename
 # noinspection PyPackageRequirements
 from wtforms import form, fields, validators
 import requests
-from flaskrun import flaskrun
+from flaskrun import flaskrun, load_options
 from sendEmail import Bimail
 # import code for encoding urls and generating md5 hashes
 import urllib, hashlib
+import optparse
 
 databaseName = 'CoffeeDB.db'
 url = 'sqlite:///' + databaseName
@@ -51,6 +52,10 @@ db = SQLAlchemy(app)
 
 if not os.path.exists(app.config['IMAGE_FOLDER']):
     os.makedirs(app.config['IMAGE_FOLDER'])
+
+
+# Set up the command-line options
+options = load_options()
 
 
 def settings_for(key):
@@ -702,7 +707,9 @@ class SnackBarIndexView(BaseView):
         return redirect(url_for('initial'))
 
 init_login()
-admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html')
+
+
+admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html', url=options.url_prefix+'/admin')
 admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
 admin.add_view(MyPaymentModelView(Inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(User, db.session, 'User'))
@@ -1228,4 +1235,4 @@ if __name__ == "__main__":
     set_default_settings()
     # app.run()
     # app.run(host='0.0.0.0', port=5000, debug=False)
-    flaskrun(app)
+    flaskrun(app, options=options)
