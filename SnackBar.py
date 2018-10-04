@@ -580,7 +580,7 @@ class MyUserModelView(ModelView):
     can_export = True
     export_types = ['csv', 'xls']
     column_exclude_list = ['history', 'inpayment',]
-    form_excluded_columns = ('History', 'Inpayment')
+    form_excluded_columns = ['history', 'inpayment']
     column_descriptions = dict(
         firstName='Name of the corresponding person'
     )
