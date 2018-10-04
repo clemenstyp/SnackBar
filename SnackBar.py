@@ -853,12 +853,6 @@ def monster_image(filename, userID):
     return send_from_directory(directory=fullpath, filename=filename, as_attachment=False)
 
 
-def fit_image_for_id(userID):
-    if userID is None:
-        userID = "example@example.org"
-
-
-    return returnValue
 
 def monster_image_for_id(userID):
     if userID is None:
