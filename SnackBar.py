@@ -424,7 +424,7 @@ def make_xls_bill(filename, fullpath):
 
     for instance in User.query.filter(User.hidden.is_(False)):
         firstline = list()
-        firstline.append('{} {}'.format(instance.firstName, instance.lastName))
+        firstline.append(u'{} {}'.format(instance.firstName, instance.lastName))
 
         for record in Item.query:
             firstline.append('{}'.format(get_unpaid(instance.userid, record.itemid)))
@@ -983,7 +983,7 @@ def reltime(date, compare_to=None, at='@'):
 
 @app.route('/user/<int:userid>', methods=['GET'])
 def user_page(userid):
-    user_name = '{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
+    user_name = u'{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
     items = list()
 
     for instance in Item.query:
