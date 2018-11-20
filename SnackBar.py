@@ -164,7 +164,7 @@ class User(db.Model):
         self.email = email
 
     def __repr__(self):
-        return '{} {}'.format(self.firstName, self.lastName)
+        return u'{} {}'.format(self.firstName, self.lastName)
 
 
 class Item(db.Model):
@@ -292,8 +292,8 @@ def get_users_with_leaders(with_leader):
         itemid = ''
 
     for instance in User.query.filter(User.hidden.is_(False)):
-        initusers.append({'firstName': '{}'.format(instance.firstName),
-                              'lastName': '{}'.format(instance.lastName),
+        initusers.append({'firstName': u'{}'.format(instance.firstName),
+                              'lastName': u'{}'.format(instance.lastName),
                               'imageName': '{}'.format(instance.imageName),
                               'id': '{}'.format(instance.userid),
                               'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
@@ -473,7 +473,7 @@ class AnalyticsView(BaseView):
         initusers = list()
 
         for instance in User.query.filter(User.hidden.is_(False)):
-            initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
+            initusers.append({'name': u'{} {}'.format(instance.firstName, instance.lastName),
                               'userid': '{}'.format(instance.userid),
                               'bill': rest_bill(instance.userid)})
 
