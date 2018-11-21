@@ -47,6 +47,7 @@ app.config['STATIC_FOLDER'] = 'static'
 app.config['IMAGE_FOLDER'] = 'static/images'
 app.config['ICON_FOLDER'] = 'static/icons'
 app.config['DEBUG'] = False
+app.config['SESSION_COOKIE_PATH'] = '/'
 
 db = SQLAlchemy(app)
 
