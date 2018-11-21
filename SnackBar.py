@@ -989,7 +989,7 @@ def user_page(userid):
 
     for instance in Item.query:
         rank_info = get_rank(userid, instance.itemid)
-        items.append({'name': '{}'.format(instance.name),
+        items.append({'name': u'{}'.format(instance.name),
                       'price': instance.price,
                       'itemid': '{}'.format(instance.itemid),
                       'icon': '{}'.format(instance.icon),
