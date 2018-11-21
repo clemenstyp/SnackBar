@@ -1,0 +1,23 @@
+[Unit]
+Description=Snackbar for Coffelist
+After=network-online.target
+
+[Service]
+PermissionsStartOnly=true
+User=pi
+Group=pi
+WorkingDirectory=/usr/local/bin/SnackBar
+ExecStartPre=/bin/rm -f /var/log/snackbar.log
+ExecStartPre=/bin/touch /var/log/snackbar.log
+ExecStartPre=/bin/chown pi:pi /var/log/snackbar.log
+ExecStartPre=/bin/chmod 644 /var/log/snackbar.log
+ExecStart=/usr/bin/python2.7 SnackBar.py --port 8000 --host 10.223.116.230 > /var/log/snackbar.log
+KillMode=control-group
+TimeoutStopSec=5
+Restart=on-failure
+StandardOutput=null
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
+Alias=snackbar.service
