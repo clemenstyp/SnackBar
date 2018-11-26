@@ -19,3 +19,4 @@ sqlite
 *.bak
 CoffeeDB.db
 static/images/
+/.vs
