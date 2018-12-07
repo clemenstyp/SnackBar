@@ -33,7 +33,7 @@ class Bimail:
         if self.attachments:
             self.attach(msg)
             # add html body after attachments
-        msg.attach(MIMEText(self.htmlbody.encode('utf-8'), 'html'))
+        msg.attach(MIMEText(self.htmlbody, 'html'))
         if msg.get('Date', None) is None:
             msg['Date'] = email.utils.formatdate()
         # send
