@@ -57,6 +57,8 @@ if not os.path.exists(app.config['IMAGE_FOLDER']):
 # Set up the command-line options
 options = load_options()
 
+#image cache for gravatar images
+imageCache = {}
 
 def settings_for(key):
     db_entry = db.session.query(Settings).filter_by(key=key).first()
@@ -878,10 +880,15 @@ def monster_image_for_id(userID):
 
     if use_gravatar:
         userHash = hashlib.md5(str(userID).encode('utf-8').lower()).hexdigest()
+        if userHash in imageCache:
+            return imageCache[userHash]
+
+
         requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=monsterid"
         try:
             proxyResponse = requests.get(requestURL, timeout=5)
             returnValue = Response(proxyResponse)
+            imageCache[userHash] = returnValue
         except:
             pass
     return returnValue
