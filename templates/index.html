@@ -107,7 +107,7 @@
 <div class="container">
 	<div class="fixed top">
     <div class="ui text container">
-        <h2 class="ui center aligned dividing" style="height: 30px; overflow: hidden">
+        <h2 class="ui center aligned header" style="height: 30px; overflow: hidden">
             Name:
             <a href="{{url_for('sort',sorting='az')}}">
                 {% if current_sorting == 'az' %}<i class="sort alphabet ascending icon"></i>{% else %}<i class="sort alphabet ascending icon black"></i>{% endif %}
@@ -143,7 +143,9 @@
         </div>
         {% endfor %}
     </div>
-	
+    
+
+
 	<div style="clear:both"></div>
 	<div class="bottom fixed">
 		<div class="ui divider"></div>
@@ -152,7 +154,7 @@
 			<a href="{{url_for('analysis_slide')}}"><i class="huge desktop icon"></i></a>
 			<a href="{{url_for('admin.index')}}"><i class="huge settings icon"></i></a>
 			<a href="{{url_for('adduser')}}"><i class="huge add icon"></i></a>
-			Fork SnackBar on <a target="_blank" href="https://github.com/blubbfish/SnackBar">GitHub (github.com/blubbfish/SnackBar)</a>
+			Fork SnackBar on <a target="_blank" href="https://github.com/clemenstyp/SnackBar">GitHub (github.com/clemenstyp/SnackBar)</a>
 		</p>
 	</div>
 </div>
