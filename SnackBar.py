@@ -167,7 +167,7 @@ class User(db.Model):
         self.email = email
 
     def __repr__(self):
-        return u'{} {}'.format(self.firstName, self.lastName)
+        return '{} {}'.format(self.firstName, self.lastName)
 
 
 class Item(db.Model):
@@ -295,8 +295,8 @@ def get_users_with_leaders(with_leader):
         itemid = ''
 
     for instance in User.query.filter(User.hidden.is_(False)):
-        initusers.append({'firstName': u'{}'.format(instance.firstName),
-                              'lastName': u'{}'.format(instance.lastName),
+        initusers.append({'firstName': '{}'.format(instance.firstName),
+                              'lastName': '{}'.format(instance.lastName),
                               'imageName': '{}'.format(instance.imageName),
                               'id': '{}'.format(instance.userid),
                               'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
@@ -427,7 +427,7 @@ def make_xls_bill(filename, fullpath):
 
     for instance in User.query.filter(User.hidden.is_(False)):
         firstline = list()
-        firstline.append(u'{} {}'.format(instance.firstName, instance.lastName))
+        firstline.append('{} {}'.format(instance.firstName, instance.lastName))
 
         for record in Item.query:
             firstline.append('{}'.format(get_unpaid(instance.userid, record.itemid)))
@@ -476,7 +476,7 @@ class AnalyticsView(BaseView):
         initusers = list()
 
         for instance in User.query.filter(User.hidden.is_(False)):
-            initusers.append({'name': u'{} {}'.format(instance.firstName, instance.lastName),
+            initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
                               'userid': '{}'.format(instance.userid),
                               'bill': rest_bill(instance.userid)})
 
@@ -992,12 +992,12 @@ def reltime(date, compare_to=None, at='@'):
 
 @app.route('/user/<int:userid>', methods=['GET'])
 def user_page(userid):
-    user_name = u'{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
+    user_name = '{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
     items = list()
 
     for instance in Item.query:
         rank_info = get_rank(userid, instance.itemid)
-        items.append({'name': u'{}'.format(instance.name),
+        items.append({'name': '{}'.format(instance.name),
                       'price': instance.price,
                       'itemid': '{}'.format(instance.itemid),
                       'icon': '{}'.format(instance.icon),
