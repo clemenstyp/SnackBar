@@ -887,6 +887,7 @@ def monster_image_for_id(userID):
         requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=monsterid"
         try:
             proxyResponse = requests.get(requestURL, timeout=5)
+            imageCache[userHash] = returnValue
             returnValue = Response(proxyResponse)
             imageCache[userHash] = returnValue
         except:
