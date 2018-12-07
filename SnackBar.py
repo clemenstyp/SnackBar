@@ -1095,7 +1095,7 @@ def send_email(curuser, curitem):
             currbill = '{0:.2f}'.format(rest_bill(curuser.userid))
             # print(instance.firstName)
             # print(currbill)
-            mymail = Bimail(u'SnackBar++ ({} {})'.format(curuser.firstName, curuser.lastName), ['{}'.format(curuser.email)])
+            mymail = Bimail('SnackBar++ ({} {})'.format(curuser.firstName, curuser.lastName), ['{}'.format(curuser.email)])
             mymail.sendername = settings_for('mailSender')
             mymail.sender = settings_for('mailSender')
             mymail.servername = settings_for('mailServer')
@@ -1103,14 +1103,14 @@ def send_email(curuser, curitem):
 
             today = datetime.now().strftime('%Y-%m-%d %H:%M')
             mymail.htmladd(
-                u'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! '
-				u'<br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
+                'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! '
+				'<br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
                     curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
             mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settings_for('snackAdmin')))
             mymail.htmladd('<br><br>---------<br><br>')
             mymail.htmladd(
-                u'Hello {} {}, <br>SnackBar has just ORDERED {} ({} €) for you! '
-                u'<br><br> Your balance is now {} € <br><br> '.format(
+                'Hello {} {}, <br>SnackBar has just ORDERED {} ({} €) for you! '
+                '<br><br> Your balance is now {} € <br><br> '.format(
                     curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
             # Further things added to body are separated by a paragraph, so you do not need to worry
             # about newlines for new sentences here we add a line of text and an html table previously
