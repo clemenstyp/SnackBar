@@ -12,3 +12,9 @@ numpy
 filedepot
 schedule
 requests
+werkzeug
+jinja2
+click
+itsdangerous
+sqlalchemy
+enum

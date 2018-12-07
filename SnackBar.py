@@ -47,6 +47,7 @@ app.config['STATIC_FOLDER'] = 'static'
 app.config['IMAGE_FOLDER'] = 'static/images'
 app.config['ICON_FOLDER'] = 'static/icons'
 app.config['DEBUG'] = False
+app.config['SESSION_COOKIE_PATH'] = '/'
 
 db = SQLAlchemy(app)
 
@@ -166,7 +167,7 @@ class User(db.Model):
         self.email = email
 
     def __repr__(self):
-        return '{} {}'.format(self.firstName, self.lastName)
+        return u'{} {}'.format(self.firstName, self.lastName)
 
 
 class Item(db.Model):
@@ -294,8 +295,8 @@ def get_users_with_leaders(with_leader):
         itemid = ''
 
     for instance in User.query.filter(User.hidden.is_(False)):
-        initusers.append({'firstName': '{}'.format(instance.firstName),
-                              'lastName': '{}'.format(instance.lastName),
+        initusers.append({'firstName': u'{}'.format(instance.firstName),
+                              'lastName': u'{}'.format(instance.lastName),
                               'imageName': '{}'.format(instance.imageName),
                               'id': '{}'.format(instance.userid),
                               'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
@@ -426,7 +427,7 @@ def make_xls_bill(filename, fullpath):
 
     for instance in User.query.filter(User.hidden.is_(False)):
         firstline = list()
-        firstline.append('{} {}'.format(instance.firstName, instance.lastName))
+        firstline.append(u'{} {}'.format(instance.firstName, instance.lastName))
 
         for record in Item.query:
             firstline.append('{}'.format(get_unpaid(instance.userid, record.itemid)))
@@ -475,7 +476,7 @@ class AnalyticsView(BaseView):
         initusers = list()
 
         for instance in User.query.filter(User.hidden.is_(False)):
-            initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
+            initusers.append({'name': u'{} {}'.format(instance.firstName, instance.lastName),
                               'userid': '{}'.format(instance.userid),
                               'bill': rest_bill(instance.userid)})
 
@@ -991,12 +992,12 @@ def reltime(date, compare_to=None, at='@'):
 
 @app.route('/user/<int:userid>', methods=['GET'])
 def user_page(userid):
-    user_name = '{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
+    user_name = u'{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
     items = list()
 
     for instance in Item.query:
         rank_info = get_rank(userid, instance.itemid)
-        items.append({'name': '{}'.format(instance.name),
+        items.append({'name': u'{}'.format(instance.name),
                       'price': instance.price,
                       'itemid': '{}'.format(instance.itemid),
                       'icon': '{}'.format(instance.icon),
@@ -1094,7 +1095,7 @@ def send_email(curuser, curitem):
             currbill = '{0:.2f}'.format(rest_bill(curuser.userid))
             # print(instance.firstName)
             # print(currbill)
-            mymail = Bimail('SnackBar++ ({} {})'.format(curuser.firstName, curuser.lastName), ['{}'.format(curuser.email)])
+            mymail = Bimail(u'SnackBar++ ({} {})'.format(curuser.firstName, curuser.lastName), ['{}'.format(curuser.email)])
             mymail.sendername = settings_for('mailSender')
             mymail.sender = settings_for('mailSender')
             mymail.servername = settings_for('mailServer')
@@ -1102,14 +1103,14 @@ def send_email(curuser, curitem):
 
             today = datetime.now().strftime('%Y-%m-%d %H:%M')
             mymail.htmladd(
-                'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! '
-                '<br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
+                u'Hallo {} {}, <br>SnackBar hat gerade "{}" ({} €) für dich GEBUCHT! '
+				u'<br><br> Dein Guthaben beträgt jetzt {} € <br><br>'.format(
                     curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
             mymail.htmladd('Ciao,<br>SnackBar Team [{}]'.format(settings_for('snackAdmin')))
             mymail.htmladd('<br><br>---------<br><br>')
             mymail.htmladd(
-                'Hello {} {}, <br>SnackBar has just REGISTERED an other {} ({} €) for you! '
-                '<br><br> Your balance is now {} € <br><br> '.format(
+                u'Hello {} {}, <br>SnackBar has just ORDERED {} ({} €) for you! '
+                u'<br><br> Your balance is now {} € <br><br> '.format(
                     curuser.firstName, curuser.lastName, curitem.name, curitem.price, currbill))
             # Further things added to body are separated by a paragraph, so you do not need to worry
             # about newlines for new sentences here we add a line of text and an html table previously
