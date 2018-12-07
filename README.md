@@ -10,7 +10,7 @@ It is based on CoffeeList from "duscheln": https://github.com/duscheln/CoffeeLis
 * Install the pip requirements as denoted in requirements.txt:
 
 ```
-pip install --user -r requirements.txt
+pip3 install --user -r requirements.txt
 ```
 
 * You can change the userList.csv as shown in the template. These users will be imported, when a database is created. You can add or remove useres at a later time
@@ -19,13 +19,13 @@ pip install --user -r requirements.txt
 * To start the SnackBar with the folowing command:
 
 ```
-python SnackBar.py --port 8000
+python3 SnackBar.py --port 8000
 ```
 
 * you can add --port and -- host to change port and host.
 
 ```
-python SnackBar.py --host 127.0.1.1 --port 8000
+python3 SnackBar.py --host 127.0.1.1 --port 8000
 ```
 
 * The initial username and password for the admin interface are:
