@@ -10,19 +10,20 @@
     <tbody>
         <tr>
              <td>
-              Total Income
+              Total Cash
             </td>
             <td>
-              {{ '%0.2f'|format(total_income) }}
+              {{ '%0.2f'|format(total_cash) }}
             </td>
 
         </tr>
+
          <tr>
              <td>
-              Total Expenses
+              Total Open Bill
             </td>
             <td>
-              {{ '%0.2f'|format(total_expenses) }}
+              {{ '%0.2f'|format(total_open) }}
             </td>
 
         </tr>
@@ -55,19 +56,19 @@
               {{ Item.name }}
             </td>
              <td>
-              Income
+              Cash
             </td>
             <td>
-              {{ '%0.2f'|format(Item.income) }}
+              {{ '%0.2f'|format(Item.cash) }}
             </td>
 
         </tr>
          <tr>
              <td>
-              Expenses
+              Open Bill
             </td>
             <td>
-              {{ '%0.2f'|format(Item.expenses) }}
+              {{ '%0.2f'|format(Item.open) }}
             </td>
 
         </tr>

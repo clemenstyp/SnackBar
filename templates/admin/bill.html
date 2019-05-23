@@ -24,10 +24,18 @@
 
         </tr>
         {% endfor %}
+      <tr></tr>
+      <tr>
+            <td>
+             <b>SUM:</b>
+            </td>
+            <td>
+              <b>{{ '%0.2f'|format(total_sum) }}</b>
+            </td>
 
+        </tr>
     </tbody>
 </table>
-
 
 
 {% endblock %}

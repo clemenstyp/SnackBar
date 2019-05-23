@@ -474,15 +474,19 @@ class MyBillView(BaseView):
     def index(self):
 
         initusers = list()
-
+        total_sum = 0
         for instance in User.query.filter(User.hidden.is_(False)):
+            bill = rest_bill(instance.userid)
+            total_sum += bill
             initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
                               'userid': '{}'.format(instance.userid),
-                              'bill': rest_bill(instance.userid)})
+                              'bill': bill})
 
         users = sorted(initusers, key=lambda k: k['name'])
 
-        return self.render('admin/bill.html', users=users)
+
+
+        return self.render('admin/bill.html', users=users, total_sum=total_sum)
 
     @expose('/reminder/')
     def reminder(self):
@@ -538,10 +542,8 @@ class MyAccountingView(BaseView):
 
             return months
 
-        total_income = 0
-        total_expenses = 0
 
-        accounting = list()
+
 
         currentDay = datetime.now()
         newestDate = nextMonth(date(currentDay.year, currentDay.month, currentDay.day))
@@ -557,31 +559,42 @@ class MyAccountingView(BaseView):
             if oldestDateHistory < oldestDate:
                 oldestDate = oldestDateHistory
 
+        total_cash = 0
+        total_open = 0
+        accounting = list()
 
+        for month in months_between(oldestDate, newestDate):
+            total_open = 0
 
-        for month in reversed(months_between(oldestDate, newestDate)):
-            income = 0
-            expenses = 0
             previousMonth = prevMonth(month)
             for instance in Inpayment.query.filter(Inpayment.date.between(previousMonth, month)):
-                income += instance.amount
+                total_cash += instance.amount
 
-            for instance in History.query.filter(History.date.between(previousMonth, month)):
-                expenses -= instance.price
+            for instance in User.query.filter(User.hidden.is_(False)):
+                curr_bill = 0
+                for historyInstance in History.query.filter(History.date.between(oldestDate, month)):
+                    if historyInstance.userid == instance.userid:
+                        curr_bill += historyInstance.price
 
-            total_income += income
-            total_expenses += expenses
+                total_payment = 0
+                for inpaymentInstance in Inpayment.query.filter(Inpayment.date.between(oldestDate, month)):
+                    if inpaymentInstance.userid == instance.userid:
+                        total_payment += inpaymentInstance.amount
+
+
+                total_open -= -curr_bill + total_payment
+
+
+
 
             accounting.append({'name': '{}'.format(previousMonth.strftime('%B %Y')),
                                'from_date': '{}'.format(previousMonth),
                                'to_date': '{}'.format(month),
-                               'income': income,
-                               'expenses': expenses,
-                               'sum': (income + expenses)})
+                               'cash': total_cash,
+                               'open': total_open,
+                               'sum': (total_cash + total_open)})
 
-        total_sum = (total_income + total_expenses)
-
-        return self.render('admin/accounting.html', data=accounting, total_income=total_income, total_expenses=total_expenses, total_sum=total_sum)
+        return self.render('admin/accounting.html', data=reversed(accounting), total_cash=total_cash, total_open=total_open, total_sum=(total_cash + total_open))
 
 
     def is_accessible(self):
