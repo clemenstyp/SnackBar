@@ -4,7 +4,7 @@ import math
 import os
 import threading
 import time
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from hashlib import md5
 from math import sqrt
 
@@ -468,7 +468,7 @@ def button_font_color(user):
         return '#%02x%02x%02x' % (255, 255, 255)
 
 
-class AnalyticsView(BaseView):
+class MyBillView(BaseView):
 
     @expose('/')
     def index(self):
@@ -482,7 +482,7 @@ class AnalyticsView(BaseView):
 
         users = sorted(initusers, key=lambda k: k['name'])
 
-        return self.render('admin/test.html', users=users)
+        return self.render('admin/bill.html', users=users)
 
     @expose('/reminder/')
     def reminder(self):
@@ -502,6 +502,92 @@ class AnalyticsView(BaseView):
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
+
+
+
+class MyAccountingView(BaseView):
+
+    @expose('/')
+    def index(self):
+
+        def nextMonth(currentMonth):
+            if currentMonth.month == 12:  # New year
+                return date(currentMonth.year + 1, 1, 1)
+            else:
+                return date(currentMonth.year, currentMonth.month + 1, 1)
+
+        def prevMonth(currentMonth):
+            if currentMonth.month == 1:  # New year
+                return date(currentMonth.year -1 , 12, 1)
+            else:
+                return date(currentMonth.year, currentMonth.month - 1, 1)
+
+        def months_between(date_start, date_end):
+            months = []
+
+            # Make sure start_date is smaller than end_date
+            if date_start > date_end:
+                tmp = date_start
+                date_start = date_end
+                date_end = tmp
+
+            tmp_date = date_start
+            while tmp_date.month <= date_end.month or tmp_date.year < date_end.year:
+                months.append(tmp_date)  # Here you could do for example: months.append(datetime.datetime.strftime(tmp_date, "%b '%y"))
+                tmp_date = nextMonth(tmp_date)
+
+            return months
+
+        total_income = 0
+        total_expenses = 0
+
+        accounting = list()
+
+        currentDay = datetime.now()
+        newestDate = nextMonth(date(currentDay.year, currentDay.month, currentDay.day))
+        oldestDate = prevMonth(newestDate)
+
+        for instance in Inpayment.query.order_by(Inpayment.date).limit(1):
+            oldestDateInpayment = date(instance.date.year, instance.date.month, 1)
+            if oldestDateInpayment < oldestDate:
+                oldestDate = oldestDateInpayment
+
+        for instance in History.query.order_by(History.date).limit(1):
+            oldestDateHistory = date(instance.date.year, instance.date.month, 1)
+            if oldestDateHistory < oldestDate:
+                oldestDate = oldestDateHistory
+
+
+
+        for month in reversed(months_between(oldestDate, newestDate)):
+            income = 0
+            expenses = 0
+            previousMonth = prevMonth(month)
+            for instance in Inpayment.query.filter(Inpayment.date.between(previousMonth, month)):
+                income += instance.amount
+
+            for instance in History.query.filter(History.date.between(previousMonth, month)):
+                expenses -= instance.price
+
+            total_income += income
+            total_expenses += expenses
+
+            accounting.append({'name': '{}'.format(previousMonth.strftime('%B %Y')),
+                               'from_date': '{}'.format(previousMonth),
+                               'to_date': '{}'.format(month),
+                               'income': income,
+                               'expenses': expenses,
+                               'sum': (income + expenses)})
+
+        total_sum = (total_income + total_expenses)
+
+        return self.render('admin/accounting.html', data=accounting, total_income=total_income, total_expenses=total_expenses, total_sum=total_sum)
+
+
+    def is_accessible(self):
+        return loginflask.current_user.is_authenticated
+
+
 
 
 class MyPaymentModelView(ModelView):
@@ -713,7 +799,8 @@ init_login()
 
 
 admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html')
-admin.add_view(AnalyticsView(name='Bill', endpoint='bill'))
+admin.add_view(MyBillView(name='Bill', endpoint='bill'))
+admin.add_view(MyAccountingView(name='Accounting', endpoint='accounting'))
 admin.add_view(MyPaymentModelView(Inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(User, db.session, 'User'))
 admin.add_view(MyItemModelView(Item, db.session, 'Items'))

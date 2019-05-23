@@ -1,0 +1,90 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+
+<table class="table table-sm table-bordered table-striped">
+    <thead>
+        <tr>
+           <th colspan="2">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+             <td>
+              Total Income
+            </td>
+            <td>
+              {{ '%0.2f'|format(total_income) }}
+            </td>
+
+        </tr>
+         <tr>
+             <td>
+              Total Expenses
+            </td>
+            <td>
+              {{ '%0.2f'|format(total_expenses) }}
+            </td>
+
+        </tr>
+       <tr>
+             <td>
+              <b>Total Sum</b>
+            </td>
+            <td>
+              <b>{{ '%0.2f'|format(total_sum) }}</b>
+            </td>
+
+        </tr>
+
+    </tbody>
+</table>
+
+<br/>
+
+<table class="table table-sm table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th colspan="2">Bill</th>
+        </tr>
+    </thead>
+    <tbody>
+      {% for Item in data %}
+        <tr>
+            <td rowspan="3">
+              {{ Item.name }}
+            </td>
+             <td>
+              Income
+            </td>
+            <td>
+              {{ '%0.2f'|format(Item.income) }}
+            </td>
+
+        </tr>
+         <tr>
+             <td>
+              Expenses
+            </td>
+            <td>
+              {{ '%0.2f'|format(Item.expenses) }}
+            </td>
+
+        </tr>
+       <tr>
+             <td>
+              <b>Sum</b>
+            </td>
+            <td>
+              <b>{{ '%0.2f'|format(Item.sum) }}</b>
+            </td>
+
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+
+
+{% endblock %}
