@@ -474,10 +474,12 @@ class MyBillView(BaseView):
     def index(self):
 
         initusers = list()
-        total_sum = 0
+        total_bill = 0
+        total_cash = db.session.query(func.sum(Inpayment.amount)).scalar()
+
         for instance in User.query.filter(User.hidden.is_(False)):
             bill = rest_bill(instance.userid)
-            total_sum += bill
+            total_bill += bill
             initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
                               'userid': '{}'.format(instance.userid),
                               'bill': bill})
@@ -485,8 +487,7 @@ class MyBillView(BaseView):
         users = sorted(initusers, key=lambda k: k['name'])
 
 
-
-        return self.render('admin/bill.html', users=users, total_sum=total_sum)
+        return self.render('admin/bill.html', users=users, total_bill=total_bill, total_cash=total_cash, total_sum=(total_cash - total_bill))
 
     @expose('/reminder/')
     def reminder(self):
@@ -572,14 +573,12 @@ class MyAccountingView(BaseView):
 
             for instance in User.query.filter(User.hidden.is_(False)):
                 curr_bill = 0
-                for historyInstance in History.query.filter(History.date.between(oldestDate, month)):
-                    if historyInstance.userid == instance.userid:
-                        curr_bill += historyInstance.price
+                for historyInstance in History.query.filter(and_(History.date.between(oldestDate, month),History.userid == instance.userid )):
+                    curr_bill += historyInstance.price
 
                 total_payment = 0
-                for inpaymentInstance in Inpayment.query.filter(Inpayment.date.between(oldestDate, month)):
-                    if inpaymentInstance.userid == instance.userid:
-                        total_payment += inpaymentInstance.amount
+                for inpaymentInstance in Inpayment.query.filter(and_(Inpayment.date.between(oldestDate, month), Inpayment.userid == instance.userid)):
+                    total_payment += inpaymentInstance.amount
 
 
                 total_open -= -curr_bill + total_payment
@@ -813,7 +812,7 @@ init_login()
 
 admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html')
 admin.add_view(MyBillView(name='Bill', endpoint='bill'))
-admin.add_view(MyAccountingView(name='Accounting', endpoint='accounting'))
+# admin.add_view(MyAccountingView(name='Accounting', endpoint='accounting'))
 admin.add_view(MyPaymentModelView(Inpayment, db.session, 'Inpayment'))
 admin.add_view(MyUserModelView(User, db.session, 'User'))
 admin.add_view(MyItemModelView(Item, db.session, 'Items'))

@@ -4,6 +4,48 @@
   <a href="{{ url_for('bill.reminder') }}" class="btn btn-primary">Send reminder!</a>
     <a href="{{ url_for('bill.export') }}" class="btn btn-primary">Export as xls!</a>
 </div>
+
+<table class="table table-sm table-bordered table-striped">
+    <thead>
+        <tr>
+           <th colspan="2">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+             <td>
+              Total Cash
+            </td>
+            <td>
+              {{ '%0.2f'|format(total_cash) }}
+            </td>
+
+        </tr>
+
+         <tr>
+             <td>
+              Total Open Bill
+            </td>
+            <td>
+              {{ '%0.2f'|format(total_bill) }}
+            </td>
+
+        </tr>
+       <tr>
+             <td>
+              <b>Resulting Sum</b>
+            </td>
+            <td>
+              <b>{{ '%0.2f'|format(total_sum) }}</b>
+            </td>
+
+        </tr>
+
+    </tbody>
+</table>
+
+<br/>
+
 <table class="table table-sm table-bordered table-striped">
     <thead>
         <tr>
