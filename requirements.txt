@@ -3,7 +3,6 @@
 #
 
 
-alembic==1.0.10
 backports.csv==1.0.7
 certifi==2019.3.9
 chardet==3.0.4

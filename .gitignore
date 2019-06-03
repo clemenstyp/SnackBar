@@ -4,8 +4,6 @@ venv
 *.xls
 *.pyc
 *.pyo
-env
-env*
 dist
 build
 *.egg
