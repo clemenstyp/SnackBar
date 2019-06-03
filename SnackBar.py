@@ -51,6 +51,8 @@ app.config['SESSION_COOKIE_PATH'] = '/'
 
 db = SQLAlchemy(app)
 
+
+
 if not os.path.exists(app.config['IMAGE_FOLDER']):
     os.makedirs(app.config['IMAGE_FOLDER'])
 
@@ -188,6 +190,8 @@ class Coffeeadmin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False, default='')
     password = db.Column(db.String(64))
+    send_bill = db.Column(db.Boolean, default=False)
+    email = db.Column(db.String(120), default='')
 
     # Flask-Login integration
     @staticmethod
@@ -509,89 +513,89 @@ class MyBillView(BaseView):
         return loginflask.current_user.is_authenticated
 
 
+def get_total_bill():
+    def nextMonth(currentMonth):
+        if currentMonth.month == 12:  # New year
+            return date(currentMonth.year + 1, 1, 1)
+        else:
+            return date(currentMonth.year, currentMonth.month + 1, 1)
+
+    def prevMonth(currentMonth):
+        if currentMonth.month == 1:  # New year
+            return date(currentMonth.year - 1, 12, 1)
+        else:
+            return date(currentMonth.year, currentMonth.month - 1, 1)
+
+    def months_between(date_start, date_end):
+        months = []
+
+        # Make sure start_date is smaller than end_date
+        if date_start > date_end:
+            tmp = date_start
+            date_start = date_end
+            date_end = tmp
+
+        tmp_date = date_start
+        while tmp_date.month <= date_end.month or tmp_date.year < date_end.year:
+            months.append(
+                tmp_date)  # Here you could do for example: months.append(datetime.datetime.strftime(tmp_date, "%b '%y"))
+            tmp_date = nextMonth(tmp_date)
+
+        return months
+
+    currentDay = datetime.now()
+    newestDate = nextMonth(date(currentDay.year, currentDay.month, currentDay.day))
+    oldestDate = prevMonth(newestDate)
+
+    for instance in Inpayment.query.order_by(Inpayment.date).limit(1):
+        oldestDateInpayment = date(instance.date.year, instance.date.month, 1)
+        if oldestDateInpayment < oldestDate:
+            oldestDate = oldestDateInpayment
+
+    for instance in History.query.order_by(History.date).limit(1):
+        oldestDateHistory = date(instance.date.year, instance.date.month, 1)
+        if oldestDateHistory < oldestDate:
+            oldestDate = oldestDateHistory
+
+    total_cash = 0
+    total_open = 0
+    accounting = list()
+
+    for month in months_between(oldestDate, newestDate):
+        total_open = 0
+
+        previousMonth = prevMonth(month)
+        for instance in Inpayment.query.filter(Inpayment.date.between(previousMonth, month)):
+            total_cash += instance.amount
+
+        for instance in User.query.filter(User.hidden.is_(False)):
+            curr_bill = 0
+            for historyInstance in History.query.filter(
+                    and_(History.date.between(oldestDate, month), History.userid == instance.userid)):
+                curr_bill += historyInstance.price
+
+            total_payment = 0
+            for inpaymentInstance in Inpayment.query.filter(
+                    and_(Inpayment.date.between(oldestDate, month), Inpayment.userid == instance.userid)):
+                total_payment += inpaymentInstance.amount
+
+            total_open -= -curr_bill + total_payment
+
+        accounting.append({'name': '{}'.format(previousMonth.strftime('%B %Y')),
+                           'from_date': '{}'.format(previousMonth),
+                           'to_date': '{}'.format(month),
+                           'cash': total_cash,
+                           'open': total_open,
+                           'sum': (total_cash + total_open)})
+
+    return accounting, total_cash
 
 class MyAccountingView(BaseView):
 
     @expose('/')
     def index(self):
 
-        def nextMonth(currentMonth):
-            if currentMonth.month == 12:  # New year
-                return date(currentMonth.year + 1, 1, 1)
-            else:
-                return date(currentMonth.year, currentMonth.month + 1, 1)
-
-        def prevMonth(currentMonth):
-            if currentMonth.month == 1:  # New year
-                return date(currentMonth.year -1 , 12, 1)
-            else:
-                return date(currentMonth.year, currentMonth.month - 1, 1)
-
-        def months_between(date_start, date_end):
-            months = []
-
-            # Make sure start_date is smaller than end_date
-            if date_start > date_end:
-                tmp = date_start
-                date_start = date_end
-                date_end = tmp
-
-            tmp_date = date_start
-            while tmp_date.month <= date_end.month or tmp_date.year < date_end.year:
-                months.append(tmp_date)  # Here you could do for example: months.append(datetime.datetime.strftime(tmp_date, "%b '%y"))
-                tmp_date = nextMonth(tmp_date)
-
-            return months
-
-
-
-
-        currentDay = datetime.now()
-        newestDate = nextMonth(date(currentDay.year, currentDay.month, currentDay.day))
-        oldestDate = prevMonth(newestDate)
-
-        for instance in Inpayment.query.order_by(Inpayment.date).limit(1):
-            oldestDateInpayment = date(instance.date.year, instance.date.month, 1)
-            if oldestDateInpayment < oldestDate:
-                oldestDate = oldestDateInpayment
-
-        for instance in History.query.order_by(History.date).limit(1):
-            oldestDateHistory = date(instance.date.year, instance.date.month, 1)
-            if oldestDateHistory < oldestDate:
-                oldestDate = oldestDateHistory
-
-        total_cash = 0
-        total_open = 0
-        accounting = list()
-
-        for month in months_between(oldestDate, newestDate):
-            total_open = 0
-
-            previousMonth = prevMonth(month)
-            for instance in Inpayment.query.filter(Inpayment.date.between(previousMonth, month)):
-                total_cash += instance.amount
-
-            for instance in User.query.filter(User.hidden.is_(False)):
-                curr_bill = 0
-                for historyInstance in History.query.filter(and_(History.date.between(oldestDate, month),History.userid == instance.userid )):
-                    curr_bill += historyInstance.price
-
-                total_payment = 0
-                for inpaymentInstance in Inpayment.query.filter(and_(Inpayment.date.between(oldestDate, month), Inpayment.userid == instance.userid)):
-                    total_payment += inpaymentInstance.amount
-
-
-                total_open -= -curr_bill + total_payment
-
-
-
-
-            accounting.append({'name': '{}'.format(previousMonth.strftime('%B %Y')),
-                               'from_date': '{}'.format(previousMonth),
-                               'to_date': '{}'.format(month),
-                               'cash': total_cash,
-                               'open': total_open,
-                               'sum': (total_cash + total_open)})
+        accounting, total_cash, total_open = get_total_bill()
 
         return self.render('admin/accounting.html', data=reversed(accounting), total_cash=total_cash, total_open=total_open, total_sum=(total_cash + total_open))
 
@@ -1169,7 +1173,9 @@ def send_reminder(curuser):
             mymail.servername = settings_for('mailServer')
             # start html body. Here we add a greeting.
             mymail.htmladd(
-                'Hallo {} {},<br><br>du hast nur noch wenig Geld auf deinem SnackBar Konto ({} €). '
+                ''
+                ''
+                ''
                 'Zahle bitte ein bisschen Geld ein, damit wir wieder neue Snacks kaufen können!'
                 '<br><br>Ciao,<br>SnackBar Team [{}]<br><br><br><br>---------<br><br><br><br>'
                 'Hello {} {},<br><br>your SnackBar balance is very low ({} €). '
@@ -1186,6 +1192,69 @@ def send_reminder(curuser):
             # send!
             # print(mymail.htmlbody)
             mymail.send()
+
+
+def send_bill(admin):
+    if admin.email:
+        initusers = list()
+        total_bill = 0
+        total_cash = db.session.query(func.sum(Inpayment.amount)).scalar()
+
+        for instance in User.query.filter(User.hidden.is_(False)):
+            bill = rest_bill(instance.userid)
+            total_bill += bill
+            initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
+                              'userid': '{}'.format(instance.userid),
+                              'bill': bill})
+
+        users = sorted(initusers, key=lambda k: k['name'])
+
+        toptable = """
+            <table class="table table-sm table-bordered table-striped">
+            <thead><tr><th colspan="2">Total</th></tr></thead>
+            <tbody>
+            <tr><td>Total Cash</td><td>{:0.2f} €</td></tr>
+            <tr><td>Total Open Bill</td><td>{:0.2f} €</td></tr>
+            <tr><td><b>Resulting Sum</b></td><td><b>{:0.2f} €</b></td></tr>
+            </tbody>
+            </table><br/>
+            """.format(total_cash, total_bill, (total_cash - total_bill))
+
+        bottomtable = """
+            <table class="table table-sm table-bordered table-striped">
+            <thead><tr><th>Name</th><th>Bill</th></tr></thead>
+            <tbody>
+            """
+        for aUser in users:
+            bottomtable = bottomtable + "<tr><td>{}</td><td>{:0.2f} €</td></tr>".format(aUser.name, aUser.bill)
+
+        bottomtable = bottomtable + """
+            <tr></tr>
+            <tr><td><b>SUM:</b></td><td><b>{:0.2f} €</b></td></tr>
+            </tbody>
+            </table><br/>
+        """.format(total_bill)
+
+
+        # print(instance.firstName)
+        # print(currbill)
+        mymail = Bimail('SnackBar Bill', ['{}'.format(admin.email)])
+        mymail.sendername = settings_for('mailSender')
+        mymail.sender = settings_for('mailSender')
+        mymail.servername = settings_for('mailServer')
+        # start html body. Here we add a greeting.
+        mymail.htmladd('{}{}'.format( toptable, bottomtable))
+        # Further things added to body are separated by a paragraph, so you do not need to
+        # worry about newlines for new sentences here we add a line of text and an html table
+        # previously stored in the variable
+        # add image chart title
+        # attach another file
+        # mymail.htmladd('Ciao,<br>SnackBar Team [Clemens Putschli (C5-315)]')
+        # mymail.addattach([os.path.join(fullpath, filename)])
+        # send!
+        # print(mymail.htmlbody)
+        mymail.send()
+
 
 
 def send_email(curuser, curitem):
@@ -1317,7 +1386,7 @@ def build_sample_db():
         # newitem.price = price[i]
         db.session.add(newitem)
 
-    newadmin = Coffeeadmin(name='admin', password='admin')
+    newadmin = Coffeeadmin(name='admin', password='admin', send_bill=False, email='')
     db.session.add(newadmin)
 
     db.session.commit()
@@ -1345,6 +1414,13 @@ def send_reminder_to_all():
     except:
         pass
 
+def send_bill_to_admin():
+    try:
+        for aAdmin in Admin.query.filter(Admin.send_bill.is_(True)):
+            send_bill(aAdmin)
+    except:
+        pass
+
 
 def run_schedule():
     while 1:
@@ -1354,11 +1430,14 @@ def run_schedule():
 
 if __name__ == "__main__":
 
-    schedule.every().monday.at("10:30").do(send_reminder_to_all)
-    schedule_thread = threading.Thread(target=run_schedule).start()
-
     if not os.path.isfile(databaseName):
         build_sample_db()
+
+
+    schedule.every().monday.at("10:30").do(send_reminder_to_all)
+    schedule.every().monday.at("00:00").do(send_bill_to_admin)
+    schedule_thread = threading.Thread(target=run_schedule).start()
+
 
     set_default_settings()
     # app.run()
