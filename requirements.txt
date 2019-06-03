@@ -1,5 +1,5 @@
-# Install all the requirements by calling: pip install --User -r requirements.txt
-# Update them by calling: pip install --User --upgrade -r requirements.txt
+# Install all the requirements by calling: pip3 install -r requirements.txt
+# Update them by calling: pip3 install --upgrade -r requirements.txt
 #
 
 psycopg2
