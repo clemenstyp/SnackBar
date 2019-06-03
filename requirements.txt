@@ -2,8 +2,7 @@
 # Update them by calling: pip3 install --upgrade -r requirements.txt
 #
 
-psycopg2
-enum
+
 alembic==1.0.10
 backports.csv==1.0.7
 certifi==2019.3.9
