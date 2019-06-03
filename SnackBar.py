@@ -1209,8 +1209,12 @@ def send_bill(admin):
 
         users = sorted(initusers, key=lambda k: k['name'])
 
+        today = datetime.now().strftime('%Y-%m-%d')
+
+        header = "Bill SnackBar: {}".format(today)
+
         toptable = """
-            <table class="table table-sm table-bordered table-striped">
+            <table>
             <thead><tr><th colspan="2">Total</th></tr></thead>
             <tbody>
             <tr><td>Total Cash</td><td>{:0.2f} €</td></tr>
@@ -1221,12 +1225,12 @@ def send_bill(admin):
             """.format(total_cash, total_bill, (total_cash - total_bill))
 
         bottomtable = """
-            <table class="table table-sm table-bordered table-striped">
+            <table>
             <thead><tr><th>Name</th><th>Bill</th></tr></thead>
             <tbody>
             """
         for aUser in users:
-            bottomtable = bottomtable + "<tr><td>{}</td><td>{:0.2f} €</td></tr>".format(aUser.name, aUser.bill)
+            bottomtable = bottomtable + "<tr><td>{}</td><td>{:0.2f} €</td></tr>".format(aUser['name'], aUser['bill'])
 
         bottomtable = bottomtable + """
             <tr></tr>
@@ -1238,12 +1242,18 @@ def send_bill(admin):
 
         # print(instance.firstName)
         # print(currbill)
-        mymail = Bimail('SnackBar Bill', ['{}'.format(admin.email)])
+        mymail = Bimail(header, ['{}'.format(admin.email)])
         mymail.sendername = settings_for('mailSender')
         mymail.sender = settings_for('mailSender')
         mymail.servername = settings_for('mailServer')
         # start html body. Here we add a greeting.
-        mymail.htmladd('{}{}'.format( toptable, bottomtable))
+        mymail.htmladd("""
+        <b>{}</b>
+        <br/><br/>
+        {}
+        {}
+        """.format(header, toptable, bottomtable))
+
         # Further things added to body are separated by a paragraph, so you do not need to
         # worry about newlines for new sentences here we add a line of text and an html table
         # previously stored in the variable
@@ -1415,8 +1425,10 @@ def send_reminder_to_all():
         pass
 
 def send_bill_to_admin():
+    # for aAdmin in Coffeeadmin.query.filter(Coffeeadmin.send_bill.is_(True)):
+    #     send_bill(aAdmin)
     try:
-        for aAdmin in Admin.query.filter(Admin.send_bill.is_(True)):
+        for aAdmin in Coffeeadmin.query.filter(Coffeeadmin.send_bill.is_(True)):
             send_bill(aAdmin)
     except:
         pass
@@ -1437,7 +1449,6 @@ if __name__ == "__main__":
     schedule.every().monday.at("10:30").do(send_reminder_to_all)
     schedule.every().monday.at("00:00").do(send_bill_to_admin)
     schedule_thread = threading.Thread(target=run_schedule).start()
-
 
     set_default_settings()
     # app.run()
