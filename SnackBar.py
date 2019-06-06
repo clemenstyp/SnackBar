@@ -285,11 +285,8 @@ def getcurrbill(userid):
     return curr_bill_new
 
 
-def get_users():
-    get_users_with_leaders(false)
 
-
-def get_users_with_leaders(with_leader):
+def get_users_with_leaders():
     initusers = list()
     all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
     all_items_id = [int(instance.itemid) for instance in all_items]
@@ -298,6 +295,8 @@ def get_users_with_leaders(with_leader):
     else:
         itemid = ''
 
+    leader_data : dict = get_all_leader_data()
+
     for instance in User.query.filter(User.hidden.is_(False)):
         initusers.append({'firstName': '{}'.format(instance.firstName),
                               'lastName': '{}'.format(instance.lastName),
@@ -305,90 +304,112 @@ def get_users_with_leaders(with_leader):
                               'id': '{}'.format(instance.userid),
                               'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
                               'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
-                              'coffeeMonth': get_unpaid(instance.userid, itemid),
-                              'leader': get_leader_data(instance.userid, not with_leader),
+                              'coffeeMonth': get_unpaid(instance.userid, itemid, leader_data),
+                              'leader': get_leader(instance.userid, leader_data),
                                'email': '{}'.format(instance.email),
                               })
     return initusers
 
 
-def get_leader_data(userid, skip):
-    leader_info = list()
-    if not skip:
-        all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
-        i = 0
-        for aItem in all_items:
-            leader_id = get_leader(aItem.itemid)
-            if int(leader_id) == userid:
-                item_id = int(aItem.itemid)
-                icon_file = str(aItem.icon)
-                position = (-7 + (i * 34))
-                leader_info.append({"item_id": item_id, "icon": icon_file, "position": position})
-                i = i + 1
-    return leader_info
+def get_all_leader_data() -> dict:
+    leader_data = {}
+    all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
+    for aItem in all_items:
+        leader_ids = get_leaders_from_database(aItem.itemid)
+
+        item_data = {'leader_ids': leader_ids, 'icon' : aItem.icon}
+        leader_data[aItem.itemid]= item_data
 
 
-def get_leader(itemid):
-    tmp_query = db.session.query(User.userid, func.count(History.price),  func.max(History.date))
+
+    return leader_data
+
+
+def get_leaders_from_database(itemid : int):
+    tmp_query = db.session.query(User.userid, func.count(History.price), func.max(History.date))
     tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
-                                extract('month', History.date) == datetime.now().month,
-                                extract('year', History.date) == datetime.now().year))
-    tmp_query = tmp_query.group_by(User.userid)
-    tmp_query = tmp_query.order_by(func.count(History.price).desc())
-    tmp_query = tmp_query.order_by(History.date)
-    tmp_query = tmp_query.first()
-
-
-    if tmp_query[1] != 0:
-        return tmp_query[0]
-    else:
-        return -1
-
-def get_rank(userid, itemid):
-    tmp_query = db.session.query(User.userid, func.count(History.price),  func.max(History.date))
-    tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
-                                extract('month', History.date) == datetime.now().month,
-                                extract('year', History.date) == datetime.now().year))
+                                                  extract('month', History.date) == datetime.now().month,
+                                                  extract('year', History.date) == datetime.now().year))
     tmp_query = tmp_query.group_by(User.userid)
     tmp_query = tmp_query.order_by(func.count(History.price).desc())
     tmp_query = tmp_query.order_by(History.date)
     tmp_query = tmp_query.all()
 
-    user_id = [x[0] for x in tmp_query]
-    item_sum = [x[1] for x in tmp_query]
 
-    idx = user_id.index(userid)
-    rank = idx + 1
+    return tmp_query
 
-    if rank == len(user_id):
-        upperbound = item_sum[idx - 1] - item_sum[idx] + 1
-        lowerbound = None
+def get_unpaid(userid : int, itemid : int, leader_data : dict) -> int:
+    returnValue = 0
+    if itemid in leader_data:
+        item_data = leader_data[itemid]['leader_ids']
 
-    elif rank == 1:
-        upperbound = None
-        lowerbound = item_sum[idx] - item_sum[idx + 1] + 1
+        user_ids = [x[0] for x in item_data]
+        item_sums = [x[1] for x in item_data]
 
-    else:
-        upperbound = item_sum[idx - 1] - item_sum[idx] + 1
-        lowerbound = item_sum[idx] - item_sum[idx + 1] + 1
+        try:
+            idx = user_ids.index(userid)
+            returnValue = item_sums[idx]
+        except (TypeError, ValueError):
+            pass
+
+
+
+    return returnValue
+
+
+
+def get_leader(userid : int, leader_data : dict) -> list:
+    leader_info = list()
+    i = 0
+    for itemid in sorted(leader_data.keys()):
+        item_data = leader_data[itemid]
+        item_leader = item_data['leader_ids']
+        if len(item_leader) > 0:
+            winner = item_leader[0]
+            winner_id = winner[0]
+            winner_count = winner[1]
+            if int(winner_id) == userid and winner_count > 0:
+                item_id = int(itemid)
+                icon_file = str(item_data['icon'])
+                position = (-7 + (i * 34))
+                leader_info.append({"item_id": item_id, "icon": icon_file, "position": position})
+                i = i + 1
+
+    return leader_info
+
+
+
+def get_rank(userid : int, itemid : int, leader_data : dict):
+    rank = 0
+    lowerbound = None
+    upperbound = None
+    if itemid in leader_data:
+        item_data = leader_data[itemid]['leader_ids']
+
+        user_id = [x[0] for x in item_data]
+        item_sum = [x[1] for x in item_data]
+
+        idx = user_id.index(userid)
+        rank = idx + 1
+
+        if rank == len(user_id):
+            upperbound = item_sum[idx - 1] - item_sum[idx] + 1
+            lowerbound = None
+
+        elif rank == 1:
+            upperbound = None
+            lowerbound = item_sum[idx] - item_sum[idx + 1] + 1
+
+        else:
+            upperbound = item_sum[idx - 1] - item_sum[idx] + 1
+            lowerbound = item_sum[idx] - item_sum[idx + 1] + 1
 
     return {'rank': rank,
             'upperbound': upperbound,
             'lowerbound': lowerbound}
 
 
-def get_unpaid(userid, itemid):
-    n_unpaid = db.session.query(History). \
-        filter(History.userid == userid). \
-        filter(History.itemid == itemid). \
-        filter(extract('month', History.date) == datetime.now().month). \
-        filter(extract('year', History.date) == datetime.now().year) \
-        .count()
 
-    if n_unpaid is None:
-        n_unpaid = 0
-
-    return n_unpaid
 
 
 def get_total(userid, itemid):
@@ -434,12 +455,14 @@ def make_xls_bill(filename, fullpath):
     excel_data = tablib.Dataset()
     excel_data.headers = header
 
+    leader_data: dict = get_all_leader_data()
+
     for instance in User.query.filter(User.hidden.is_(False)):
         firstline = list()
         firstline.append('{} {}'.format(instance.firstName, instance.lastName))
 
         for record in Item.query:
-            firstline.append('{}'.format(get_unpaid(instance.userid, record.itemid)))
+            firstline.append('{}'.format(get_unpaid(instance.userid, record.itemid, leader_data)))
 
         firstline.append('{0:.2f}'.format(rest_bill(instance.userid)))
         excel_data.append(firstline)
@@ -838,7 +861,7 @@ current_sorting = ""
 @app.route('/')
 def initial():
     global current_sorting
-    initusers = get_users_with_leaders(true)
+    initusers = get_users_with_leaders()
     users = sorted(initusers, key=lambda k: k['firstName'])
 
     if current_sorting == "za":
@@ -1113,14 +1136,15 @@ def reltime(date, compare_to=None, at='@'):
 def user_page(userid):
     user_name = '{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
     items = list()
+    leader_data: dict = get_all_leader_data()
 
     for instance in Item.query:
-        rank_info = get_rank(userid, instance.itemid)
+        rank_info = get_rank(userid, instance.itemid, leader_data)
         items.append({'name': '{}'.format(instance.name),
                       'price': instance.price,
                       'itemid': '{}'.format(instance.itemid),
                       'icon': '{}'.format(instance.icon),
-                      'count': get_unpaid(userid, instance.itemid),
+                      'count': get_unpaid(userid, instance.itemid, leader_data),
                       'total': get_total(userid, instance.itemid),
                       'rank': rank_info['rank'],
                       'ub': rank_info['upperbound'],
