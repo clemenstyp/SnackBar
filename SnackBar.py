@@ -455,7 +455,7 @@ def make_xls_bill(filename, fullpath):
     excel_data = tablib.Dataset()
     excel_data.headers = header
 
-    leader_data: dict = get_all_leader_data()
+    leader_data = get_all_leader_data()
 
     for instance in User.query.filter(User.hidden.is_(False)):
         firstline = list()
@@ -1136,7 +1136,7 @@ def reltime(date, compare_to=None, at='@'):
 def user_page(userid):
     user_name = '{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
     items = list()
-    leader_data: dict = get_all_leader_data()
+    leader_data = get_all_leader_data()
 
     for instance in Item.query:
         rank_info = get_rank(userid, instance.itemid, leader_data)
