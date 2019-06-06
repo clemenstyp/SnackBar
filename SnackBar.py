@@ -295,7 +295,7 @@ def get_users_with_leaders():
     else:
         itemid = ''
 
-    leader_data : dict = get_all_leader_data()
+    leader_data = get_all_leader_data()
 
     for instance in User.query.filter(User.hidden.is_(False)):
         initusers.append({'firstName': '{}'.format(instance.firstName),
@@ -311,7 +311,7 @@ def get_users_with_leaders():
     return initusers
 
 
-def get_all_leader_data() -> dict:
+def get_all_leader_data():
     leader_data = {}
     all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
     for aItem in all_items:
@@ -325,7 +325,7 @@ def get_all_leader_data() -> dict:
     return leader_data
 
 
-def get_leaders_from_database(itemid : int):
+def get_leaders_from_database(itemid):
     tmp_query = db.session.query(User.userid, func.count(History.price), func.max(History.date))
     tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
                                                   extract('month', History.date) == datetime.now().month,
@@ -338,7 +338,7 @@ def get_leaders_from_database(itemid : int):
 
     return tmp_query
 
-def get_unpaid(userid : int, itemid : int, leader_data : dict) -> int:
+def get_unpaid(userid, itemid, leader_data):
     returnValue = 0
     if itemid in leader_data:
         item_data = leader_data[itemid]['leader_ids']
@@ -358,7 +358,7 @@ def get_unpaid(userid : int, itemid : int, leader_data : dict) -> int:
 
 
 
-def get_leader(userid : int, leader_data : dict) -> list:
+def get_leader(userid, leader_data):
     leader_info = list()
     i = 0
     for itemid in sorted(leader_data.keys()):
@@ -379,7 +379,7 @@ def get_leader(userid : int, leader_data : dict) -> list:
 
 
 
-def get_rank(userid : int, itemid : int, leader_data : dict):
+def get_rank(userid, itemid, leader_data):
     rank = 0
     lowerbound = None
     upperbound = None
