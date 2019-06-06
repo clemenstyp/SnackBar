@@ -318,8 +318,8 @@ def get_leader_data(userid, skip):
         all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
         i = 0
         for aItem in all_items:
-            leader_id = int(get_leader(aItem.itemid))
-            if leader_id == userid:
+            leader_id = get_leader(aItem.itemid)
+            if int(leader_id) == userid:
                 item_id = int(aItem.itemid)
                 icon_file = str(aItem.icon)
                 position = (-7 + (i * 34))
@@ -329,12 +329,15 @@ def get_leader_data(userid, skip):
 
 
 def get_leader(itemid):
-    tmp_query = db.session.query(User.userid, func.count(History.price))
+    tmp_query = db.session.query(User.userid, func.count(History.price),  func.max(History.date))
     tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
                                 extract('month', History.date) == datetime.now().month,
                                 extract('year', History.date) == datetime.now().year))
     tmp_query = tmp_query.group_by(User.userid)
-    tmp_query = tmp_query.order_by(func.count(History.price).desc()).first()
+    tmp_query = tmp_query.order_by(func.count(History.price).desc())
+    tmp_query = tmp_query.order_by(History.date)
+    tmp_query = tmp_query.first()
+
 
     if tmp_query[1] != 0:
         return tmp_query[0]
@@ -342,12 +345,14 @@ def get_leader(itemid):
         return -1
 
 def get_rank(userid, itemid):
-    tmp_query = db.session.query(User.userid, func.count(History.price)). \
-        outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
+    tmp_query = db.session.query(User.userid, func.count(History.price),  func.max(History.date))
+    tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
                                 extract('month', History.date) == datetime.now().month,
-                                extract('year', History.date) == datetime.now().year)). \
-        group_by(User.userid). \
-        order_by(func.count(History.price).desc()).all()
+                                extract('year', History.date) == datetime.now().year))
+    tmp_query = tmp_query.group_by(User.userid)
+    tmp_query = tmp_query.order_by(func.count(History.price).desc())
+    tmp_query = tmp_query.order_by(History.date)
+    tmp_query = tmp_query.all()
 
     user_id = [x[0] for x in tmp_query]
     item_sum = [x[1] for x in tmp_query]
@@ -834,20 +839,31 @@ current_sorting = ""
 def initial():
     global current_sorting
     initusers = get_users_with_leaders(true)
+    users = sorted(initusers, key=lambda k: k['firstName'])
 
-    if current_sorting == "az":
-        users = sorted(initusers, key=lambda k: k['firstName'])
-    elif current_sorting == "za":
-        users = sorted(initusers, key=lambda k: k['firstName'])
+    if current_sorting == "za":
         users.reverse()
     elif current_sorting == "coffee19":
-        users = sorted(initusers, key=lambda k: k['coffeeMonth'])
+        users = sorted(users, key=lambda k: k['coffeeMonth'])
     elif current_sorting == "coffee91":
-        users = sorted(initusers, key=lambda k: k['coffeeMonth'])
+        users = sorted(users, key=lambda k: k['coffeeMonth'])
         users.reverse()
     else:
         current_sorting = "az"
-        users = sorted(initusers, key=lambda k: k['firstName'])
+
+    # if current_sorting == "az":
+    #     users = sorted(initusers, key=lambda k: k['firstName'])
+    # elif current_sorting == "za":
+    #     users = sorted(initusers, key=lambda k: k['firstName'])
+    #     users.reverse()
+    # elif current_sorting == "coffee19":
+    #     users = sorted(initusers, key=lambda k: k['coffeeMonth'])
+    # elif current_sorting == "coffee91":
+    #     users = sorted(initusers, key=lambda k: k['coffeeMonth'])
+    #     users.reverse()
+    # else:
+    #     current_sorting = "az"
+    #     users = sorted(initusers, key=lambda k: k['firstName'])
 
     return render_template('index.html', users=users, current_sorting=current_sorting)
 
