@@ -1377,9 +1377,19 @@ def change_image():
     with app.app_context():
         if 'image' in request.files:
             file = request.files['image']
-            if file.filename != '' and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
+            imagename = file.filename
+            if imagename != '' and allowed_file(imagename):
+                filename = secure_filename(imagename)
                 full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
+                add = 0
+                while os.path.isfile(full_path):
+                    add = add + 1
+                    split = imagename.rsplit('.', 1)
+                    part_1 = split[0] + "_" + str(add)
+                    new_imagename = ".".join([part_1, split[1]])
+                    new_filename = secure_filename(new_imagename)
+                    full_path = os.path.join(app.config['IMAGE_FOLDER'], new_filename)
+
                 file.save(full_path)
 
                 userid = request.form["userid"]
@@ -1389,6 +1399,8 @@ def change_image():
                 db.session.commit()
 
     return redirect(url_for('initial'))
+
+
 
 
 def build_sample_db():
