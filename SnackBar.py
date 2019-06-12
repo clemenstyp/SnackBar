@@ -1387,8 +1387,8 @@ def change_image():
                     split = imagename.rsplit('.', 1)
                     part_1 = split[0] + "_" + str(add)
                     new_imagename = ".".join([part_1, split[1]])
-                    new_filename = secure_filename(new_imagename)
-                    full_path = os.path.join(app.config['IMAGE_FOLDER'], new_filename)
+                    filename = secure_filename(new_imagename)
+                    full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
 
                 file.save(full_path)
 
