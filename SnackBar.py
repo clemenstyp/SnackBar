@@ -1000,6 +1000,7 @@ def monster_image(filename, userID):
 
 
 def monster_image_for_id(userID):
+
     if userID is None:
         userID = "example@example.org"
 
@@ -1026,16 +1027,47 @@ def monster_image_for_id(userID):
         if userHash in imageCache:
             return imageCache[userHash]
 
+        image = get_monster_id_from_gravatar(userHash)
+        if image is False:
+            image = get_wavatar_from_gravatar(userHash)
 
-        requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=monsterid"
-        try:
-            proxyResponse = requests.get(requestURL, timeout=5)
+        if image is not False:
+            returnValue = image
             imageCache[userHash] = returnValue
-            returnValue = Response(proxyResponse)
-            imageCache[userHash] = returnValue
-        except:
-            pass
     return returnValue
+
+
+def get_wavatar_from_gravatar(userHash):
+    returnValue = False
+
+    requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=wavatar"
+    try:
+        proxyResponse = requests.get(requestURL, timeout=5)
+        # imageCache[userHash] = returnValue
+        statusCode = proxyResponse.status_code
+        if statusCode is 200:
+            returnValue = Response(proxyResponse)
+    except:
+        pass
+
+    return returnValue
+
+def get_monster_id_from_gravatar(userHash):
+
+    returnValue = False
+
+    requestURL = "https://www.gravatar.com/avatar/" + userHash + "?s=100" + "&d=monsterid"
+    try:
+        proxyResponse = requests.get(requestURL, timeout=5)
+        # imageCache[userHash] = returnValue
+        statusCode = proxyResponse.status_code
+        if statusCode is 200:
+            returnValue = Response(proxyResponse)
+    except:
+        pass
+
+    return returnValue
+
 
 
 def image_from_folder(filename, image_folder, the_default_image):
