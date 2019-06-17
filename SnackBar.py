@@ -1245,9 +1245,7 @@ def send_reminder(curuser):
             mymail.servername = settings_for('mailServer')
             # start html body. Here we add a greeting.
             mymail.htmladd(
-                ''
-                ''
-                ''
+                'Hallo {} {},<br><br>du hast nur noch wenig Geld auf deinem SnackBar Konto ({} €). '
                 'Zahle bitte ein bisschen Geld ein, damit wir wieder neue Snacks kaufen können!'
                 '<br><br>Ciao,<br>SnackBar Team [{}]<br><br><br><br>---------<br><br><br><br>'
                 'Hello {} {},<br><br>your SnackBar balance is very low ({} €). '
