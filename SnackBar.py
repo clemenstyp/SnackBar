@@ -1287,9 +1287,9 @@ def send_bill(admin):
             <table>
             <thead><tr><th colspan="2">Total</th></tr></thead>
             <tbody>
-            <tr><td>Total Cash</td><td>{:0.2f} €</td></tr>
-            <tr><td>Total Open Bill</td><td>{:0.2f} €</td></tr>
-            <tr><td><b>Resulting Sum</b></td><td><b>{:0.2f} €</b></td></tr>
+            <tr><td>Total Cash: </td><td>{:0.2f} €</td></tr>
+            <tr><td>Total Open Bill: </td><td>{:0.2f} €</td></tr>
+            <tr><td><b>Resulting Sum: </b></td><td><b>{:0.2f} €</b></td></tr>
             </tbody>
             </table><br/>
             """.format(total_cash, total_bill, (total_cash - total_bill))
