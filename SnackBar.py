@@ -1409,7 +1409,8 @@ def change_image():
             file = request.files['image']
             imagename = file.filename
             if imagename != '' and allowed_file(imagename):
-                filename = secure_filename(imagename)
+                userid = request.form["userid"]
+                filename = str(userid) + "_" + secure_filename(imagename)
                 full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
                 add = 0
                 while os.path.isfile(full_path):
@@ -1422,7 +1423,7 @@ def change_image():
 
                 file.save(full_path)
 
-                userid = request.form["userid"]
+
                 current_user = User.query.get(userid)
                 current_user.imageName = filename
 
