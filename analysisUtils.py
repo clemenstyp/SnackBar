@@ -96,8 +96,8 @@ def main():
         total_day_delta = max(total_day_delta, 1)
         week_delta = total_day_delta / 7
 
-        for i in range(len(amount)):
-            amount[i] = amount[i] / week_delta
+        # for i in range(len(amount)):
+        #     amount[i] = amount[i] / week_delta
 
         # amount = [x[1] for x in bla]
         content[item_name]['tagsDays'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -145,8 +145,8 @@ def main():
         # print(amountPoints)
         # print(amountRaw)
 
-        for i in range(len(amount_points)):
-            amount_points[i]['y'] = amount_points[i]['y'] / total_day_delta
+        # for i in range(len(amount_points)):
+        #     amount_points[i]['y'] = amount_points[i]['y'] / total_day_delta
 
         content[item_name]['amountPoints'] = amount_points
 
@@ -163,8 +163,8 @@ def main():
             amount_month[elem[0] - 1] = elem[1]
 
         month_delta = total_day_delta / 30
-        for i in range(len(amount_month)):
-            amount_month[i] = amount_month[i] / month_delta
+        # for i in range(len(amount_month)):
+        #     amount_month[i] = amount_month[i] / month_delta
 
         content[item_name]['amountMonth'] = amount_month
         content[item_name]['tagsMonth'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
