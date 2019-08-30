@@ -1,6 +1,7 @@
 # coding: utf-8
 from collections import Counter
 from datetime import timedelta
+from datetime import datetime
 
 from SnackBar import History, Item, db
 
@@ -64,6 +65,14 @@ def main():
         histogram = db.session.query(History.itemid, History.date, History.userid). \
             filter(History.itemid == itemID).all()
         # print("Total number of consumed {} is : {}".format(itemName,len(histogram)))
+        if len(histogram) > 1:
+            oldest_date = histogram[0][1]
+            newest_date = histogram[-1][1]
+            histogram_delta = newest_date - oldest_date
+            second_delta = histogram_delta.seconds
+        else:
+            second_delta = 3600.0
+
         content[item_name]['total'] = len(histogram)
 
         # print(len(histogram))
@@ -80,11 +89,22 @@ def main():
         for elem in bla:
             amount[elem[0] - 1] = elem[1]
 
+
+        hour_delta = second_delta / 3600
+        day_delta = hour_delta / 24
+        total_day_delta = day_delta + histogram_delta.days
+        total_day_delta = max(total_day_delta, 1)
+        week_delta = total_day_delta / 7
+
+        for i in range(len(amount)):
+            amount[i] = amount[i] / week_delta
+
         # amount = [x[1] for x in bla]
-        time_stamp = [x[0] for x in bla]
-        time_stamp = [x + 1 for x in range(7)]
         content[item_name]['tagsDays'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         content[item_name]['amountDays'] = amount
+
+        time_stamp = [x[0] for x in bla]
+        time_stamp = [x + 1 for x in range(7)]
 
         # Info Item on weekhours
         histogram_minutes = list()
@@ -125,6 +145,9 @@ def main():
         # print(amountPoints)
         # print(amountRaw)
 
+        for i in range(len(amount_points)):
+            amount_points[i]['y'] = amount_points[i]['y'] / total_day_delta
+
         content[item_name]['amountPoints'] = amount_points
 
         # Info Item on month
@@ -135,10 +158,15 @@ def main():
                 histogram_month.append(x[1].month)
         bla = list(sorted(Counter(histogram_month).items()))
         time_stamp = [x for x in range(12)]
-        amount = [0 for x in range(12)]
+        amount_month = [0 for x in range(12)]
         for elem in bla:
-            amount[elem[0] - 1] = elem[1]
-        content[item_name]['amountMonth'] = amount
+            amount_month[elem[0] - 1] = elem[1]
+
+        month_delta = total_day_delta / 30
+        for i in range(len(amount_month)):
+            amount_month[i] = amount_month[i] / month_delta
+
+        content[item_name]['amountMonth'] = amount_month
         content[item_name]['tagsMonth'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
                                            'Dec']
 
