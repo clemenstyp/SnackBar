@@ -32,6 +32,9 @@ from sendEmail import Bimail
 # import code for encoding urls and generating md5 hashes
 import urllib, hashlib
 import optparse
+import json
+import paho.mqtt.publish as mqtt_publish
+
 
 databaseName = 'CoffeeDB.db'
 url = 'sqlite:///' + databaseName
@@ -1374,6 +1377,34 @@ def send_email(curuser, curitem):
             # print(mymail.htmlbody)
             mymail.send()
 
+def send_webhook(curuser, curitem):
+    webhook_thread = threading.Thread(target=send_webhook_now, args=(curuser, curitem))
+    webhook_thread.start()
+
+
+def send_webhook_now(curuser, curitem):
+    if settings_for('publishToMqtt') == 'true' and settings_for('mqttTopic') is not '' and settings_for('mqttServer') is not '' and settings_for('mqttPort') is not '':
+        leader_data = get_all_leader_data()
+
+        coffeeDict = {}
+
+        coffeeDict["firstName"] =  curuser.firstName
+        coffeeDict["lastName"] = curuser.firstName
+        coffeeDict["name"] = '{} {}'.format(curuser.firstName, curuser.lastName)
+        coffeeDict["item"] = curitem.name
+        coffeeDict["price"] = curitem.price
+        coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
+        coffeeDict["total"] =  get_total(curuser.userid, curitem.itemid)
+
+        data_out = json.dumps(coffeeDict)
+
+        broker_url = settings_for('mqttServer')
+        broker_port = int(settings_for('mqttPort'))
+        broker_topic = settings_for('mqttTopic')
+
+        mqtt_publish.single(broker_topic, payload=data_out,hostname=broker_url, port=broker_port)
+
+
 
 @app.route('/change/<int:userid>')
 def change(userid):
@@ -1386,6 +1417,11 @@ def change(userid):
     db.session.commit()
 
     send_email(curuser, curitem)
+
+    try:
+        send_webhook(curuser, curitem)
+    except:
+        pass
     return redirect(url_for('user_page', userid=userid))
 
 

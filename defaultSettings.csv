@@ -5,3 +5,7 @@ mailServer,smtp.fit.fraunhofer.de
 minimumBalance,-5
 usersCanChangeImage,true
 instantMail,true
+publishToMqtt,false
+mqttServer,zamperoni.fit.fraunhofer.de
+mqttPort,1883
+mqttTopic,snackbar/et3
