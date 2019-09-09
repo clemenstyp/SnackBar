@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='clippy/clippy.css')}}" media="all">
 
 
     <!--<script src="{{url_for('static', filename='jquery/jquery.min.js')}}"></script>-->
@@ -223,6 +224,28 @@ function displayChangeImage (canChangeImage) {
     $( "#change_image" ).toggle(canChangeImage === "true");
 }
 displayChangeImage('{{canChangeImage}}')
+
+
+
+</script>
+
+    <!-- Clippy.js -->
+<script src="{{url_for('static', filename='clippy/clippy.min.js')}}"></script>
+
+<!-- Init script -->
+<script type="text/javascript">
+    var all_helper = Array("Bonzi", "Clippy", "F1", "Genie", "Genius", "Links", "Merlin", "Peedy", "Rocky", "Rover");
+    var helper = all_helper[Math.floor(Math.random()*all_helper.length)];
+
+
+
+    clippy.load(helper, function(agent){
+        // do anything with the loaded agent
+        agent.show();
+        agent.animate();
+        //agent.speak('When all else fails, bind some paper together. My name is Clippy.');
+        //agent.hide();
+    });
 
 
 
