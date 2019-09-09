@@ -1389,7 +1389,7 @@ def send_webhook_now(curuser, curitem):
         coffeeDict = {}
 
         coffeeDict["firstName"] =  curuser.firstName
-        coffeeDict["lastName"] = curuser.firstName
+        coffeeDict["lastName"] = curuser.lastName
         coffeeDict["name"] = '{} {}'.format(curuser.firstName, curuser.lastName)
         coffeeDict["item"] = curitem.name
         coffeeDict["price"] = curitem.price
