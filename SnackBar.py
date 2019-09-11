@@ -872,8 +872,10 @@ def initial():
     elif current_sorting == "coffee19":
         users = sorted(users, key=lambda k: k['coffeeMonth'])
     elif current_sorting == "coffee91":
+        users.reverse()
         users = sorted(users, key=lambda k: k['coffeeMonth'])
         users.reverse()
+
     else:
         current_sorting = "az"
 
