@@ -1388,6 +1388,13 @@ def send_webhook_now(curuser, curitem):
     if settings_for('publishToMqtt') == 'true' and settings_for('mqttTopic') is not '' and settings_for('mqttServer') is not '' and settings_for('mqttPort') is not '':
         leader_data = get_all_leader_data()
 
+        curn_bill_float = rest_bill(curuser.userid)
+        minimum_balance = float(settings_for('minimumBalance'))
+        if curn_bill_float <= minimum_balance:
+            shouldTopUpMoney = True
+        else:
+            shouldTopUpMoney = False
+
         coffeeDict = {}
 
         coffeeDict["firstName"] =  curuser.firstName
@@ -1397,6 +1404,7 @@ def send_webhook_now(curuser, curitem):
         coffeeDict["price"] = curitem.price
         coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
         coffeeDict["total"] =  get_total(curuser.userid, curitem.itemid)
+        coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
 
         data_out = json.dumps(coffeeDict)
 
