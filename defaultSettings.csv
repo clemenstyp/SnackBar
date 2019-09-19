@@ -1,7 +1,7 @@
 key,value
 snackAdmin,Clemens Putschli (C5-315)
 mailSender,snackbar-noreply@fit.fraunhofer.de
-mailServer,smtp.fit.fraunhofer.de
+mailServer,cns-dmz.fit.fraunhofer.de
 minimumBalance,-5
 usersCanChangeImage,true
 instantMail,true
