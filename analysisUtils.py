@@ -72,7 +72,7 @@ def main():
             second_delta = histogram_delta.seconds
         else:
             second_delta = 3600.0
-            histogram_delta = 0
+            histogram_delta = datetime()
 
         content[item_name]['total'] = len(histogram)
 
