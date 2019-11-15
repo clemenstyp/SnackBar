@@ -511,6 +511,8 @@ class MyBillView(BaseView):
         initusers = list()
         total_bill = 0
         total_cash = db.session.query(func.sum(Inpayment.amount)).scalar()
+        if total_cash is None:
+            total_cash = 0
 
         for instance in User.query.filter(User.hidden.is_(False)):
             bill = rest_bill(instance.userid)
