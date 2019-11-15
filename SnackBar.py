@@ -939,8 +939,9 @@ def adduser():
                 filename = ''
                 if 'image' in request.files:
                     file = request.files['image']
-                    if file.filename != '' and allowed_file(file.filename):
-                        filename = secure_filename(file.filename)
+                    imagename = first_name + "_" + file.filename + "_ " + str(int(time.time()))
+                    if imagename != '' and allowed_file(imagename):
+                        filename = secure_filename(imagename)
                         full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
                         file.save(full_path)
 
@@ -1457,9 +1458,7 @@ def change_image():
             file = request.files['image']
             imagename = file.filename
             userid = request.form["userid"]
-            imagename = str(userid) + "_" + imagename
-            import time
-            imagename = imagename + "_ " + str(int(time.time()))
+            imagename = str(userid) + "_" + imagename + "_ " + str(int(time.time()))
             if imagename != '' and allowed_file(imagename):
                 userid = request.form["userid"]
                 filename = secure_filename(imagename)
