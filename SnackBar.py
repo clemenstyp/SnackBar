@@ -4,6 +4,8 @@ import math
 import os
 import threading
 import time
+import string
+import random
 from datetime import date, datetime, timedelta
 from hashlib import md5
 from math import sqrt
@@ -939,7 +941,7 @@ def adduser():
                 filename = ''
                 if 'image' in request.files:
                     file = request.files['image']
-                    imagename = first_name + "_" + file.filename + "_ " + str(int(time.time()))
+                    imagename = first_name + "_" + file.filename + "_ " + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
                     if imagename != '' and allowed_file(imagename):
                         filename = secure_filename(imagename)
                         full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
@@ -1458,7 +1460,7 @@ def change_image():
             file = request.files['image']
             imagename = file.filename
             userid = request.form["userid"]
-            imagename = str(userid) + "_" + imagename + "_ " + str(int(time.time()))
+            imagename = str(userid) + "_" + imagename + "_ " + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
             if imagename != '' and allowed_file(imagename):
                 userid = request.form["userid"]
                 filename = secure_filename(imagename)
