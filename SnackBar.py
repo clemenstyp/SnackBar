@@ -45,9 +45,13 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 app = Flask(__name__)
+
+# Set up the command-line options
+options = load_options()
+
 app.config['SQLALCHEMY_DATABASE_URI'] = url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['SECRET_KEY'] = '123456790'
+app.config['SECRET_KEY'] = '123456790' + options.url_prefix
 app.config['STATIC_FOLDER'] = 'static'
 app.config['IMAGE_FOLDER'] = 'static/images'
 app.config['ICON_FOLDER'] = 'static/icons'
@@ -62,8 +66,7 @@ if not os.path.exists(app.config['IMAGE_FOLDER']):
     os.makedirs(app.config['IMAGE_FOLDER'])
 
 
-# Set up the command-line options
-options = load_options()
+
 
 #image cache for gravatar images
 imageCache = {}
