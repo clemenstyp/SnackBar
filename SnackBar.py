@@ -1005,6 +1005,8 @@ def monster_image(filename, userID):
     try:
         if not os.path.isfile(full_file_path):
             return  monster_image_for_id(userID)
+        if os.stat(full_file_path).st_size < 1:
+            return monster_image_for_id(userID)
     except (TypeError, ValueError):
         pass
 
