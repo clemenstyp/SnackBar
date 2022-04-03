@@ -22,7 +22,7 @@ jdcal==1.4.1
 Jinja2==2.11.3
 Mako==1.0.11
 MarkupSafe==1.1.1
-numpy==1.16.4
+numpy==1.21.0
 odfpy==1.4.0
 openpyxl==2.6.2
 python-dateutil==2.8.0
