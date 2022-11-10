@@ -2,11 +2,5 @@
   "name": "SnackBar",
   "short_name": "SnackBar",
   "lang": "de-DE",
-  "start_url": "index.html",
-  "display": "standalone",
-  "icons": [
-    {
-      "src": "./static/app_icon.png"
-    }
-  ]
+  "display": "standalone"
 }
