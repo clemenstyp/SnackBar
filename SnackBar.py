@@ -1389,12 +1389,12 @@ def send_email(curuser, curitem):
             # print(mymail.htmlbody)
             mymail.send()
 
-def send_webhook(curuser, curitem):
-    webhook_thread = threading.Thread(target=send_webhook_now, args=(curuser, curitem))
+def send_webhook(curuser, curitem, extra_data={}):
+    webhook_thread = threading.Thread(target=send_webhook_now, args=(curuser, curitem, extra_data))
     webhook_thread.start()
 
 
-def send_webhook_now(curuser, curitem):
+def send_webhook_now(curuser, curitem, extra_data):
     if settings_for('publishToMqtt') == 'true' and settings_for('mqttTopic') is not '' and settings_for('mqttServer') is not '' and settings_for('mqttPort') is not '':
         leader_data = get_all_leader_data()
 
@@ -1415,6 +1415,7 @@ def send_webhook_now(curuser, curitem):
         coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
         coffeeDict["total"] =  get_total(curuser.userid, curitem.itemid)
         coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
+        coffeeDict["extra_data"] = extra_data
 
         data_out = json.dumps(coffeeDict)
 
@@ -1437,12 +1438,29 @@ def change(userid):
     db.session.commit()
 
     send_email(curuser, curitem)
-
     try:
-        send_webhook(curuser, curitem)
+        send_webhook(curuser, curitem, get_extra_data(request))
     except:
         pass
     return redirect(url_for('user_page', userid=userid))
+
+def get_extra_data(theRequest):
+    return_data = {}
+    if theRequest.environ.get('HTTP_X_FORWARDED_FOR') is not None:
+        return_data["remote_address"] = theRequest.environ['HTTP_X_FORWARDED_FOR']
+    elif theRequest.environ.get('REMOTE_ADDR') is not None:
+        return_data["remote_address"] = theRequest.environ['REMOTE_ADDR']
+    elif theRequest.remote_addr is not None:
+        return_data["remote_address"] = theRequest.remote_addr
+
+    if theRequest.referrer is not None:
+        return_data["referrer"] = theRequest.referrer
+
+    if theRequest.user_agent is not None:
+        return_data["user_agent"] = theRequest.user_agent.string
+
+
+    return return_data
 
 
 @app.route('/analysis')
