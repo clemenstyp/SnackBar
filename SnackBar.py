@@ -1278,23 +1278,58 @@ def send_reminder(curuser):
             # print(mymail.htmlbody)
             mymail.send()
 
+def create_bill():
+    initusers = list()
+    total_bill = 0
+    total_cash = db.session.query(func.sum(Inpayment.amount)).scalar()
 
-def send_bill(admin):
-    if admin.email:
-        initusers = list()
-        total_bill = 0
-        total_cash = db.session.query(func.sum(Inpayment.amount)).scalar()
+    for instance in User.query.filter(User.hidden.is_(False)):
+        bill = rest_bill(instance.userid)
+        total_bill += bill
+        initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
+                            'userid': '{}'.format(instance.userid),
+                            'bill': bill})
 
-        for instance in User.query.filter(User.hidden.is_(False)):
-            bill = rest_bill(instance.userid)
-            total_bill += bill
-            initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
-                              'userid': '{}'.format(instance.userid),
-                              'bill': bill})
+    users = sorted(initusers, key=lambda k: k['name'])
 
-        users = sorted(initusers, key=lambda k: k['name'])
+    bill_date = datetime.now()
 
-        today = datetime.now().strftime('%Y-%m-%d')
+    return (total_cash, total_bill, users, bill_date)
+
+
+def save_bill(total_cash, total_bill, bill_date):
+    #filename = 'CoffeeBill_{}_{}.xls'.format(bill_date.date().isoformat(),bill_date.time().strftime('%H-%M-%S'))
+    filename = 'CoffeeBill.xls'
+    
+    # export_path
+    export_path = os.path.join(current_app.root_path, "bill")
+    if not export_path:
+        os.makedirs(export_path)
+
+    full_export_path = os.path.join(export_path, filename)
+
+    # check if export file already exists (if not then create it and add header)
+    if not os.path.exists(full_export_path):
+        # create file
+        with open(full_export_path, "w") as file:
+            writer = csv.writer(file)
+        
+        # Daten an die CSV-Datei anhängen
+        writer.writerow(["Date", "Total Cash", "Total Open Bill", "Resulting Sum"])
+
+    today = bill_date.strftime('%Y-%m-%d')
+    #Append to CSV file
+    with open(full_export_path, mode="a", newline="") as file:
+        writer = csv.writer(file)
+        
+        # Daten an die CSV-Datei anhängen
+        writer.writerow([today, total_cash, total_bill, (total_cash - total_bill)])
+	
+	
+def send_bill_to(user, total_cash, total_bill, users, bill_date):
+    if user.email:
+
+        today = bill_date.strftime('%Y-%m-%d')
 
         header = "Bill SnackBar: {}".format(today)
 
@@ -1327,7 +1362,7 @@ def send_bill(admin):
 
         # print(instance.firstName)
         # print(currbill)
-        mymail = Bimail(header, ['{}'.format(admin.email)])
+        mymail = Bimail(header, ['{}'.format(user.email)])
         mymail.sendername = settings_for('mailSender')
         mymail.sender = settings_for('mailSender')
         mymail.servername = settings_for('mailServer')
@@ -1584,11 +1619,12 @@ def send_reminder_to_all():
         pass
 
 def send_bill_to_admin():
-    # for aAdmin in Coffeeadmin.query.filter(Coffeeadmin.send_bill.is_(True)):
-    #     send_bill(aAdmin)
+    (total_cash, total_bill, users, bill_date) = create_bill()
+    save_bill(total_cash, total_bill, bill_date)
+	
     try:
         for aAdmin in Coffeeadmin.query.filter(Coffeeadmin.send_bill.is_(True)):
-            send_bill(aAdmin)
+            send_bill_to(aAdmin, total_cash, total_bill, users, bill_date)
     except:
         pass
 
