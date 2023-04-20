@@ -1323,7 +1323,7 @@ def save_bill(total_cash, total_bill, bill_date):
         writer = csv.writer(file)
         
         # Daten an die CSV-Datei anhängen
-        writer.writerow([today, total_cash, total_bill, (total_cash - total_bill)])
+        writer.writerow([today, "{:0.2f}".format(total_cash), "{:0.2f}".format(total_bill), "{:0.2f}".format((total_cash - total_bill))])
 	
 	
 def send_bill_to(user, total_cash, total_bill, users, bill_date):
@@ -1643,6 +1643,7 @@ if __name__ == "__main__":
 
     schedule.every().monday.at("10:30").do(send_reminder_to_all)
     schedule.every().monday.at("00:00").do(send_bill_to_admin)
+    schedule.every(1).minutes.do(send_bill_to_admin)
     schedule_thread = threading.Thread(target=run_schedule).start()
 
     set_default_settings()
