@@ -1294,7 +1294,7 @@ def create_bill():
 
     bill_date = datetime.now()
 
-    return (total_cash, total_bill, users, bill_date)
+    return total_cash, total_bill, users, bill_date
 
 
 def save_bill(total_cash, total_bill, bill_date):
@@ -1302,7 +1302,8 @@ def save_bill(total_cash, total_bill, bill_date):
     filename = 'CoffeeBill.xls'
     
     # export_path
-    export_path = os.path.join(current_app.root_path, "bill")
+    root_path = os.path.dirname(os.path.abspath(__file__))
+    export_path = os.path.join(root_path, "bill")
     if not export_path:
         os.makedirs(export_path)
 
@@ -1619,7 +1620,7 @@ def send_reminder_to_all():
         pass
 
 def send_bill_to_admin():
-    (total_cash, total_bill, users, bill_date) = create_bill()
+    total_cash, total_bill, users, bill_date = create_bill()
     save_bill(total_cash, total_bill, bill_date)
 	
     try:
@@ -1643,6 +1644,7 @@ if __name__ == "__main__":
 
     schedule.every().monday.at("10:30").do(send_reminder_to_all)
     schedule.every().monday.at("00:00").do(send_bill_to_admin)
+    schedule.every(1).minutes.do(send_bill_to_admin)
     schedule_thread = threading.Thread(target=run_schedule).start()
 
     set_default_settings()
