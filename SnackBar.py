@@ -1298,8 +1298,8 @@ def create_bill():
 
 
 def save_bill(total_cash, total_bill, bill_date):
-    #filename = 'CoffeeBill_{}_{}.xls'.format(bill_date.date().isoformat(),bill_date.time().strftime('%H-%M-%S'))
-    filename = 'CoffeeBill.xls'
+    #filename = 'CoffeeBill_{}_{}.csv'.format(bill_date.date().isoformat(),bill_date.time().strftime('%H-%M-%S'))
+    filename = 'CoffeeBill.csv'
     
     # export_path
     root_path = os.path.dirname(os.path.abspath(__file__))
