@@ -1314,9 +1314,8 @@ def save_bill(total_cash, total_bill, bill_date):
         # create file
         with open(full_export_path, "w") as file:
             writer = csv.writer(file)
-        
-        # Daten an die CSV-Datei anhängen
-        writer.writerow(["Date", "Total Cash", "Total Open Bill", "Resulting Sum"])
+            # Daten an die CSV-Datei anhängen
+            writer.writerow(["Date", "Total Cash", "Total Open Bill", "Resulting Sum"])
 
     today = bill_date.strftime('%Y-%m-%d')
     #Append to CSV file
