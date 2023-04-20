@@ -1643,7 +1643,6 @@ if __name__ == "__main__":
 
     schedule.every().monday.at("10:30").do(send_reminder_to_all)
     schedule.every().monday.at("00:00").do(send_bill_to_admin)
-    schedule.every(1).minutes.do(send_bill_to_admin)
     schedule_thread = threading.Thread(target=run_schedule).start()
 
     set_default_settings()
