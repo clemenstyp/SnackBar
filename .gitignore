@@ -15,6 +15,6 @@ _mailinglist
 sqlite
 *.db
 *.bak
-CoffeeDB.db
+data/CoffeeDB.db
 static/images/
 /.vs

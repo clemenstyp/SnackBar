@@ -38,7 +38,7 @@ import json
 import paho.mqtt.publish as mqtt_publish
 
 
-databaseName = 'CoffeeDB.db'
+databaseName = 'data/CoffeeDB.db'
 url = 'sqlite:///' + databaseName
 engine = create_engine(url, connect_args={'check_same_thread': False}, poolclass=SingletonThreadPool)
 Session = sessionmaker(bind=engine)

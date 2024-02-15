@@ -10,7 +10,7 @@ It is based on CoffeeList from "duscheln": https://github.com/duscheln/CoffeeLis
 * Install the pip requirements as denoted in requirements.txt:
 
 ```
-pip3 install --user -r requirements.txt
+pipx install --user -r requirements.txt
 ```
 
 * You can change the userList.csv as shown in the template. These users will be imported, when a database is created. You can add or remove useres at a later time
