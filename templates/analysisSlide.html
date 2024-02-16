@@ -32,11 +32,11 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <!--<script src="{{url_for('static', filename='bootstrap/bootstrap.min.js')}}"></script>-->
     <style>
-        body {
-            margin:20px;
-            text-align:center !important;
-        }
-        .carousel-indicators li {
+body {
+    margin:20px;
+    text-align:center !important;
+}
+.carousel-indicators li {
     display: inline-block;
     width: 48px;
     height: 48px;
@@ -59,13 +59,14 @@
     bottom: -90px;
 }
 
+
 .black-big-icon {
   color: black !important;
   font-size: 75px !important;
 }
 </style>
 </head>
-<body>
+<body >
     <div class="ui text container" style = "margin-top:30px">
             <h1 class="ui center aligned dividing header"> Snackbar Analysis!</h1>
         </div>
@@ -81,7 +82,6 @@
   <!-- Wrapper for slides -->
   <div class="carousel-inner" role="listbox">
     <div class="item active item1">
-
             <canvas id="WeekHours"></canvas>
         <br/>
     </div>
@@ -322,17 +322,26 @@ var weekHoursChart = new Chart(ctx, {
     },
 });
 
+$('.carousel').carousel({
+  interval: 5000
+})
 
-
- weekDaysChart.render();
+weekDaysChart.render();
 monthChart.render();
 weekHoursChart.render();
 
+
+
 function resetChart() {
     //re-render chart data
-    weekDaysChart.render();
-    monthChart.render();
-    weekHoursChart.render();
+    weekDaysChart.resize();
+    monthChart.resize();
+    weekHoursChart.resize();
+
+    // weekDaysChart.render();
+    // monthChart.render();
+    // weekHoursChart.render();
+
 }
 
 $(document).on('click', '.carousel-control', function () {

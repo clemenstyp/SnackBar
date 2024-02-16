@@ -9,23 +9,24 @@ import random
 from datetime import date, datetime, timedelta
 from hashlib import md5
 from math import sqrt
+from collections import Counter
 
 import flask_login as loginflask
 import schedule
 import tablib
-from flask import Flask, redirect, url_for, render_template, request, send_from_directory, current_app, safe_join, flash, Response
+from flask import Flask, redirect, url_for, render_template, request, send_from_directory, current_app, flash, Response
 from flask_admin import Admin, expose, helpers, AdminIndexView, BaseView
 from flask_admin.base import MenuLink
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.form.upload import FileUploadField
 from flask_sqlalchemy import SQLAlchemy
-from jinja2 import Markup
+from markupsafe import Markup
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
 from sqlalchemy.sql import func
 # noinspection PyPackageRequirements
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename, safe_join
 # noinspection PyPackageRequirements
 from wtforms import form, fields, validators
 import requests
@@ -36,15 +37,16 @@ import urllib, hashlib
 import optparse
 import json
 import paho.mqtt.publish as mqtt_publish
+import logging
+from logging.handlers import SMTPHandler
 
+app = Flask(__name__)
 
 databaseName = 'data/CoffeeDB.db'
-url = 'sqlite:///' + databaseName
+url = f"sqlite:///{app.root_path}/{databaseName}"
 engine = create_engine(url, connect_args={'check_same_thread': False}, poolclass=SingletonThreadPool)
 Session = sessionmaker(bind=engine)
 session = Session()
-
-app = Flask(__name__)
 
 # Set up the command-line options
 options = load_options()
@@ -72,11 +74,12 @@ if not os.path.exists(app.config['IMAGE_FOLDER']):
 imageCache = {}
 
 def settings_for(key):
-    db_entry = db.session.query(Settings).filter_by(key=key).first()
-    if db_entry is None:
-        return ''
-    else:
-        return db_entry.value
+    with app.app_context():
+        db_entry = db.session.query(Settings).filter_by(key=key).first()
+        if db_entry is None:
+            return ''
+        else:
+            return db_entry.value
 
 
 @app.template_filter("itemstrikes")
@@ -237,8 +240,8 @@ class Settings(db.Model):
 
 
 class LoginForm(form.Form):
-    login = fields.StringField(validators=[validators.required()])
-    password = fields.PasswordField(validators=[validators.required()])
+    login = fields.StringField(validators=[validators.DataRequired()])
+    password = fields.PasswordField(validators=[validators.DataRequired()])
 
     # noinspection PyUnusedLocal
     def validate_login(self, field):
@@ -254,18 +257,20 @@ class LoginForm(form.Form):
             raise validators.ValidationError('Invalid password')
 
     def get_user(self):
-        return db.session.query(Coffeeadmin).filter_by(name=self.login.data).first()
+        with app.app_context():
+            return db.session.query(Coffeeadmin).filter_by(name=self.login.data).first()
 
 
 # noinspection PyUnusedLocal
 class RegistrationForm(form.Form):
-    login = fields.StringField(validators=[validators.required()])
+    login = fields.StringField(validators=[validators.DataRequired()])
     email = fields.StringField()
-    password = fields.PasswordField(validators=[validators.required()])
+    password = fields.PasswordField(validators=[validators.DataRequired()])
 
     def validate_login(self, field):
-        if db.session.query(Coffeeadmin).filter_by(name=self.login.data).count() > 0:
-            raise validators.ValidationError('Duplicate username')
+        with app.app_context():
+            if db.session.query(Coffeeadmin).filter_by(name=self.login.data).count() > 0:
+                raise validators.ValidationError('Duplicate username')
 
 
 def init_login():
@@ -275,58 +280,62 @@ def init_login():
     # Create User loader function
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.query(Coffeeadmin).get(user_id)
+        with app.app_context():
+            return db.session.get(Coffeeadmin, user_id)
 
 
 def getcurrbill(userid):
-    curr_bill_new = db.session.query(func.sum(History.price)). \
-        filter(History.userid == userid).scalar()
-    if curr_bill_new is None:
-        curr_bill_new = 0
+    with app.app_context():
+        curr_bill_new = db.session.query(func.sum(History.price)). \
+            filter(History.userid == userid).scalar()
+        if curr_bill_new is None:
+            curr_bill_new = 0
 
-    # bill = History.query.filter(History.userid == userid).filter(History.paid == False)
-    # currbill = 0
+        # bill = History.query.filter(History.userid == userid).filter(History.paid == False)
+        # currbill = 0
 
-    # for entry in bill:
-    #     currbill += entry.price
+        # for entry in bill:
+        #     currbill += entry.price
 
-    return curr_bill_new
+        return curr_bill_new
 
 
 
 def get_users_with_leaders():
     initusers = list()
-    all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
-    all_items_id = [int(instance.itemid) for instance in all_items]
-    if len(all_items_id) > 0:
-        itemid = all_items_id[0]
-    else:
-        itemid = ''
+    with app.app_context():
+        all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
+        all_items_id = [int(instance.itemid) for instance in all_items]
+        if len(all_items_id) > 0:
+            itemid = all_items_id[0]
+        else:
+            itemid = ''
 
-    leader_data = get_all_leader_data()
+        leader_data = get_all_leader_data()
 
-    for instance in User.query.filter(User.hidden.is_(False)):
-        initusers.append({'firstName': '{}'.format(instance.firstName),
-                              'lastName': '{}'.format(instance.lastName),
-                              'imageName': '{}'.format(instance.imageName),
-                              'id': '{}'.format(instance.userid),
-                              'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
-                              'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
-                              'coffeeMonth': get_unpaid(instance.userid, itemid, leader_data),
-                              'leader': get_leader(instance.userid, leader_data),
-                               'email': '{}'.format(instance.email),
-                              })
+        for instance in User.query.filter(User.hidden.is_(False)):
+            initusers.append({'firstName': '{}'.format(instance.firstName),
+                                  'lastName': '{}'.format(instance.lastName),
+                                  'imageName': '{}'.format(instance.imageName),
+                                  'id': '{}'.format(instance.userid),
+                                  'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
+                                  'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
+                                  'coffeeMonth': get_unpaid(instance.userid, itemid, leader_data),
+                                  'leader': get_leader(instance.userid, leader_data),
+                                   'email': '{}'.format(instance.email),
+                                  })
     return initusers
 
 
 def get_all_leader_data():
     leader_data = {}
-    all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
-    for aItem in all_items:
-        leader_ids = get_leaders_from_database(aItem.itemid)
+    with app.app_context():
+        all_items = Item.query.filter(Item.icon is not None, Item.icon != '', Item.icon != ' ')
+        for aItem in all_items:
+            leader_ids = get_leaders_from_database(aItem.itemid)
 
-        item_data = {'leader_ids': leader_ids, 'icon' : aItem.icon}
-        leader_data[aItem.itemid]= item_data
+            item_data = {'leader_ids': leader_ids, 'icon' : aItem.icon}
+            leader_data[aItem.itemid]= item_data
 
 
 
@@ -334,17 +343,18 @@ def get_all_leader_data():
 
 
 def get_leaders_from_database(itemid):
-    tmp_query = db.session.query(User.userid, func.count(History.price), func.max(History.date))
-    tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
-                                                  extract('month', History.date) == datetime.now().month,
-                                                  extract('year', History.date) == datetime.now().year))
-    tmp_query = tmp_query.group_by(User.userid)
-    tmp_query = tmp_query.order_by(func.count(History.price).desc())
-    tmp_query = tmp_query.order_by(History.date)
-    tmp_query = tmp_query.all()
+    with app.app_context():
+        tmp_query = db.session.query(User.userid, func.count(History.price), func.max(History.date))
+        tmp_query = tmp_query.outerjoin(History, and_(User.userid == History.userid, History.itemid == itemid,
+                                                      extract('month', History.date) == datetime.now().month,
+                                                      extract('year', History.date) == datetime.now().year))
+        tmp_query = tmp_query.group_by(User.userid)
+        tmp_query = tmp_query.order_by(func.count(History.price).desc())
+        tmp_query = tmp_query.order_by(History.date)
+        tmp_query = tmp_query.all()
 
 
-    return tmp_query
+        return tmp_query
 
 def get_unpaid(userid, itemid, leader_data):
     returnValue = 0
@@ -421,23 +431,25 @@ def get_rank(userid, itemid, leader_data):
 
 
 def get_total(userid, itemid):
-    n_unpaid = db.session.query(History). \
-        filter(History.userid == userid). \
-        filter(History.itemid == itemid).count()
+    with app.app_context():
+        n_unpaid = db.session.query(History). \
+            filter(History.userid == userid). \
+            filter(History.itemid == itemid).count()
 
-    if n_unpaid is None:
-        n_unpaid = 0
+        if n_unpaid is None:
+            n_unpaid = 0
 
-    return n_unpaid
+        return n_unpaid
 
 
 def get_payment(userid):
-    total_payment_new = db.session.query(func.sum(Inpayment.amount)). \
-        filter(Inpayment.userid == userid).scalar()
-    if total_payment_new is None:
-        total_payment_new = 0
+    with app.app_context():
+        total_payment_new = db.session.query(func.sum(Inpayment.amount)). \
+            filter(Inpayment.userid == userid).scalar()
+        if total_payment_new is None:
+            total_payment_new = 0
 
-    return total_payment_new
+        return total_payment_new
 
 
 def rest_bill(userid):
@@ -450,35 +462,36 @@ def rest_bill(userid):
 
 
 def make_xls_bill(filename, fullpath):
-    # filename = 'CoffeeBill_{}_{}.xls'.format(datetime.now().date().isoformat(),
-    #                                        datetime.now().time().strftime('%H-%M-%S'))
+    with app.app_context():
+        # filename = 'CoffeeBill_{}_{}.xls'.format(datetime.now().date().isoformat(),
+        #                                        datetime.now().time().strftime('%H-%M-%S'))
 
-    # fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
-    header = list()
-    header.append('name')
-    for entry in Item.query:
-        header.append('{}'.format(entry.name))
-    header.append('bill')
+        # fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
+        header = list()
+        header.append('name')
+        for entry in Item.query:
+            header.append('{}'.format(entry.name))
+        header.append('bill')
 
-    excel_data = tablib.Dataset()
-    excel_data.headers = header
+        excel_data = tablib.Dataset()
+        excel_data.headers = header
 
-    leader_data = get_all_leader_data()
+        leader_data = get_all_leader_data()
 
-    for instance in User.query.filter(User.hidden.is_(False)):
-        firstline = list()
-        firstline.append('{} {}'.format(instance.firstName, instance.lastName))
+        for instance in User.query.filter(User.hidden.is_(False)):
+            firstline = list()
+            firstline.append('{} {}'.format(instance.firstName, instance.lastName))
 
-        for record in Item.query:
-            firstline.append('{}'.format(get_unpaid(instance.userid, record.itemid, leader_data)))
+            for record in Item.query:
+                firstline.append('{}'.format(get_unpaid(instance.userid, record.itemid, leader_data)))
 
-        firstline.append('{0:.2f}'.format(rest_bill(instance.userid)))
-        excel_data.append(firstline)
+            firstline.append('{0:.2f}'.format(rest_bill(instance.userid)))
+            excel_data.append(firstline)
 
-    with open(os.path.join(fullpath, filename), 'wb') as f:
-        f.write(excel_data.xls)
+        with open(os.path.join(fullpath, filename), 'wb') as f:
+            f.write(excel_data.xls)
 
-    return
+        return
 
 
 def button_background(user):
@@ -528,8 +541,18 @@ class MyBillView(BaseView):
 
         users = sorted(initusers, key=lambda k: k['name'])
 
+        init_hidden_users = list()
+        hidden_total_bill = 0
+        for instance in User.query.filter(User.hidden.is_(True)):
+            bill = rest_bill(instance.userid)
+            hidden_total_bill += bill
+            init_hidden_users.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
+                              'userid': '{}'.format(instance.userid),
+                              'bill': bill})
 
-        return self.render('admin/bill.html', users=users, total_bill=total_bill, total_cash=total_cash, total_sum=(total_cash - total_bill))
+        hidden_users = sorted(init_hidden_users, key=lambda k: k['bill'])
+
+        return self.render('admin/bill.html', users=users, hidden_users=hidden_users, hidden_total_bill=hidden_total_bill, total_bill=total_bill, total_cash=total_cash, total_sum=(total_cash - total_bill))
 
     @expose('/reminder/')
     def reminder(self):
@@ -545,7 +568,7 @@ class MyBillView(BaseView):
         fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
         make_xls_bill(filename, fullpath)
 
-        return send_from_directory(directory=fullpath, filename=filename, as_attachment=True)
+        return send_from_directory(directory=fullpath, path=filename, as_attachment=True)
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
@@ -581,52 +604,53 @@ def get_total_bill():
 
         return months
 
-    currentDay = datetime.now()
-    newestDate = nextMonth(date(currentDay.year, currentDay.month, currentDay.day))
-    oldestDate = prevMonth(newestDate)
+    with app.app_context():
+        currentDay = datetime.now()
+        newestDate = nextMonth(date(currentDay.year, currentDay.month, currentDay.day))
+        oldestDate = prevMonth(newestDate)
 
-    for instance in Inpayment.query.order_by(Inpayment.date).limit(1):
-        oldestDateInpayment = date(instance.date.year, instance.date.month, 1)
-        if oldestDateInpayment < oldestDate:
-            oldestDate = oldestDateInpayment
+        for instance in Inpayment.query.order_by(Inpayment.date).limit(1):
+            oldestDateInpayment = date(instance.date.year, instance.date.month, 1)
+            if oldestDateInpayment < oldestDate:
+                oldestDate = oldestDateInpayment
 
-    for instance in History.query.order_by(History.date).limit(1):
-        oldestDateHistory = date(instance.date.year, instance.date.month, 1)
-        if oldestDateHistory < oldestDate:
-            oldestDate = oldestDateHistory
+        for instance in History.query.order_by(History.date).limit(1):
+            oldestDateHistory = date(instance.date.year, instance.date.month, 1)
+            if oldestDateHistory < oldestDate:
+                oldestDate = oldestDateHistory
 
-    total_cash = 0
-    total_open = 0
-    accounting = list()
-
-    for month in months_between(oldestDate, newestDate):
+        total_cash = 0
         total_open = 0
+        accounting = list()
 
-        previousMonth = prevMonth(month)
-        for instance in Inpayment.query.filter(Inpayment.date.between(previousMonth, month)):
-            total_cash += instance.amount
+        for month in months_between(oldestDate, newestDate):
+            total_open = 0
 
-        for instance in User.query.filter(User.hidden.is_(False)):
-            curr_bill = 0
-            for historyInstance in History.query.filter(
-                    and_(History.date.between(oldestDate, month), History.userid == instance.userid)):
-                curr_bill += historyInstance.price
+            previousMonth = prevMonth(month)
+            for instance in Inpayment.query.filter(Inpayment.date.between(previousMonth, month)):
+                total_cash += instance.amount
 
-            total_payment = 0
-            for inpaymentInstance in Inpayment.query.filter(
-                    and_(Inpayment.date.between(oldestDate, month), Inpayment.userid == instance.userid)):
-                total_payment += inpaymentInstance.amount
+            for instance in User.query.filter(User.hidden.is_(False)):
+                curr_bill = 0
+                for historyInstance in History.query.filter(
+                        and_(History.date.between(oldestDate, month), History.userid == instance.userid)):
+                    curr_bill += historyInstance.price
 
-            total_open -= -curr_bill + total_payment
+                total_payment = 0
+                for inpaymentInstance in Inpayment.query.filter(
+                        and_(Inpayment.date.between(oldestDate, month), Inpayment.userid == instance.userid)):
+                    total_payment += inpaymentInstance.amount
 
-        accounting.append({'name': '{}'.format(previousMonth.strftime('%B %Y')),
-                           'from_date': '{}'.format(previousMonth),
-                           'to_date': '{}'.format(month),
-                           'cash': total_cash,
-                           'open': total_open,
-                           'sum': (total_cash + total_open)})
+                total_open -= -curr_bill + total_payment
 
-    return accounting, total_cash
+            accounting.append({'name': '{}'.format(previousMonth.strftime('%B %Y')),
+                               'from_date': '{}'.format(previousMonth),
+                               'to_date': '{}'.format(month),
+                               'cash': total_cash,
+                               'open': total_open,
+                               'sum': (total_cash + total_open)})
+
+        return accounting, total_cash
 
 class MyAccountingView(BaseView):
 
@@ -666,19 +690,37 @@ class MyPaymentModelView(ModelView):
         return loginflask.current_user.is_authenticated
 
     def page_sum(self, current_page):
-        # this should take into account any filters/search inplace
-        _query = self.session.query(Inpayment).limit(self.page_size).offset(current_page * self.page_size)
-        page_sum = sum([payment.amount for payment in _query])
-        if page_sum is None:
+        with app.app_context():
+            # this should take into account any filters/search inplace
+            #_query = self.session.query(Inpayment).limit(self.page_size).offset(current_page * self.page_size)
+            #page_sum = sum([payment.amount for payment in _query])
+
+            view_args = self._get_list_extra_args()
+            # Map column index to column name
+            sort_column = self._get_column_by_idx(view_args.sort)
+            if sort_column is not None:
+                sort_column = sort_column[0]
+
+            # Get page size
+            page_size = view_args.page_size or self.page_size
+            count, data = self.get_list(current_page, sort_column, view_args.sort_desc,
+                                        view_args.search, view_args.filters, page_size=page_size)
+
             page_sum = 0
-        return '{0:.2f}'.format(page_sum)
+            for payment in data:
+                page_sum += payment.amount
+
+            if page_sum is None:
+                page_sum = 0
+            return '{0:.2f}'.format(page_sum)
 
     def total_sum(self):
-        # this should take into account any filters/search inplace
-        total_sum = self.session.query(func.sum(Inpayment.amount)).scalar()
-        if total_sum is None:
-            total_sum = 0
-        return '{0:.2f}'.format(total_sum)
+        with app.app_context():
+            # this should take into account any filters/search inplace
+            total_sum = self.session.query(func.sum(Inpayment.amount)).scalar()
+            if total_sum is None:
+                total_sum = 0
+            return '{0:.2f}'.format(total_sum)
 
     def render(self, template, **kwargs):
         # we are only interested in the list page
@@ -1010,17 +1052,16 @@ def monster_image(filename, userID):
     except (TypeError, ValueError):
         pass
 
-    return send_from_directory(directory=fullpath, filename=filename, as_attachment=False)
+    return send_from_directory(directory=fullpath, path=filename, as_attachment=False)
 
 
 
 def monster_image_for_id(userID):
-
     if userID is None:
         userID = "example@example.org"
 
     use_gravatar = True
-    returnValue = send_from_directory(directory=current_app.root_path, filename="static/unknown_image.png",
+    returnValue = send_from_directory(directory=current_app.root_path, path="static/unknown_image.png",
                                       as_attachment=False)
 
     # mail_parts = userID.split("@")
@@ -1060,7 +1101,7 @@ def get_wavatar_from_gravatar(userHash):
         proxyResponse = requests.get(requestURL, timeout=5)
         # imageCache[userHash] = returnValue
         statusCode = proxyResponse.status_code
-        if statusCode is 200:
+        if statusCode == 200:
             returnValue = Response(proxyResponse)
     except:
         pass
@@ -1076,7 +1117,7 @@ def get_monster_id_from_gravatar(userHash):
         proxyResponse = requests.get(requestURL, timeout=5)
         # imageCache[userHash] = returnValue
         statusCode = proxyResponse.status_code
-        if statusCode is 200:
+        if statusCode == 200:
             returnValue = Response(proxyResponse)
     except:
         pass
@@ -1087,7 +1128,7 @@ def get_monster_id_from_gravatar(userHash):
 
 def image_from_folder(filename, image_folder, the_default_image):
     if filename is None:
-        return send_from_directory(directory=current_app.root_path, filename=the_default_image, as_attachment=False)
+        return send_from_directory(directory=current_app.root_path, path=the_default_image, as_attachment=False)
 
     fullpath = os.path.join(current_app.root_path, image_folder)
 
@@ -1096,11 +1137,11 @@ def image_from_folder(filename, image_folder, the_default_image):
         full_file_path = os.path.join(current_app.root_path, full_file_path)
     try:
         if not os.path.isfile(full_file_path):
-            return send_from_directory(directory=current_app.root_path, filename=the_default_image, as_attachment=False)
+            return send_from_directory(directory=current_app.root_path, path=the_default_image, as_attachment=False)
     except (TypeError, ValueError):
         pass
 
-    return send_from_directory(directory=fullpath, filename=filename, as_attachment=False)
+    return send_from_directory(directory=fullpath, path=filename, as_attachment=False)
     # return redirect(url)
 
 
@@ -1181,7 +1222,10 @@ def reltime(date, compare_to=None, at='@'):
 
 @app.route('/user/<int:userid>', methods=['GET'])
 def user_page(userid):
-    user_name = '{} {}'.format(User.query.get(userid).firstName, User.query.get(userid).lastName)
+    curuser = db.session.get(User, userid)
+    if curuser is None:
+        return redirect(url_for('initial'))
+    user_name = '{} {}'.format(curuser.firstName, curuser.lastName)
     items = list()
     leader_data = get_all_leader_data()
 
@@ -1279,22 +1323,23 @@ def send_reminder(curuser):
             mymail.send()
 
 def create_bill():
-    initusers = list()
-    total_bill = 0
-    total_cash = db.session.query(func.sum(Inpayment.amount)).scalar()
+    with app.app_context():
+        initusers = list()
+        total_bill = 0
+        total_cash = db.session.query(func.sum(Inpayment.amount)).scalar()
 
-    for instance in User.query.filter(User.hidden.is_(False)):
-        bill = rest_bill(instance.userid)
-        total_bill += bill
-        initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
-                            'userid': '{}'.format(instance.userid),
-                            'bill': bill})
+        for instance in User.query.filter(User.hidden.is_(False)):
+            bill = rest_bill(instance.userid)
+            total_bill += bill
+            initusers.append({'name': '{} {}'.format(instance.firstName, instance.lastName),
+                                'userid': '{}'.format(instance.userid),
+                                'bill': bill})
 
-    users = sorted(initusers, key=lambda k: k['name'])
+        users = sorted(initusers, key=lambda k: k['name'])
 
-    bill_date = datetime.now()
+        bill_date = datetime.now()
 
-    return total_cash, total_bill, users, bill_date
+        return total_cash, total_bill, users, bill_date
 
 
 def save_bill(total_cash, total_bill, bill_date):
@@ -1424,32 +1469,39 @@ def send_email(curuser, curitem):
             # print(mymail.htmlbody)
             mymail.send()
 
-def send_webhook(curuser, curitem, extra_data={}):
-    webhook_thread = threading.Thread(target=send_webhook_now, args=(curuser, curitem, extra_data))
+def send_webhook(coffeeDict, extra_data={}):
+    webhook_thread = threading.Thread(target=send_webhook_now, args=(coffeeDict, extra_data))
     webhook_thread.start()
 
 
-def send_webhook_now(curuser, curitem, extra_data):
-    if settings_for('publishToMqtt') == 'true' and settings_for('mqttTopic') is not '' and settings_for('mqttServer') is not '' and settings_for('mqttPort') is not '':
-        leader_data = get_all_leader_data()
+def get_coffee_dict(curuser, curitem):
+    leader_data = get_all_leader_data()
 
-        curn_bill_float = rest_bill(curuser.userid)
-        minimum_balance = float(settings_for('minimumBalance'))
-        if curn_bill_float <= minimum_balance:
-            shouldTopUpMoney = True
-        else:
-            shouldTopUpMoney = False
+    curn_bill_float = rest_bill(curuser.userid)
+    minimum_balance = float(settings_for('minimumBalance'))
+    if curn_bill_float <= minimum_balance:
+        shouldTopUpMoney = True
+    else:
+        shouldTopUpMoney = False
 
-        coffeeDict = {}
+    coffeeDict = {}
 
-        coffeeDict["firstName"] =  curuser.firstName
-        coffeeDict["lastName"] = curuser.lastName
-        coffeeDict["name"] = '{} {}'.format(curuser.firstName, curuser.lastName)
-        coffeeDict["item"] = curitem.name
-        coffeeDict["price"] = curitem.price
-        coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
-        coffeeDict["total"] =  get_total(curuser.userid, curitem.itemid)
-        coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
+    coffeeDict["firstName"] = curuser.firstName
+    coffeeDict["lastName"] = curuser.lastName
+    coffeeDict["userId"] = curuser.userid
+    coffeeDict["name"] = '{} {}'.format(curuser.firstName, curuser.lastName)
+    coffeeDict["item"] = curitem.name
+    coffeeDict["itemId"] = curitem.itemid
+    coffeeDict["price"] = curitem.price
+    coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
+    coffeeDict["total"] = get_total(curuser.userid, curitem.itemid)
+    coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
+    coffeeDict["userPage"] = url_for('user_page', userid=curuser.userid)
+    return coffeeDict
+
+def send_webhook_now(coffeeDict, extra_data):
+    if settings_for('publishToMqtt') == 'true' and settings_for('mqttTopic') != '' and settings_for('mqttServer') != '' and settings_for('mqttPort') != '':
+
         coffeeDict["extra_data"] = extra_data
 
         data_out = json.dumps(coffeeDict)
@@ -1462,22 +1514,93 @@ def send_webhook_now(curuser, curitem, extra_data):
 
 
 
-@app.route('/change/<int:userid>')
-def change(userid):
-    itemid = request.args.get('itemid')
-    curuser = User.query.get(userid)
-    curitem = Item.query.get(itemid)
+@app.post('/api/buy')
+def api_buy():
+    #Todo: ein globals try catch über diese funktion legen
+    # bei der antwort muss noch die komplette url eingetragen werden und nicht nur die relative url
+    # wenn der user nicht existiert, dann soll ggf. ein neuer user angelegt werden
+    # docker überprüfen
+    # und deployen
+
+
+    try:
+        # Get the JSON data from the request
+        data = request.get_json(force=True)
+    except Exception as e:
+        app.logger.warn(f"got data: {request.data}")
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": f"Content-Type not supported! Please use the JSON format. Exception:{e}",
+            }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
+    # data = request.get_json()
+
+    userId = data.get('userId')
+    userName = data.get('userName')
+    if userId is not None:
+        curuser = db.session.get(User, userId)
+    elif userName is not None:
+        firstName = userName.rsplit(" ", 1)[0]
+        lastName = userName.rsplit(" ", 1)[1]
+        curuser =  db.session.query(User).filter_by(firstName=firstName, lastName=lastName).first()
+    else:
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": "No userID or userName provided. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+             }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
+
+    if curuser is None:
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": "Could not find User. The userId is probably wrong. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+             }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
+    itemId = data.get('itemId')
+    if itemId is None:
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": "No itemId provided. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+             }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
+    curitem = db.session.get(Item, itemId)
+    if curitem is None:
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": "Could not find Item. The itemId is probably wrong. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+             }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
     user_purchase = History(curuser, curitem, curitem.price)
 
     db.session.add(user_purchase)
     db.session.commit()
 
     send_email(curuser, curitem)
+    coffeeDict = get_coffee_dict(curuser, curitem)
     try:
-        send_webhook(curuser, curitem, get_extra_data(request))
+        send_webhook(coffeeDict, get_extra_data(request))
     except:
         pass
-    return redirect(url_for('user_page', userid=userid))
+
+    response = Response(json.dumps(
+        {"data": coffeeDict, "message": "", "status": "ok"}), mimetype='application/json')
+    response.status_code = 200
+    return response
 
 def get_extra_data(theRequest):
     return_data = {}
@@ -1500,15 +1623,179 @@ def get_extra_data(theRequest):
 
 @app.route('/analysis')
 def analysis():
-    from analysisUtils import main
-    content, tags_hours_labels = main()
+    content, tags_hours_labels = get_analysis()
     return render_template('analysis.html', content=content, tagsHoursLabels=tags_hours_labels)
 
 @app.route('/analysis/slide')
 def analysis_slide():
-    from analysisUtils import main
-    content, tags_hours_labels = main()
+    content, tags_hours_labels = get_analysis()
     return render_template('analysisSlide.html', content=content, tagsHoursLabels=tags_hours_labels)
+
+
+def get_analysis():
+    with app.app_context():
+        # get no of users
+
+        # noUsers = db.session.query(User).count()
+        # print('Number of users is: {}'.format(noUsers))
+        content = dict()
+
+        tags_hours = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00',
+                      '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00',
+                      '22:00', '23:00']
+        min_tag = len(tags_hours)
+        max_tag = 0
+
+        all_items = Item.query.filter(Item.name is not None, Item.name != '')
+        all_item_id = [int(instance.itemid) for instance in all_items]
+
+        # Info for Coffee
+        for itemID in all_item_id:
+            histogram = db.session.query(History.itemid, History.date, History.userid). \
+                filter(History.itemid == itemID).all()
+
+            # Info Item on weekhours
+            histogram_hours = list()
+            for x in histogram:
+                if x[1] is not None:
+                    histogram_hours.append(x[1].time().replace(minute=0, second=0, microsecond=0))
+
+            bla = list(sorted(Counter(histogram_hours).items()))
+            time_stamp = [x[0].strftime('%H:%M') for x in bla]
+
+            for j, elem in enumerate(time_stamp):
+                index = tags_hours.index(elem)
+                min_tag = min(min_tag, index)
+                max_tag = max(max_tag, index)
+
+        min_tag = max(min_tag - 1, 0)
+        max_tag = min(max_tag + 2, len(tags_hours))
+
+        min_tag = min(min_tag, 9)
+        max_tag = max(max_tag, 17)
+
+        if min_tag < max_tag:
+            tags_hours = tags_hours[min_tag:max_tag]
+
+        # Info for Coffe
+        for itemID in all_item_id:
+            # itemID = 4
+
+            itemtmp = db.session.query(Item.name).filter(Item.itemid == itemID).one()
+            item_name = itemtmp[0]
+
+            content[item_name] = dict()
+            histogram = db.session.query(History.itemid, History.date, History.userid). \
+                filter(History.itemid == itemID).all()
+            # print("Total number of consumed {} is : {}".format(itemName,len(histogram)))
+            if len(histogram) > 1:
+                oldest_date = histogram[0][1]
+                newest_date = histogram[-1][1]
+                histogram_delta = newest_date - oldest_date
+                second_delta = histogram_delta.seconds
+            else:
+                second_delta = 3600.0
+                histogram_delta = timedelta(hours=1)
+
+            content[item_name]['total'] = len(histogram)
+
+            # print(len(histogram))
+            # Info Item on weekday
+
+            histogram_days = list()
+            for x in histogram:
+                if x[1] is not None:
+                    histogram_days.append(x[1].isoweekday())
+
+            bla = list(sorted(Counter(histogram_days).items()))
+            # noinspection PyUnusedLocal
+            amount = [0 for x in range(7)]
+            for elem in bla:
+                amount[elem[0] - 1] = elem[1]
+
+
+            hour_delta = second_delta / 3600
+            day_delta = hour_delta / 24
+            total_day_delta = day_delta + histogram_delta.days
+            total_day_delta = max(total_day_delta, 1)
+            week_delta = total_day_delta / 7
+
+            # for i in range(len(amount)):
+            #     amount[i] = amount[i] / week_delta
+
+            # amount = [x[1] for x in bla]
+            content[item_name]['tagsDays'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            content[item_name]['amountDays'] = amount
+
+            time_stamp = [x[0] for x in bla]
+            time_stamp = [x + 1 for x in range(7)]
+
+            # Info Item on weekhours
+            histogram_minutes = list()
+            for x in histogram:
+                if x[1] is not None:
+                    histogram_minutes.append(x[1].replace(minute=30, second=0, microsecond=0, month=1, day=1, year=2000))
+
+            histogram_minutes_sorted = list(sorted(Counter(histogram_minutes).items()))
+
+            all_minute_coffee = list()
+            hour_after = None
+
+            for j, element in enumerate(histogram_minutes_sorted):
+                time_stamp = element[0]
+                before = time_stamp.replace(minute=0, second=0, microsecond=0, month=1, day=1, year=2000)
+                after = time_stamp.replace(minute=0, second=0, microsecond=0, month=1, day=1, year=2000)
+                after = after + timedelta(hours=1)
+
+                if before != hour_after and hour_after is not None:
+                    all_minute_coffee.append((hour_after, 0))
+                    all_minute_coffee.append((before, 0))
+
+                if hour_after is None:
+                    all_minute_coffee.append((before, 0))
+
+                hour_after = after
+                all_minute_coffee.append((time_stamp, element[1]))
+
+            if hour_after is not None:
+                all_minute_coffee.append((hour_after, 0))
+
+            amount_points = []
+            for j, element in enumerate(all_minute_coffee):
+                time_stamp = element[0]
+                time_string = time_stamp.strftime('%H:%M')
+                amount_points.append({'y': element[1], 'x': time_string})
+
+            # print(amountPoints)
+            # print(amountRaw)
+
+            # for i in range(len(amount_points)):
+            #     amount_points[i]['y'] = amount_points[i]['y'] / total_day_delta
+
+            content[item_name]['amountPoints'] = amount_points
+
+            # Info Item on month
+
+            histogram_month = list()
+            for x in histogram:
+                if x[1] is not None:
+                    histogram_month.append(x[1].month)
+            bla = list(sorted(Counter(histogram_month).items()))
+            time_stamp = [x for x in range(12)]
+            amount_month = [0 for x in range(12)]
+            for elem in bla:
+                amount_month[elem[0] - 1] = elem[1]
+
+            month_delta = total_day_delta / 30
+            # for i in range(len(amount_month)):
+            #     amount_month[i] = amount_month[i] / month_delta
+
+            content[item_name]['amountMonth'] = amount_month
+            content[item_name]['tagsMonth'] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov',
+                                               'Dec']
+
+        return content, tags_hours
+
 
 
 @app.route('/change_image', methods=(['POST']))
@@ -1535,7 +1822,7 @@ def change_image():
                 file.save(full_path)
 
 
-                current_user = User.query.get(userid)
+                current_user = db.session.get(User, userid)
                 current_user.imageName = filename
 
                 db.session.commit()
@@ -1546,87 +1833,91 @@ def change_image():
 
 
 def build_sample_db():
-    db.drop_all()
-    db.create_all()
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
 
-    with open('userList.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            newuser = User(firstname='{}'.format(row['FirstName']),
-                           lastname='{}'.format(row['LastName']),
-                           imagename='{}'.format(row['ImageName']),
-                           email='{}'.format(row['email']))
-            db.session.add(newuser)
-            initial_balance = '{}'.format(row['InitialBalance'])
-            # noinspection PyBroadException,PyPep8
-            try:
-                initial_balance_float = float(initial_balance)
-                if initial_balance_float != 0:
-                    initial_payment = Inpayment(amount=initial_balance)
-                    initial_payment.user = newuser
-                    db.session.add(initial_payment)
-            except:
-                pass
+        with open('userList.csv') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                newuser = User(firstname='{}'.format(row['FirstName']),
+                               lastname='{}'.format(row['LastName']),
+                               imagename='{}'.format(row['ImageName']),
+                               email='{}'.format(row['email']))
+                db.session.add(newuser)
+                initial_balance = '{}'.format(row['InitialBalance'])
+                # noinspection PyBroadException,PyPep8
+                try:
+                    initial_balance_float = float(initial_balance)
+                    if initial_balance_float != 0:
+                        initial_payment = Inpayment(amount=initial_balance)
+                        initial_payment.user = newuser
+                        db.session.add(initial_payment)
+                except:
+                    pass
 
-    '''
-    name = [
-        'Wilhelm Müller', 'Franz Meier', 'Berta Schmitt', 'Fritz Hase']
-    email = [
-        'wilhelm@mueller.de', 'franz@meier.de', 'berta@schmitt.de', 'fritz@hase.de']
+        '''
+        name = [
+            'Wilhelm Müller', 'Franz Meier', 'Berta Schmitt', 'Fritz Hase']
+        email = [
+            'wilhelm@mueller.de', 'franz@meier.de', 'berta@schmitt.de', 'fritz@hase.de']
+    
+        for i in range(len(name)):
+            newuser = User(username='{}'.format(name[i]),email = '{}'.format(email[i]))
+            #newuser.username = name[i]
+            #newuser.email = email[i]
+        '''
 
-    for i in range(len(name)):
-        newuser = User(username='{}'.format(name[i]),email = '{}'.format(email[i]))
-        #newuser.username = name[i]
-        #newuser.email = email[i]
-    '''
+        itemname = ['Coffee', 'Water', 'Snacks', 'Cola']
+        price = [0.2, 0.55, 0.2, 0.4]
 
-    itemname = ['Coffee', 'Water', 'Snacks', 'Cola']
-    price = [0.2, 0.55, 0.2, 0.4]
+        for i in range(len(itemname)):
+            newitem = Item(name='{}'.format(itemname[i]), price=float('{}'.format(price[i])))
+            newitem.icon = "item" + str(i + 1) + ".svg"
+            # newitem.name = itemname[i]
+            # newitem.price = price[i]
+            db.session.add(newitem)
 
-    for i in range(len(itemname)):
-        newitem = Item(name='{}'.format(itemname[i]), price=float('{}'.format(price[i])))
-        newitem.icon = "item" + str(i + 1) + ".svg"
-        # newitem.name = itemname[i]
-        # newitem.price = price[i]
-        db.session.add(newitem)
+        newadmin = Coffeeadmin(name='admin', password='admin', send_bill=False, email='')
+        db.session.add(newadmin)
 
-    newadmin = Coffeeadmin(name='admin', password='admin', send_bill=False, email='')
-    db.session.add(newadmin)
-
-    db.session.commit()
+        db.session.commit()
     return
 
 
 def set_default_settings():
-    with open('defaultSettings.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            key = '{}'.format(row['key'])
-            db_entry = db.session.query(Settings).filter_by(key=key).first()
-            if db_entry is None:
-                newsettingitem = Settings(key='{}'.format(row['key']), value='{}'.format(row['value']))
-                db.session.add(newsettingitem)
+    with app.app_context():
+        with open('defaultSettings.csv') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                key = '{}'.format(row['key'])
+                db_entry = db.session.query(Settings).filter_by(key=key).first()
+                if db_entry is None:
+                    newsettingitem = Settings(key='{}'.format(row['key']), value='{}'.format(row['value']))
+                    db.session.add(newsettingitem)
 
-    db.session.commit()
+        db.session.commit()
 
 
 # noinspection PyBroadException,PyPep8
 def send_reminder_to_all():
-    try:
-        for aUser in User.query.filter(User.hidden.is_(False)):
-            send_reminder(aUser)
-    except:
-        pass
+    with app.app_context():
+        try:
+            for aUser in User.query.filter(User.hidden.is_(False)):
+                send_reminder(aUser)
+        except:
+            pass
 
 def send_bill_to_admin():
-    total_cash, total_bill, users, bill_date = create_bill()
-    save_bill(total_cash, total_bill, bill_date)
-	
-    try:
-        for aAdmin in Coffeeadmin.query.filter(Coffeeadmin.send_bill.is_(True)):
-            send_bill_to(aAdmin, total_cash, total_bill, users, bill_date)
-    except:
-        pass
+    with app.app_context():
+        total_cash, total_bill, users, bill_date = create_bill()
+        save_bill(total_cash, total_bill, bill_date)
+
+        try:
+            for aAdmin in Coffeeadmin.query.filter(Coffeeadmin.send_bill.is_(True)):
+                send_bill_to(aAdmin, total_cash, total_bill, users, bill_date)
+        except:
+            pass
 
 
 def run_schedule():
@@ -1648,4 +1939,21 @@ if __name__ == "__main__":
     set_default_settings()
     # app.run()
     # app.run(host='0.0.0.0', port=5000, debug=False)
+
+
+    # Email Errors to Admins
+    mail_handler = SMTPHandler(
+        mailhost=settings_for('mailServer'),
+        fromaddr=settings_for('mailSender'),
+        toaddrs=['clemens.eyhoff@fit.fraunhofer.de'],
+        subject='Application Error'
+    )
+    mail_handler.setLevel(logging.ERROR)
+    mail_handler.setFormatter(logging.Formatter(
+        '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+    ))
+
+    if not options.debug:
+        app.logger.addHandler(mail_handler)
+
     flaskrun(app, options=options)

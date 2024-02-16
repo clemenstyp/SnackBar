@@ -41,7 +41,7 @@ USER appuser
 
 # Copy the source code into the container.
 COPY requirements.txt .
-RUN pipx install --user -r requirements.txt
+RUN pip install --user -r requirements.txt
 
 # Copy the source code into the container.
 COPY . .

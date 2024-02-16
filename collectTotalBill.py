@@ -13,7 +13,7 @@ host = 'localhost'
 port = 5432
 coffeeMaster = "Clemens"
 
-url = 'sqlite:///CoffeeDB.db'
+url = 'sqlite:///data/CoffeeDB.db'
 # url = 'postgresql://{}:{}@{}:{}/{}'
 url = url.format(userName, password, host, port, db)
 

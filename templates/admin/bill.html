@@ -79,5 +79,51 @@
     </tbody>
 </table>
 
+<br/>
 
+<!--<a id="hiddenUserToggle" onclick="toggleHiddenUserList();" href="#" style="color: #000"><h4>toggle hidden users table</h4></a>-->
+<table class="table table-sm table-bordered table-striped" id="hiddenUser" style="display: none;">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Bill</th>
+        </tr>
+    </thead>
+    <tbody>
+      {% for User in hidden_users %}
+        <tr>
+            <td>
+              {{ User.name }}
+            </td>
+            <td>
+              {{ '%0.2f'|format(User.bill) }} €
+            </td>
+
+        </tr>
+        {% endfor %}
+     <tr></tr>
+      <tr>
+            <td>
+             <b>SUM:</b>
+            </td>
+            <td>
+              <b>{{ '%0.2f'|format(hidden_total_bill) }} €</b>
+            </td>
+
+        </tr>
+    </tbody>
+</table>
+
+<script>
+  function toggleHiddenUserList()
+    {
+    var status = document.getElementById("hiddenUser").style.display;
+
+    if (status == 'table') {
+      document.getElementById("hiddenUser").style.display="none";
+    } else {
+      document.getElementById("hiddenUser").style.display="table";
+    }
+  }
+</script>
 {% endblock %}

@@ -1,6 +1,7 @@
 import optparse
 from werkzeug.serving import run_simple
-from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
+import logging
 
 def simple(env, resp):
     resp(b'200 OK', [(b'Content-Type', b'text/plain')])
@@ -66,6 +67,8 @@ def flaskrun(app, options=None):
     app.wsgi_app = DispatcherMiddleware(simple, {options.url_prefix: app.wsgi_app})
 
     app.config["APPLICATION_ROOT"] = options.url_prefix
+
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
     app.run(
         debug=options.debug,
