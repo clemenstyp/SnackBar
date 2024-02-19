@@ -15,10 +15,10 @@ _mailinglist
 sqlite
 *.db
 *.bak
+/.vs
 CoffeeDB.db
 static/images/
-/.vs
-/static/icons/3256_1053.png
-/static/icons/8000920461150_147555.png
-/static/icons/Spaghetti-Becher.png
+!static/images/.gitkeep
+/static/icons/
+!static/icons/.gitkeep
 docker-compose.override.yaml
