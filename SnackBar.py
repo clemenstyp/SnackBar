@@ -1166,7 +1166,7 @@ def reltime(date, compare_to=None, at='@'):
 
     compare_to = compare_to or datetime.now()
     if date > compare_to:
-        return NotImplementedError('reltime only handles dates in the past')
+        return NotImplementedError(f"reltime only handles dates in the past: {date} > {compare_to}")
     # get timediff values
     diff = compare_to - date
     if diff.seconds < 60 * 60 * 8:  # less than a business day?
