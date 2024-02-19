@@ -12,8 +12,9 @@ services:
     build:
       context: .
     ports:
-      - 8000:8000
+      - 5000:5000
     volumes:
       - ./data:/app/data
+      - /etc/localtime:/etc/localtime:ro
 
 

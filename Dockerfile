@@ -47,7 +47,7 @@ RUN pip install --user -r requirements.txt
 COPY . .
 
 # Expose the port that the application listens on.
-EXPOSE 8000
+EXPOSE 5000
 
 # Run the application.
-CMD python3 SnackBar.py --host 0.0.0.0 --port 8000
+CMD python3 SnackBar.py --host 0.0.0.0 --port 5000
