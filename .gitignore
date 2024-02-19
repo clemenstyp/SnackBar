@@ -17,8 +17,9 @@ sqlite
 *.bak
 /.vs
 CoffeeDB.db
-static/images/
-!static/images/.gitkeep
+/static/images/
+!/static/images/.gitkeep
 /static/icons/
-!static/icons/.gitkeep
+!/static/icons/.gitkeep
+/data/
 docker-compose.override.yaml
