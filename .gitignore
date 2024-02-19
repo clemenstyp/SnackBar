@@ -21,3 +21,4 @@ static/images/
 /static/icons/3256_1053.png
 /static/icons/8000920461150_147555.png
 /static/icons/Spaghetti-Becher.png
+docker-compose.override.yml
