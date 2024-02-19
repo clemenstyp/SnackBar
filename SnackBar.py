@@ -39,6 +39,7 @@ import json
 import paho.mqtt.publish as mqtt_publish
 import logging
 from logging.handlers import SMTPHandler
+import urllib.parse
 
 app = Flask(__name__)
 
@@ -1469,12 +1470,12 @@ def send_email(curuser, curitem):
             # print(mymail.htmlbody)
             mymail.send()
 
-def send_webhook(coffeeDict, extra_data={}):
-    webhook_thread = threading.Thread(target=send_webhook_now, args=(coffeeDict, extra_data))
+def send_webhook(coffeeDict):
+    webhook_thread = threading.Thread(target=send_webhook_now, args=(coffeeDict, ))
     webhook_thread.start()
 
 
-def get_coffee_dict(curuser, curitem):
+def get_coffee_dict(curuser, curitem, base_url="", extra_data={}):
     leader_data = get_all_leader_data()
 
     curn_bill_float = rest_bill(curuser.userid)
@@ -1496,14 +1497,12 @@ def get_coffee_dict(curuser, curitem):
     coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
     coffeeDict["total"] = get_total(curuser.userid, curitem.itemid)
     coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
-    coffeeDict["userPage"] = url_for('user_page', userid=curuser.userid)
+    coffeeDict["userPage"] = urllib.parse.urljoin(base_url, url_for('user_page', userid=curuser.userid))
+    coffeeDict["extra_data"] = extra_data
     return coffeeDict
 
-def send_webhook_now(coffeeDict, extra_data):
+def send_webhook_now(coffeeDict):
     if settings_for('publishToMqtt') == 'true' and settings_for('mqttTopic') != '' and settings_for('mqttServer') != '' and settings_for('mqttPort') != '':
-
-        coffeeDict["extra_data"] = extra_data
-
         data_out = json.dumps(coffeeDict)
 
         broker_url = settings_for('mqttServer')
@@ -1516,91 +1515,111 @@ def send_webhook_now(coffeeDict, extra_data):
 
 @app.post('/api/buy')
 def api_buy():
-    #Todo: ein globals try catch über diese funktion legen
-    # bei der antwort muss noch die komplette url eingetragen werden und nicht nur die relative url
-    # wenn der user nicht existiert, dann soll ggf. ein neuer user angelegt werden
     # docker überprüfen
     # und deployen
-
-
     try:
-        # Get the JSON data from the request
-        data = request.get_json(force=True)
+        try:
+            # Get the JSON data from the request
+            data = request.get_json(force=True)
+        except Exception as e:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": f"Content-Type not supported! Please use the JSON format.",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        userId = data.get('userId')
+        userName = data.get('userName')
+        if userId is not None:
+            curuser = db.session.get(User, userId)
+        elif userName is not None:
+            name_array =  userName.rsplit(" ", 1)
+            if len(name_array) == 1 :
+                firstName = ""
+                lastName = name_array[0]
+            elif len(name_array) == 2 :
+                firstName = name_array[0]
+                lastName = name_array[1]
+            else:
+                raise Exception
+            curuser = db.session.query(User).filter_by(firstName=firstName, lastName=lastName).first()
+            if curuser is None:
+                with app.app_context():
+                    curuser = User(firstname=firstName, lastname=lastName, email='', imagename='')
+                    db.session.add(curuser)
+                    db.session.commit()
+                    #send_email_new_user(new_user)
+
+        else:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "No userID or userName provided. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        if curuser is None:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "Could not find User. The userId is probably wrong. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        itemId = data.get('itemId')
+        if itemId is None:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "No itemId provided. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        curitem = db.session.get(Item, itemId)
+        if curitem is None:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "Could not find Item. The itemId is probably wrong. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        user_purchase = History(curuser, curitem, curitem.price)
+
+        db.session.add(user_purchase)
+        db.session.commit()
+
+        send_email(curuser, curitem)
+        base_url = request.base_url.replace( url_for('api_buy'), "")
+        coffeeDict = get_coffee_dict(curuser, curitem, base_url, get_extra_data(request))
+        try:
+            send_webhook(coffeeDict)
+        except:
+            pass
+
+        response = Response(json.dumps(
+            {"data": coffeeDict, "message": "", "status": "ok"}), mimetype='application/json')
+        response.status_code = 200
+        return response
+
+
     except Exception as e:
-        app.logger.warn(f"got data: {request.data}")
         response = Response(json.dumps(
             {"data": "",
              "status": "error",
-             "message": f"Content-Type not supported! Please use the JSON format. Exception:{e}",
+             "message": f"Some unknown error occured: Exception:{e}",
             }), mimetype='application/json')
         response.status_code = 400
         return response
 
-    # data = request.get_json()
-
-    userId = data.get('userId')
-    userName = data.get('userName')
-    if userId is not None:
-        curuser = db.session.get(User, userId)
-    elif userName is not None:
-        firstName = userName.rsplit(" ", 1)[0]
-        lastName = userName.rsplit(" ", 1)[1]
-        curuser =  db.session.query(User).filter_by(firstName=firstName, lastName=lastName).first()
-    else:
-        response = Response(json.dumps(
-            {"data": "",
-             "status": "error",
-             "message": "No userID or userName provided. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
-             }), mimetype='application/json')
-        response.status_code = 400
-        return response
 
 
-    if curuser is None:
-        response = Response(json.dumps(
-            {"data": "",
-             "status": "error",
-             "message": "Could not find User. The userId is probably wrong. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
-             }), mimetype='application/json')
-        response.status_code = 400
-        return response
-
-    itemId = data.get('itemId')
-    if itemId is None:
-        response = Response(json.dumps(
-            {"data": "",
-             "status": "error",
-             "message": "No itemId provided. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
-             }), mimetype='application/json')
-        response.status_code = 400
-        return response
-
-    curitem = db.session.get(Item, itemId)
-    if curitem is None:
-        response = Response(json.dumps(
-            {"data": "",
-             "status": "error",
-             "message": "Could not find Item. The itemId is probably wrong. Example Json: {\"userId\": someUserId, \"itemId\": someItemId } or {\"userName\": \"Firstname Lastname\", \"itemId\": someItemId }",
-             }), mimetype='application/json')
-        response.status_code = 400
-        return response
-
-    user_purchase = History(curuser, curitem, curitem.price)
-
-    db.session.add(user_purchase)
-    db.session.commit()
-
-    send_email(curuser, curitem)
-    coffeeDict = get_coffee_dict(curuser, curitem)
-    try:
-        send_webhook(coffeeDict, get_extra_data(request))
-    except:
-        pass
-
-    response = Response(json.dumps(
-        {"data": coffeeDict, "message": "", "status": "ok"}), mimetype='application/json')
-    response.status_code = 200
-    return response
 
 def get_extra_data(theRequest):
     return_data = {}
