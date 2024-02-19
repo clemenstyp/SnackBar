@@ -2,7 +2,7 @@ import optparse
 from werkzeug.serving import run_simple
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 import logging
-
+import os
 def simple(env, resp):
     resp(b'200 OK', [(b'Content-Type', b'text/plain')])
     return [b'You have to call the url_prefix']
@@ -39,6 +39,16 @@ def load_options(default_host="127.0.0.1",
                       help=optparse.SUPPRESS_HELP)
 
     options, _ = parser.parse_args()
+
+    if host := os.getenv("SNACKBAR_HOST"):
+        options.host = host
+    if port := os.getenv("SNACKBAR_PORT"):
+        options.port = port
+    if url_prefix := os.getenv("SNACKBAR_URL_PREFIX"):
+        options.url_prefix = url_prefix
+    if os.getenv("SNACKBAR_DEBUG"):
+        options.debug = True
+
     return options
 
 def flaskrun(app, options=None):
@@ -52,7 +62,6 @@ def flaskrun(app, options=None):
 
     if not options.debug:
         options.debug = False
-
     # If the User selects the profiling option, then we need
     # to do a little extra setup
     if options.profile:

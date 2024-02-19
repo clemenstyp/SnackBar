@@ -50,4 +50,4 @@ COPY . .
 EXPOSE 5000
 
 # Run the application.
-CMD python3 SnackBar.py --host 0.0.0.0 --port 5000
+ENTRYPOINT ["python" ,"-u", "/app/SnackBar.py"]

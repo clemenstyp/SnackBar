@@ -12,9 +12,9 @@ services:
     build:
       context: .
     ports:
-      - 5000:5000
+      - 5001:5000
     volumes:
       - ./data:/app/data
       - /etc/localtime:/etc/localtime:ro
-
-
+    environment:
+      SNACKBAR_URL_PREFIX: '/demo'
