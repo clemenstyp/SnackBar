@@ -77,8 +77,11 @@ def flaskrun(app, options=None):
 
     app.config["APPLICATION_ROOT"] = options.url_prefix
 
-    logging.getLogger("werkzeug").setLevel(logging.WARNING)
-
+    if not options.debug:
+        logging.getLogger("werkzeug").setLevel(logging.WARNING)
+    else:
+        logging.getLogger("werkzeug").setLevel(logging.DEBUG)
+        
     app.run(
         debug=options.debug,
         host=options.host,
