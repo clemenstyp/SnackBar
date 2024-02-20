@@ -10,6 +10,7 @@ from datetime import date, datetime, timedelta
 from hashlib import md5
 from math import sqrt
 from collections import Counter
+import traceback
 
 import flask_login as loginflask
 import schedule
@@ -676,6 +677,8 @@ class MyPaymentModelView(ModelView):
     can_export = True
     form_excluded_columns = 'date'
     export_types = ['csv']
+    column_descriptions = dict()
+    column_labels = dict(user='Name')
     column_default_sort = ('date', True)
     column_filters = ('user', 'amount', 'date')
     list_template = 'admin/custom_list.html'
@@ -683,7 +686,10 @@ class MyPaymentModelView(ModelView):
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def date_format(self, context, model, name):
         field = getattr(model, name)
-        return field.strftime('%Y-%m-%d %H:%M')
+        if field is not None:
+            return field.strftime('%Y-%m-%d %H:%M')
+        else:
+            return ""
 
     column_formatters = dict(date=date_format)
 
@@ -893,9 +899,7 @@ class SnackBarIndexView(BaseView):
         return redirect(url_for('initial'))
 
 init_login()
-
-
-admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html')
+admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html', template_mode='bootstrap2')
 admin.add_view(MyBillView(name='Bill', endpoint='bill'))
 # admin.add_view(MyAccountingView(name='Accounting', endpoint='accounting'))
 admin.add_view(MyPaymentModelView(Inpayment, db.session, 'Inpayment'))
@@ -1613,7 +1617,7 @@ def api_buy():
         response = Response(json.dumps(
             {"data": "",
              "status": "error",
-             "message": f"Some unknown error occured: Exception:{e}",
+             "message": f"Some unknown error occured: Exception: {''.join(traceback.format_exception(e))}",
             }), mimetype='application/json')
         response.status_code = 400
         return response

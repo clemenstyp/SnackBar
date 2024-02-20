@@ -24,26 +24,29 @@ class Bimail:
         self.servername = ''
 
     def send(self):
-        msg = MIMEMultipart('mixed')
-        msg['From'] = self.sendername
-        msg['Subject'] = self.subject
-        msg['To'] = ", ".join(self.recipients)  # to must be array of the form ['mailsender135@gmail.com']
-        # msg.preamble = "Das ist eine Präambel"
-        # check if there are attachments if yes, add them
-        if self.attachments:
-            self.attach(msg)
-            # add html body after attachments
-        msg.attach(MIMEText(self.htmlbody, 'html'))
-        if msg.get('Date', None) is None:
-            msg['Date'] = email.utils.formatdate()
-        # send
-        s = smtplib.SMTP(self.servername)
-        # s.starttls()
-        # s.login(self.sender, self.senderpass)
-        s.sendmail(self.sender, self.recipients, msg.as_string())
-        # test
-        # print(msg)
-        s.quit()
+        try:
+            msg = MIMEMultipart('mixed')
+            msg['From'] = self.sendername
+            msg['Subject'] = self.subject
+            msg['To'] = ", ".join(self.recipients)  # to must be array of the form ['mailsender135@gmail.com']
+            # msg.preamble = "Das ist eine Präambel"
+            # check if there are attachments if yes, add them
+            if self.attachments:
+                self.attach(msg)
+                # add html body after attachments
+            msg.attach(MIMEText(self.htmlbody, 'html'))
+            if msg.get('Date', None) is None:
+                msg['Date'] = email.utils.formatdate()
+            # send
+            s = smtplib.SMTP(self.servername)
+            # s.starttls()
+            # s.login(self.sender, self.senderpass)
+            s.sendmail(self.sender, self.recipients, msg.as_string())
+            # test
+            # print(msg)
+            s.quit()
+        except Exception as e:
+            pass
 
     def htmladd(self, html):
         self.htmlbody = self.htmlbody + '<p></p>' + html

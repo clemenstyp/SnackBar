@@ -81,7 +81,7 @@ def flaskrun(app, options=None):
         logging.getLogger("werkzeug").setLevel(logging.WARNING)
     else:
         logging.getLogger("werkzeug").setLevel(logging.DEBUG)
-        
+
     app.run(
         debug=options.debug,
         host=options.host,
