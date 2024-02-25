@@ -11,6 +11,7 @@ from hashlib import md5
 from math import sqrt
 from collections import Counter
 import traceback
+from typing import List
 
 import flask_login as loginflask
 import schedule
@@ -22,6 +23,8 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin.form.upload import FileUploadField
 from flask_sqlalchemy import SQLAlchemy
 from markupsafe import Markup
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
@@ -62,8 +65,8 @@ app.config['ICON_FOLDER'] = 'static/icons'
 app.config['DEBUG'] = False
 app.config['SESSION_COOKIE_PATH'] = '/'
 
-db = SQLAlchemy(app)
 
+db = SQLAlchemy(app)
 
 
 if not os.path.exists(app.config['IMAGE_FOLDER']):
@@ -107,18 +110,30 @@ def itemstrikes(value):
 
 
 class History(db.Model):
-    historyid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    historyid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
-    user = db.relationship('User', backref=db.backref('history', lazy='dynamic'))
-    # user = db.relationship('User', foreign_keys=userid)
+    userid: Mapped[int] = mapped_column(ForeignKey('user.userid'))
+    user: Mapped["User"] = relationship(back_populates="history")
 
-    itemid = db.Column(db.Integer, db.ForeignKey('item.itemid'))
-    item = db.relationship('Item', backref=db.backref('items', lazy='dynamic'))
-    # item = db.relationship('Item', foreign_keys=itemid)
+    itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'))
+    item: Mapped["Item"] = relationship(back_populates="history")
 
-    price = db.Column(db.Float)
-    date = db.Column(db.DateTime)
+    price: Mapped[float] = mapped_column()
+    date: Mapped[datetime] = mapped_column()
+
+
+    # historyid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    #
+    # userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
+    # user = db.relationship('User', backref=db.backref('history', lazy='dynamic'))
+    # # user = db.relationship('User', foreign_keys=userid)
+    #
+    # itemid = db.Column(db.Integer, db.ForeignKey('item.itemid'))
+    # item = db.relationship('Item', backref=db.backref('items', lazy='dynamic'))
+    # # item = db.relationship('Item', foreign_keys=itemid)
+    #
+    # price = db.Column(db.Float)
+    # date = db.Column(db.DateTime)
 
     def __init__(self, user=None, item=None, price=0, date=None):
         self.user = user
@@ -130,22 +145,32 @@ class History(db.Model):
         self.date = date
 
     def __repr__(self):
-        return 'User {} bought {} for {} on the {}'.format(self.user, self.item, self.price, self.date)
+        return 'User {} ({} {}) bought {} for {} on the {}'.format(self.user, self.user.firstName, self.user.lastName, self.item, self.price, self.date)
 
 
 class Inpayment(db.Model):
-    paymentid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    paymentid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
-    user = db.relationship('User', backref=db.backref('inpayment', lazy='dynamic'))
-    # user = db.relationship('User', foreign_keys=userid)
+    userid: Mapped[int] = mapped_column(ForeignKey('user.userid'))
+    user: Mapped["User"] = relationship(back_populates="inpayment")
 
-    amount = db.Column(db.Float)
-    date = db.Column(db.DateTime)
-    notes = db.Column(db.String(120))
+    amount: Mapped[float] = mapped_column()
+    date: Mapped[datetime] = mapped_column()
+    notes: Mapped[str] = mapped_column(String(120))
+
+
+    # paymentid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    #
+    # userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
+    # user = db.relationship('User', backref=db.backref('inpayment', lazy='dynamic'))
+    # # user = db.relationship('User', foreign_keys=userid)
+    #
+    # amount = db.Column(db.Float)
+    # date = db.Column(db.DateTime)
+    # notes = db.Column(db.String(120))
 
     def __init__(self, user=None, amount=None, date=None, notes=None):
-        self.userid = user
+        self.user = user
         self.amount = amount
         self.notes = notes
 
@@ -154,16 +179,26 @@ class Inpayment(db.Model):
         self.date = date
 
     def __repr__(self):
-        return 'User {} paid {} on the {}'.format(self.userid, self.amount, self.date)
+        return 'User {} ({} {}) paid {} on the {}'.format(self.userid, self.user.firstName, self.user.lastName, self.amount, self.date)
 
 
 class User(db.Model):
-    userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    firstName = db.Column(db.String(80), nullable=False, default='')
-    lastName = db.Column(db.String(80), nullable=False, default='')
-    imageName = db.Column(db.String(240))
-    email = db.Column(db.String(120), nullable=False, default='')
-    hidden = db.Column(db.Boolean)
+    userid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    firstName: Mapped[str] = mapped_column(String(80), nullable=False, default='')
+    lastName: Mapped[str] = mapped_column(String(80), nullable=False, default='')
+    imageName: Mapped[str] = mapped_column(String(240))
+    email: Mapped[str] = mapped_column(String(120), nullable=False, default='')
+    hidden: Mapped[bool] = mapped_column()
+
+    inpayment: Mapped[List["Inpayment"]] = relationship(back_populates="user")
+    history: Mapped[List["History"]] = relationship(back_populates="user")
+
+    # userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # firstName = db.Column(db.String(80), nullable=False, default='')
+    # lastName = db.Column(db.String(80), nullable=False, default='')
+    # imageName = db.Column(db.String(240))
+    # email = db.Column(db.String(120), nullable=False, default='')
+    # hidden = db.Column(db.Boolean)
 
     def __init__(self, firstname='', lastname='', email='', imagename=''):
         if not firstname:
@@ -186,10 +221,17 @@ class User(db.Model):
 
 
 class Item(db.Model):
-    itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), unique=True, nullable=False, default='')
-    price = db.Column(db.Float)
-    icon = db.Column(db.String(300))
+    itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, default='')
+    price: Mapped[float] = mapped_column()
+    icon: Mapped[str] = mapped_column(String(300))
+
+    history: Mapped[List["History"]] = relationship(back_populates="item")
+
+    # itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # name = db.Column(db.String(80), unique=True, nullable=False, default='')
+    # price = db.Column(db.Float)
+    # icon = db.Column(db.String(300))
 
     def __init__(self, name='', price=0):
         self.name = name
@@ -200,11 +242,17 @@ class Item(db.Model):
 
 
 class Coffeeadmin(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False, default='')
-    password = db.Column(db.String(64))
-    send_bill = db.Column(db.Boolean, default=False)
-    email = db.Column(db.String(120), default='')
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, default='')
+    password: Mapped[str] = mapped_column(String(64))
+    send_bill: Mapped[bool] = mapped_column(default=False)
+    email: Mapped[str] = mapped_column(String(120), default='')
+
+    # id = db.Column(db.Integer, primary_key=True)
+    # name = db.Column(db.String(80), unique=True, nullable=False, default='')
+    # password = db.Column(db.String(64))
+    # send_bill = db.Column(db.Boolean, default=False)
+    # email = db.Column(db.String(120), default='')
 
     # Flask-Login integration
     @staticmethod
@@ -224,9 +272,13 @@ class Coffeeadmin(db.Model):
 
 
 class Settings(db.Model):
-    settingsid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    key = db.Column(db.String(80), unique=True)
-    value = db.Column(db.String(600))
+    settingsid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    key: Mapped[str] = mapped_column(String(80), unique=True)
+    value: Mapped[str] = mapped_column(String(600))
+
+    # settingsid = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # key = db.Column(db.String(80), unique=True)
+    # value = db.Column(db.String(600))
 
     def __init__(self, key='', value=''):
         if not key:
@@ -681,6 +733,8 @@ class MyPaymentModelView(ModelView):
     column_labels = dict(user='Name')
     column_default_sort = ('date', True)
     column_filters = ('user', 'amount', 'date')
+    column_list = ('user', 'amount', 'date',  'notes')
+    column_sortable_list = ('user', 'date')
     list_template = 'admin/custom_list.html'
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
@@ -751,7 +805,9 @@ class MyHistoryModelView(ModelView):
     column_descriptions = dict()
     column_labels = dict(user='Name')
     column_default_sort = ('date', True)
-    column_filters = ('user', 'item', 'date')
+    column_filters = ('user', 'item', 'price', 'date')
+    column_list = ('user', 'item', 'price', 'date')
+    column_sortable_list = ('user', 'date')
     form_args = dict(date=dict(default=datetime.now()), price=dict(default=0))
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
@@ -773,9 +829,9 @@ class MyUserModelView(ModelView):
     export_types = ['csv']
     column_exclude_list = ['history', 'inpayment',]
     form_excluded_columns = ['history', 'inpayment']
-    column_descriptions = dict(
-        firstName='Name of the corresponding person'
-    )
+    # column_descriptions = dict(
+    #     firstName='Name of the corresponding person'
+    # )
 
     base_path = app.config['IMAGE_FOLDER']
     form_overrides = dict(imageName=FileUploadField)
@@ -788,6 +844,9 @@ class MyUserModelView(ModelView):
                          lastName='Last Name',
                          imageName='User Image')
 
+    column_list = ('firstName', 'lastName', 'email', 'hidden')
+    column_sortable_list = ('firstName', 'lastName', 'email', 'hidden')
+
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
 
@@ -795,7 +854,7 @@ class MyUserModelView(ModelView):
 class MyItemModelView(ModelView):
     can_export = True
     export_types = ['csv']
-    form_excluded_columns = 'items'
+    form_excluded_columns = 'history'
 
     base_path = app.config['ICON_FOLDER']
     form_overrides = dict(icon=FileUploadField)
@@ -805,6 +864,8 @@ class MyItemModelView(ModelView):
         }
     }
 
+    column_list = ('name', 'price')
+    column_sortable_list = ('name', 'price')
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
 
@@ -812,7 +873,7 @@ class MyItemModelView(ModelView):
 class MyAdminModelView(ModelView):
     can_export = False
     # can_delete = False
-    column_exclude_list = ['password', ]
+    column_exclude_list = ('password', )
 
     form_excluded_columns = 'password'
 
@@ -854,12 +915,13 @@ class MyAdminModelView(ModelView):
 
 class MySettingsModelView(ModelView):
     can_create = False
-    can_edit = False
+    can_edit = True
     can_delete = False
     can_export = False
-    column_editable_list = ['value']
+    column_editable_list = ('value', )
 
     column_labels = dict(key='Name', value='Value')
+    form_excluded_columns = 'key'
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
@@ -1483,6 +1545,7 @@ def get_coffee_dict(curuser, curitem, base_url="", extra_data={}):
     leader_data = get_all_leader_data()
 
     curn_bill_float = rest_bill(curuser.userid)
+
     minimum_balance = float(settings_for('minimumBalance'))
     if curn_bill_float <= minimum_balance:
         shouldTopUpMoney = True
@@ -1498,6 +1561,7 @@ def get_coffee_dict(curuser, curitem, base_url="", extra_data={}):
     coffeeDict["item"] = curitem.name
     coffeeDict["itemId"] = curitem.itemid
     coffeeDict["price"] = curitem.price
+    coffeeDict["balance"] = round(curn_bill_float, 2)
     coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
     coffeeDict["total"] = get_total(curuser.userid, curitem.itemid)
     coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
