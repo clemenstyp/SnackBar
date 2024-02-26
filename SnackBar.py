@@ -23,7 +23,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin.form.upload import FileUploadField
 from flask_sqlalchemy import SQLAlchemy
 from markupsafe import Markup
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload
 from sqlalchemy import ForeignKey
 from sqlalchemy import *
 from sqlalchemy.orm import sessionmaker
@@ -122,19 +122,6 @@ class History(db.Model):
     date: Mapped[datetime] = mapped_column()
 
 
-    # historyid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    #
-    # userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
-    # user = db.relationship('User', backref=db.backref('history', lazy='dynamic'))
-    # # user = db.relationship('User', foreign_keys=userid)
-    #
-    # itemid = db.Column(db.Integer, db.ForeignKey('item.itemid'))
-    # item = db.relationship('Item', backref=db.backref('items', lazy='dynamic'))
-    # # item = db.relationship('Item', foreign_keys=itemid)
-    #
-    # price = db.Column(db.Float)
-    # date = db.Column(db.DateTime)
-
     def __init__(self, user=None, item=None, price=0, date=None):
         self.user = user
         self.item = item
@@ -159,16 +146,6 @@ class Inpayment(db.Model):
     notes: Mapped[str] = mapped_column(String(120))
 
 
-    # paymentid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    #
-    # userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
-    # user = db.relationship('User', backref=db.backref('inpayment', lazy='dynamic'))
-    # # user = db.relationship('User', foreign_keys=userid)
-    #
-    # amount = db.Column(db.Float)
-    # date = db.Column(db.DateTime)
-    # notes = db.Column(db.String(120))
-
     def __init__(self, user=None, amount=None, date=None, notes=None):
         self.user = user
         self.amount = amount
@@ -186,19 +163,13 @@ class User(db.Model):
     userid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     firstName: Mapped[str] = mapped_column(String(80), nullable=False, default='')
     lastName: Mapped[str] = mapped_column(String(80), nullable=False, default='')
-    imageName: Mapped[str] = mapped_column(String(240))
+    imageName: Mapped[str] = mapped_column(String(240),  nullable=True)
     email: Mapped[str] = mapped_column(String(120), nullable=False, default='')
     hidden: Mapped[bool] = mapped_column()
 
     inpayment: Mapped[List["Inpayment"]] = relationship(back_populates="user")
     history: Mapped[List["History"]] = relationship(back_populates="user")
 
-    # userid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # firstName = db.Column(db.String(80), nullable=False, default='')
-    # lastName = db.Column(db.String(80), nullable=False, default='')
-    # imageName = db.Column(db.String(240))
-    # email = db.Column(db.String(120), nullable=False, default='')
-    # hidden = db.Column(db.Boolean)
 
     def __init__(self, firstname='', lastname='', email='', imagename=''):
         if not firstname:
@@ -208,7 +179,7 @@ class User(db.Model):
         if not imagename:
             imagename = ''
         if not email:
-            email = 'example@example.org'
+            email = ''
 
         self.hidden = False
         self.firstName = firstname
@@ -228,10 +199,6 @@ class Item(db.Model):
 
     history: Mapped[List["History"]] = relationship(back_populates="item")
 
-    # itemid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # name = db.Column(db.String(80), unique=True, nullable=False, default='')
-    # price = db.Column(db.Float)
-    # icon = db.Column(db.String(300))
 
     def __init__(self, name='', price=0):
         self.name = name
@@ -248,11 +215,6 @@ class Coffeeadmin(db.Model):
     send_bill: Mapped[bool] = mapped_column(default=False)
     email: Mapped[str] = mapped_column(String(120), default='')
 
-    # id = db.Column(db.Integer, primary_key=True)
-    # name = db.Column(db.String(80), unique=True, nullable=False, default='')
-    # password = db.Column(db.String(64))
-    # send_bill = db.Column(db.Boolean, default=False)
-    # email = db.Column(db.String(120), default='')
 
     # Flask-Login integration
     @staticmethod
@@ -275,10 +237,6 @@ class Settings(db.Model):
     settingsid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     key: Mapped[str] = mapped_column(String(80), unique=True)
     value: Mapped[str] = mapped_column(String(600))
-
-    # settingsid = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # key = db.Column(db.String(80), unique=True)
-    # value = db.Column(db.String(600))
 
     def __init__(self, key='', value=''):
         if not key:
@@ -840,6 +798,7 @@ class MyUserModelView(ModelView):
             'base_path': base_path
         }
     }
+
     column_labels = dict(firstName='First Name',
                          lastName='Last Name',
                          imageName='User Image')
@@ -1330,7 +1289,7 @@ def user_page(userid):
 
 
 def send_email_new_user(curuser):
-    if curuser.email:
+    if curuser.email and curuser.email != '':
         mymail = Bimail('SnackBar User Created', ['{}'.format(curuser.email)])
         mymail.sendername = settings_for('mailSender')
         mymail.sender = settings_for('mailSender')
@@ -1358,7 +1317,7 @@ def send_email_new_user(curuser):
 
 
 def send_reminder(curuser):
-    if curuser.email:
+    if curuser.email and curuser.email != '':
         curn_bill_float = rest_bill(curuser.userid)
         minimum_balance = float(settings_for('minimumBalance'))
         if curn_bill_float <= minimum_balance:
@@ -1439,7 +1398,7 @@ def save_bill(total_cash, total_bill, bill_date):
 	
 	
 def send_bill_to(user, total_cash, total_bill, users, bill_date):
-    if user.email:
+    if user.email and user.email != '':
 
         today = bill_date.strftime('%Y-%m-%d')
 
@@ -1500,7 +1459,7 @@ def send_bill_to(user, total_cash, total_bill, users, bill_date):
 
 
 def send_email(curuser, curitem):
-    if curuser.email:
+    if curuser.email and curuser.email != '':
         if settings_for('instantMail') == 'true':
             currbill = '{0:.2f}'.format(rest_bill(curuser.userid))
             # print(instance.firstName)
@@ -1541,7 +1500,7 @@ def send_webhook(coffeeDict):
     webhook_thread.start()
 
 
-def get_coffee_dict(curuser, curitem, base_url="", extra_data={}):
+def get_coffee_dict(curuser: User, last_purchase: History | None = None, extra_data={}):
     leader_data = get_all_leader_data()
 
     curn_bill_float = rest_bill(curuser.userid)
@@ -1558,16 +1517,27 @@ def get_coffee_dict(curuser, curitem, base_url="", extra_data={}):
     coffeeDict["lastName"] = curuser.lastName
     coffeeDict["userId"] = curuser.userid
     coffeeDict["name"] = '{} {}'.format(curuser.firstName, curuser.lastName)
-    coffeeDict["item"] = curitem.name
-    coffeeDict["itemId"] = curitem.itemid
-    coffeeDict["price"] = curitem.price
     coffeeDict["balance"] = round(curn_bill_float, 2)
-    coffeeDict["monthlyCount"] = get_unpaid(curuser.userid, curitem.itemid, leader_data)
-    coffeeDict["total"] = get_total(curuser.userid, curitem.itemid)
     coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
-    coffeeDict["userPage"] = urllib.parse.urljoin(base_url, url_for('user_page', userid=curuser.userid))
+    coffeeDict["userPage"] = url_for('user_page', _external=True, userid=curuser.userid)
+
+    purchaseDict = {}
+
+    if last_purchase:
+        purchaseDict["item"] = last_purchase.item.name
+        purchaseDict["itemId"] = last_purchase.item.itemid
+        purchaseDict["price"] = last_purchase.price
+        purchaseDict["purchaseDate"] = last_purchase.date.astimezone().replace(microsecond=0).isoformat()
+        purchaseDict["monthlyCount"] = get_unpaid(curuser.userid, last_purchase.itemid, leader_data)
+        purchaseDict["totalCount"] = get_total(curuser.userid, last_purchase.itemid)
+
+
+    coffeeDict["last_purchase"] = purchaseDict
+
     coffeeDict["extra_data"] = extra_data
+
     return coffeeDict
+
 
 def send_webhook_now(coffeeDict):
     if settings_for('publishToMqtt') == 'true' and settings_for('mqttTopic') != '' and settings_for('mqttServer') != '' and settings_for('mqttPort') != '':
@@ -1578,6 +1548,158 @@ def send_webhook_now(coffeeDict):
         broker_topic = settings_for('mqttTopic')
 
         mqtt_publish.single(broker_topic, payload=data_out,hostname=broker_url, port=broker_port)
+
+
+
+@app.get('/api/items')
+def api_items():
+    # docker überprüfen
+    # und deployen
+    try:
+        items = list()
+        for itemInstance in Item.query:
+            items.append({'name': '{}'.format(itemInstance.name),
+                          'price': itemInstance.price,
+                          'itemid': '{}'.format(itemInstance.itemid),
+                          'iconURL': '{}'.format(url_for('get_icon', _external=True, icon=itemInstance.icon))})
+
+        response = Response(json.dumps(
+            {"data": items, "message": "", "status": "ok"}), mimetype='application/json')
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": f"Some unknown error occured: Exception: {''.join(traceback.format_exception(e))}",
+            }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
+
+@app.route('/api/info/<int:userid>', methods=['GET'])
+def api_info_userid(userid):
+    try:
+
+        if userid is not None:
+            curuser = db.session.get(User, userid)
+        else:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "No userID provided.",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        if curuser is None:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "Could not find User. The userId is probably wrong. ",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        last_purchase = curuser.history[-1] if len(curuser.history) > 0 else None
+        coffeeDict = get_coffee_dict(curuser, last_purchase, get_extra_data(request))
+
+        response = Response(json.dumps(
+            {"data": coffeeDict, "message": "", "status": "ok"}), mimetype='application/json')
+        response.status_code = 200
+        return response
+
+
+    except Exception as e:
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": f"Some unknown error occured: Exception: {''.join(traceback.format_exception(e))}",
+             }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
+
+@app.post('/api/info')
+def api_info():
+    # docker überprüfen
+    # und deployen
+    try:
+        try:
+            # Get the JSON data from the request
+            data = request.get_json(force=True)
+        except Exception as e:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": f"Content-Type not supported! Please use the JSON format.",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        userId = data.get('userId')
+        userName = data.get('userName')
+        if userId is not None:
+            curuser = db.session.get(User, userId)
+        elif userName is not None:
+            name_array =  userName.rsplit(" ", 1)
+            if len(name_array) == 1 :
+                firstName = ""
+                lastName = name_array[0]
+            elif len(name_array) == 2 :
+                firstName = name_array[0]
+                lastName = name_array[1]
+            else:
+                raise Exception
+            curuser = db.session.query(User).filter(func.lower(User.firstName)==func.lower(firstName), func.lower(User.lastName)==func.lower(lastName)).first()
+            if curuser is None:
+                with app.app_context():
+                    newuser = User(firstname=firstName, lastname=lastName, email='', imagename='')
+                    db.session.add(newuser)
+                    db.session.commit()
+                    db.session.flush()
+                    db.session.refresh(newuser)
+
+                    curuser = db.session.query(User).options(joinedload(User.history)).filter_by(userid=newuser.userid).first()
+                    #send_email_new_user(new_user)
+
+        else:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "No userID or userName provided. Example Json: {\"userId\": someUserId } or {\"userName\": \"Firstname Lastname\" }",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        if curuser is None:
+            response = Response(json.dumps(
+                {"data": "",
+                 "status": "error",
+                 "message": "Could not find User. The userId is probably wrong. Example Json: {\"userId\": someUserId } or {\"userName\": \"Firstname Lastname\" }",
+                 }), mimetype='application/json')
+            response.status_code = 400
+            return response
+
+        last_purchase = curuser.history[-1] if len(curuser.history) > 0 else None
+        coffeeDict = get_coffee_dict(curuser, last_purchase, get_extra_data(request))
+
+        response = Response(json.dumps(
+            {"data": coffeeDict, "message": "", "status": "ok"}), mimetype='application/json')
+        response.status_code = 200
+        return response
+
+
+    except Exception as e:
+        response = Response(json.dumps(
+            {"data": "",
+             "status": "error",
+             "message": f"Some unknown error occured: Exception: {''.join(traceback.format_exception(e))}",
+            }), mimetype='application/json')
+        response.status_code = 400
+        return response
+
 
 
 
@@ -1612,13 +1734,17 @@ def api_buy():
                 lastName = name_array[1]
             else:
                 raise Exception
-            curuser = db.session.query(User).filter_by(firstName=firstName, lastName=lastName).first()
+            curuser = db.session.query(User).filter(func.lower(User.firstName) == func.lower(firstName), func.lower(User.lastName) == func.lower(lastName)).first()
             if curuser is None:
                 with app.app_context():
-                    curuser = User(firstname=firstName, lastname=lastName, email='', imagename='')
-                    db.session.add(curuser)
+                    newuser = User(firstname=firstName, lastname=lastName, email='', imagename='')
+                    db.session.add(newuser)
                     db.session.commit()
-                    #send_email_new_user(new_user)
+                    db.session.flush()
+                    db.session.refresh(newuser)
+
+                    curuser = db.session.query(User).options(joinedload(User.history)).filter_by(userid=newuser.userid).first()
+                #send_email_new_user(new_user)
 
         else:
             response = Response(json.dumps(
@@ -1664,8 +1790,8 @@ def api_buy():
         db.session.commit()
 
         send_email(curuser, curitem)
-        base_url = request.base_url.replace( url_for('api_buy'), "")
-        coffeeDict = get_coffee_dict(curuser, curitem, base_url, get_extra_data(request))
+        coffeeDict = get_coffee_dict(curuser, user_purchase, get_extra_data(request))
+
         try:
             send_webhook(coffeeDict)
         except:
