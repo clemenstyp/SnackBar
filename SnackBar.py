@@ -118,18 +118,8 @@ class History(db.Model):
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'))
     item: Mapped["Item"] = relationship(back_populates="history")
 
-    price: Mapped[float] = mapped_column()
-    date: Mapped[datetime] = mapped_column()
-
-
-    def __init__(self, user=None, item=None, price=0, date=None):
-        self.user = user
-        self.item = item
-        self.price = price
-
-        if date is None:
-            date = datetime.now()
-        self.date = date
+    price: Mapped[float] = mapped_column(nullable=False)
+    date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
 
     def __repr__(self):
         return 'User {} ({} {}) bought {} for {} on the {}'.format(self.user, self.user.firstName, self.user.lastName, self.item, self.price, self.date)
@@ -141,19 +131,9 @@ class Inpayment(db.Model):
     userid: Mapped[int] = mapped_column(ForeignKey('user.userid'))
     user: Mapped["User"] = relationship(back_populates="inpayment")
 
-    amount: Mapped[float] = mapped_column()
-    date: Mapped[datetime] = mapped_column()
-    notes: Mapped[str] = mapped_column(String(120))
-
-
-    def __init__(self, user=None, amount=None, date=None, notes=None):
-        self.user = user
-        self.amount = amount
-        self.notes = notes
-
-        if date is None:
-            date = datetime.now()
-        self.date = date
+    amount: Mapped[float] = mapped_column(nullable=False)
+    date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
+    notes: Mapped[str] = mapped_column(String(120), nullable=True)
 
     def __repr__(self):
         return 'User {} ({} {}) paid {} on the {}'.format(self.userid, self.user.firstName, self.user.lastName, self.amount, self.date)
@@ -161,31 +141,14 @@ class Inpayment(db.Model):
 
 class User(db.Model):
     userid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    firstName: Mapped[str] = mapped_column(String(80), nullable=False, default='')
-    lastName: Mapped[str] = mapped_column(String(80), nullable=False, default='')
-    imageName: Mapped[str] = mapped_column(String(240),  nullable=True)
-    email: Mapped[str] = mapped_column(String(120), nullable=False, default='')
-    hidden: Mapped[bool] = mapped_column()
+    firstName: Mapped[str] = mapped_column(String(80), nullable=True)
+    lastName: Mapped[str] = mapped_column(String(80), nullable=False)
+    imageName: Mapped[str] = mapped_column(String(240), nullable=True, default='')
+    email: Mapped[str] = mapped_column(String(120), nullable=True)
+    hidden: Mapped[bool] = mapped_column(default=False)
 
     inpayment: Mapped[List["Inpayment"]] = relationship(back_populates="user")
     history: Mapped[List["History"]] = relationship(back_populates="user")
-
-
-    def __init__(self, firstname='', lastname='', email='', imagename=''):
-        if not firstname:
-            firstname = ''
-        if not lastname:
-            lastname = ''
-        if not imagename:
-            imagename = ''
-        if not email:
-            email = ''
-
-        self.hidden = False
-        self.firstName = firstname
-        self.lastName = lastname
-        self.imageName = imagename
-        self.email = email
 
     def __repr__(self):
         return '{} {}'.format(self.firstName, self.lastName)
@@ -194,15 +157,10 @@ class User(db.Model):
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, default='')
-    price: Mapped[float] = mapped_column()
-    icon: Mapped[str] = mapped_column(String(300))
+    price: Mapped[float] = mapped_column(nullable=False)
+    icon: Mapped[str] = mapped_column(String(300), nullable=True)
 
     history: Mapped[List["History"]] = relationship(back_populates="item")
-
-
-    def __init__(self, name='', price=0):
-        self.name = name
-        self.price = price
 
     def __repr__(self):
         return self.name
@@ -235,8 +193,8 @@ class Coffeeadmin(db.Model):
 
 class Settings(db.Model):
     settingsid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    key: Mapped[str] = mapped_column(String(80), unique=True)
-    value: Mapped[str] = mapped_column(String(600))
+    key: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    value: Mapped[str] = mapped_column(String(600), nullable=False)
 
     def __init__(self, key='', value=''):
         if not key:
@@ -685,7 +643,7 @@ class MyPaymentModelView(ModelView):
     can_delete = False
     can_edit = True
     can_export = True
-    form_excluded_columns = 'date'
+    #form_excluded_columns = 'date'
     export_types = ['csv']
     column_descriptions = dict()
     column_labels = dict(user='Name')
