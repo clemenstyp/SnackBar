@@ -141,10 +141,10 @@ class Inpayment(db.Model):
 
 class User(db.Model):
     userid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    firstName: Mapped[str] = mapped_column(String(80), nullable=True)
-    lastName: Mapped[str] = mapped_column(String(80), nullable=False)
+    firstName: Mapped[str] = mapped_column(String(80), nullable=True, default='')
+    lastName: Mapped[str] = mapped_column(String(80), nullable=False, default='')
     imageName: Mapped[str] = mapped_column(String(240), nullable=True, default='')
-    email: Mapped[str] = mapped_column(String(120), nullable=True)
+    email: Mapped[str] = mapped_column(String(120), nullable=True, default='')
     hidden: Mapped[bool] = mapped_column(default=False)
 
     inpayment: Mapped[List["Inpayment"]] = relationship(back_populates="user")
