@@ -1742,7 +1742,7 @@ def api_buy():
             response.status_code = 400
             return response
 
-        user_purchase = History(curuser, curitem, curitem.price)
+        user_purchase = History(user=curuser, item=curitem, price=curitem.price)
 
         db.session.add(user_purchase)
         db.session.commit()
