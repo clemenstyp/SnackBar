@@ -15,24 +15,24 @@ from Snackbar import app
 imageCache = {}
 
 
-def button_background(user):
+def button_background(username: str):
     """
         returns the background color based on the username md5
     """
-    hash_string = md5(user.encode('utf-8')).hexdigest()
+    hash_string = md5(username.encode('utf-8')).hexdigest()
     hash_values = (hash_string[:8], hash_string[8:16], hash_string[16:24])
     background = tuple(int(value, 16) % 256 for value in hash_values)
     return '#%02x%02x%02x' % background
 
 
-def button_font_color(user):
+def button_font_color(username: str):
     """
         returns black or white according to the brightness
     """
     r_coef = 0.241
     g_coef = 0.691
     b_coef = 0.068
-    hash_string = md5(user.encode('utf-8')).hexdigest()
+    hash_string = md5(username.encode('utf-8')).hexdigest()
     hash_values = (hash_string[:8], hash_string[8:16], hash_string[16:24])
     bg = tuple(int(value, 16) % 256 for value in hash_values)
     b = sqrt(r_coef * bg[0] ** 2 + g_coef * bg[1] ** 2 + b_coef * bg[2] ** 2)
@@ -42,12 +42,12 @@ def button_font_color(user):
         return '#%02x%02x%02x' % (255, 255, 255)
 
 
-def allowed_file(filename):
+def allowed_file(filename: str):
     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 
-def monster_image(filename, userID):
+def monster_image(filename: str, userID):
     if filename is None:
         return monster_image_for_id(userID)
 

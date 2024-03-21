@@ -7,12 +7,7 @@ from sqlalchemy import func, and_, extract
 
 from Snackbar import app, db, databaseName
 from Snackbar.Helper.Appearance import button_background, button_font_color
-from Snackbar.Models.Coffeeadmin import Coffeeadmin
-from Snackbar.Models.History import History
-from Snackbar.Models.Inpayment import Inpayment
-from Snackbar.Models.Item import Item
-from Snackbar.Models.Settings import Settings
-from Snackbar.Models.User import User
+from Snackbar.models import Coffeeadmin, History, Inpayment, Item, Settings, User
 
 
 def database_exist():
@@ -33,16 +28,17 @@ def get_users_with_leaders():
 
         leader_data = get_all_leader_data()
 
-        for instance in User.query.filter(User.hidden.is_(False)):
-            initusers.append({'firstName': '{}'.format(instance.firstName),
-                              'lastName': '{}'.format(instance.lastName),
-                              'imageName': '{}'.format(instance.imageName),
-                              'id': '{}'.format(instance.userid),
-                              'bgcolor': '{}'.format(button_background(instance.firstName + ' ' + instance.lastName)),
-                              'fontcolor': '{}'.format(button_font_color(instance.firstName + ' ' + instance.lastName)),
-                              'coffeeMonth': get_unpaid(instance.userid, itemid, leader_data),
-                              'leader': get_leader(instance.userid, leader_data),
-                              'email': '{}'.format(instance.email),
+        for aUser in User.query.filter(User.hidden.is_(False)):
+            initusers.append({'firstName': '{}'.format(aUser.firstName),
+                              'lastName': '{}'.format(aUser.lastName),
+                              'imageName': '{}'.format(aUser.imageName),
+                              'id': '{}'.format(aUser.userid),
+                              'bgcolor': '{}'.format(button_background(f"{aUser.firstName} {aUser.lastName}".strip())),
+                              'fontcolor': '{}'.format(
+                                  button_font_color(f"{aUser.firstName} {aUser.lastName}.strip()")),
+                              'coffeeMonth': get_unpaid(aUser.userid, itemid, leader_data),
+                              'leader': get_leader(aUser.userid, leader_data),
+                              'email': '{}'.format(aUser.email),
                               })
     return initusers
 
@@ -199,7 +195,7 @@ def build_sample_db():
             # newitem.price = price[i]
             db.session.add(newitem)
 
-        newadmin = Coffeeadmin(name='Adminpanel', password='Adminpanel', send_bill=False, email='')
+        newadmin = Coffeeadmin(name='admin', password='admin', send_bill=False, email='')
         db.session.add(newadmin)
 
         db.session.commit()
@@ -229,7 +225,9 @@ def settings_for(key):
             return db_entry.value
 
 
-def get_coffee_dict(curuser: User, last_purchase: History | None = None, extra_data={}):
+def get_coffee_dict(curuser: User, last_purchase: History | None = None, extra_data=None):
+    if extra_data is None:
+        extra_data = {}
     leader_data = get_all_leader_data()
 
     curn_bill_float = curuser.calculate_account_balance()
@@ -240,15 +238,10 @@ def get_coffee_dict(curuser: User, last_purchase: History | None = None, extra_d
     else:
         shouldTopUpMoney = False
 
-    coffeeDict = {}
-
-    coffeeDict["firstName"] = curuser.firstName
-    coffeeDict["lastName"] = curuser.lastName
-    coffeeDict["userId"] = curuser.userid
-    coffeeDict["name"] = '{} {}'.format(curuser.firstName, curuser.lastName)
-    coffeeDict["balance"] = round(curn_bill_float, 2)
-    coffeeDict["shouldTopUpMoney"] = shouldTopUpMoney
-    coffeeDict["userPage"] = url_for('user_page', _external=True, userid=curuser.userid)
+    coffeeDict = {"firstName": curuser.firstName, "lastName": curuser.lastName, "userId": curuser.userid,
+                  "name": '{} {}'.format(curuser.firstName, curuser.lastName), "balance": round(curn_bill_float, 2),
+                  "shouldTopUpMoney": shouldTopUpMoney,
+                  "userPage": url_for('user_page', _external=True, userid=curuser.userid)}
 
     purchaseDict = {}
 
@@ -265,39 +258,6 @@ def get_coffee_dict(curuser: User, last_purchase: History | None = None, extra_d
     coffeeDict["extra_data"] = extra_data
 
     return coffeeDict
-
-
-def make_xls_bill(filename, fullpath):
-    with app.app_context():
-        # filename = 'CoffeeBill_{}_{}.xls'.format(datetime.now().date().isoformat(),
-        #                                        datetime.now().time().strftime('%H-%M-%S'))
-
-        # fullpath = os.path.join(current_app.root_path, app.config['STATIC_FOLDER'])
-        header = list()
-        header.append('name')
-        for entry in Item.query:
-            header.append('{}'.format(entry.name))
-        header.append('bill')
-
-        excel_data = tablib.Dataset()
-        excel_data.headers = header
-
-        leader_data = get_all_leader_data()
-
-        for aUser in User.query.filter(User.hidden.is_(False)):
-            firstline = list()
-            firstline.append('{} {}'.format(aUser.firstName, aUser.lastName))
-
-            for record in Item.query:
-                firstline.append('{}'.format(get_unpaid(aUser.userid, record.itemid, leader_data)))
-
-            firstline.append('{0:.2f}'.format(aUser.calculate_account_balance()))
-            excel_data.append(firstline)
-
-        with open(os.path.join(fullpath, filename), 'wb') as f:
-            f.write(excel_data.xls)
-
-        return
 
 
 def get_total_bill():

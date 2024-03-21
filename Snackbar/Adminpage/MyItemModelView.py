@@ -9,7 +9,8 @@ class MyItemModelView(ModelView):
     can_export = True
     export_types = ['csv']
     form_excluded_columns = 'history'
-
+    can_set_page_size = True
+    
     base_path = app.config['ICON_FOLDER']
     form_overrides = dict(icon=FileUploadField)
     form_args = {

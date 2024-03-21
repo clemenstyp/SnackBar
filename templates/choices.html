@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.js"></script>
-<!--<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='clippy/clippy.css')}}" media="all">-->
 
 
     <!--<script Snackbar="{{url_for('static', filename='jquery/jquery.min.js')}}"></script>-->
@@ -28,34 +27,36 @@
         .button_item{
             display:inline-block !important;
             position: relative;
-            width: 170px;
+            width: 140px;
             height: 190px;
+            margin:5px !important;
         }
         body .items_container .button_item a.Item-button {
-            overflow: visible !important;
-            margin:5px !important;
+            overflow: hidden !important;
             display:inline-block;
-            width:160px !important;
-            height:180px !important;
+            width:100% !important;
+            height:100% !important;
             background-color: #e6efff;
-            padding-left: 2px !important;
-            padding-right: 2px !important;
             font-size: 1.5rem;
         }
-
+        .textBorder
+        {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height:60px !important;
+        }
         .items_container {
             text-align:center;
             margin:30px;
         }
 
-         .ct-chart .ct-bar {
-            stroke-width: 30px;
-            stroke: #5D8AA8;
-        }
         .circle
         {
-            border-radius:50% 50% 50% 50%;
-            width:100px;
+            object-fit: contain;
+            padding-top: 5px !important;
+            padding-bottom: 5px !important;
+            width:80px;
             height:100px;
         }
 
@@ -77,9 +78,13 @@
                        id="{{Item.itemid}}"
                        style = ""
                        href="#"
-                       class="ui massive button Item-button">{{ Item.name }} <br>
-                        <img src="{{url_for('get_icon',icon=Item.icon)}}" class="circle">
-                        <br> {{'%0.2f'|format(Item.price|round(2))}} €</a>
+                       class="ui massive button Item-button">
+                        <span class="textBorder">{{ Item.name }}</span>
+                         <br>
+                        <img src="{{url_for('get_icon',icon=Item.icon)}}" class="circle" alt="{{ Item.name }}">
+                        <br>
+                        <span class="textBorder">{{'%0.2f'|format(Item.price|round(2))}} €</span>
+                    </a>
                 </div>
 
               {% endfor %}
@@ -160,8 +165,8 @@
 
 <script src="{{url_for('static', filename='idleTimer.js')}}"></script>
 <script type="text/javascript">
-var idleTimer = new IdleTimerOpenURL();
-idleTimer.setupTimer(20, '{{ url_for('initial') }}');
+    const idleTimer = new IdleTimerOpenURL();
+    idleTimer.setupTimer(20, '{{ url_for('initial') }}');
 
 function buyItem(userid, itemid, itemName, itemPrice, buyURL){
 
@@ -169,7 +174,7 @@ function buyItem(userid, itemid, itemName, itemPrice, buyURL){
  }
 
 function askTobuyItem(userid, itemid, itemName, itemPrice, buyURL){
-    var ask=confirm("Do you really want to buy \""+ itemName + "\" for " + itemPrice +"€?");
+    const ask = confirm("Do you really want to buy \"" + itemName + "\" for " + itemPrice + "€?");
     if(ask){
      buyItemNow(userid, itemid, itemName, itemPrice, buyURL);
     }
@@ -192,7 +197,7 @@ function buyItemNow(userid, itemid, itemName, itemPrice, buyURL){
               document.getElementById(itemid).style.backgroundColor = '#e6efff';
             }
           },
-        success: function(result){
+        success: function(){
            document.getElementById(itemid).style.backgroundColor = 'green';
            self.idleTimer.changeTimeout(2);
            //setTimeout(function(){window.location.href='{{ url_for('initial') }}'},2000);
@@ -201,11 +206,11 @@ function buyItemNow(userid, itemid, itemName, itemPrice, buyURL){
             balance = balance - itemPrice;
             document.getElementById('balance').innerHTML = balance.toFixed(2);
 
-            var date = new Date();
+            const date = new Date();
 
-            var hours = date.getHours();
+            const hours = date.getHours();
             // getMinutes returns the minutes in local time zone from 0 to 59
-            var minutes =  date.getMinutes()
+            let minutes = date.getMinutes();
 
             // hours should always be two digits long
             //if (hours < 10) {
@@ -221,7 +226,7 @@ function buyItemNow(userid, itemid, itemName, itemPrice, buyURL){
         }
     });
 
-    return;
+
 }
 
 function extendTimerTo(newTimer){
@@ -237,30 +242,5 @@ displayChangeImage('{{canChangeImage}}')
 
 </script>
 
-    <!-- Clippy.js -->
-<!--<script Snackbar="{{url_for('static', filename='clippy/clippy.min.js')}}"></script>-->
-
-<!-- Init script -->
-<script type="text/javascript">
-    // var all_helper = Array("Bonzi", "Clippy", "F1", "Genie", "Genius", "Links", "Merlin", "Peedy", "Rocky", "Rover");
-    // var helper = all_helper[Math.floor(Math.random()*all_helper.length)];
-
-/*    var helper = "Clippy";
-
-    var randomNumber = Math.floor((Math.random() * 0));
-    if (randomNumber == 0){
-          setTimeout(function(){
-             clippy.load(helper, function(agent){
-                // do anything with the loaded agent
-                agent.show();
-                agent.animate();
-                //agent.speak('When all else fails, bind some paper together. My name is Clippy.');
-                //agent.hide();
-             }, 1000);
-    });
-    }
-*/
-
-</script>
 </body>
 </html>

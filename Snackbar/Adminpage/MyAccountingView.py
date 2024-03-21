@@ -10,7 +10,7 @@ class MyAccountingView(BaseView):
     def index(self):
         accounting, total_cash, total_open = get_total_bill()
 
-        return self.render('Adminpanel/accounting.html', data=reversed(accounting), total_cash=total_cash,
+        return self.render('admin/accounting.html', data=reversed(accounting), total_cash=total_cash,
                            total_open=total_open, total_sum=(total_cash + total_open))
 
     def is_accessible(self):

@@ -1,45 +1,44 @@
 {% extends 'admin/master.html' %}
 {% block body %}
 <div style="text-align:right;margin-bottom:50px">
-  <a href="{{ url_for('bill.reminder') }}" class="btn btn-primary">Send reminder!</a>
-    <a href="{{ url_for('bill.export') }}" class="btn btn-primary">Export as xls!</a>
+    <a href="{{ url_for('bill.reminder') }}" class="btn btn-primary">Send reminder!</a>
 </div>
 
 <table class="table table-sm table-bordered table-striped">
     <thead>
-        <tr>
-           <th colspan="2">Total</th>
-        </tr>
+    <tr>
+        <th colspan="2">Total</th>
+    </tr>
     </thead>
     <tbody>
-        <tr>
-             <td>
-              Total Cash
-            </td>
-            <td>
-              {{ '%0.2f'|format(total_cash) }} €
-            </td>
+    <tr>
+        <td>
+            Total Cash
+        </td>
+        <td>
+            {{ '%0.2f'|format(total_cash) }} €
+        </td>
 
-        </tr>
+    </tr>
 
-         <tr>
-             <td>
-              Total Open Bill
-            </td>
-            <td>
-              {{ '%0.2f'|format(total_bill) }} €
-            </td>
+    <tr>
+        <td>
+            Total Open Bill
+        </td>
+        <td>
+            {{ '%0.2f'|format(total_bill) }} €
+        </td>
 
-        </tr>
-       <tr>
-             <td>
-              <b>Resulting Sum</b>
-            </td>
-            <td>
-              <b>{{ '%0.2f'|format(total_sum) }} €</b>
-            </td>
+    </tr>
+    <tr>
+        <td>
+            <b>Resulting Sum</b>
+        </td>
+        <td>
+            <b>{{ '%0.2f'|format(total_sum) }} €</b>
+        </td>
 
-        </tr>
+    </tr>
 
     </tbody>
 </table>
@@ -48,34 +47,34 @@
 
 <table class="table table-sm table-bordered table-striped">
     <thead>
-        <tr>
-            <th>Name</th>
-            <th>Bill</th>
-        </tr>
+    <tr>
+        <th>Name</th>
+        <th>Bill</th>
+    </tr>
     </thead>
     <tbody>
-      {% for User in users %}
+    {% for User in users %}
 
-        <tr>
-            <td>
-              {{ User.name }}
-            </td>
-            <td>
-              {{ '%0.2f'|format(User.bill) }} €
-            </td>
+    <tr>
+        <td>
+            {{ User.name }}
+        </td>
+        <td>
+            {{ '%0.2f'|format(User.bill) }} €
+        </td>
 
-        </tr>
-        {% endfor %}
-      <tr></tr>
-      <tr>
-            <td>
-             <b>SUM:</b>
-            </td>
-            <td>
-              <b>{{ '%0.2f'|format(total_bill) }} €</b>
-            </td>
+    </tr>
+    {% endfor %}
+    <tr></tr>
+    <tr>
+        <td>
+            <b>SUM:</b>
+        </td>
+        <td>
+            <b>{{ '%0.2f'|format(total_bill) }} €</b>
+        </td>
 
-        </tr>
+    </tr>
     </tbody>
 </table>
 
@@ -84,46 +83,45 @@
 <!--<a id="hiddenUserToggle" onclick="toggleHiddenUserList();" href="#" style="color: #000"><h4>toggle hidden users table</h4></a>-->
 <table class="table table-sm table-bordered table-striped" id="hiddenUser" style="display: none;">
     <thead>
-        <tr>
-            <th>Name</th>
-            <th>Bill</th>
-        </tr>
+    <tr>
+        <th>Name</th>
+        <th>Bill</th>
+    </tr>
     </thead>
     <tbody>
-      {% for User in hidden_users %}
-        <tr>
-            <td>
-              {{ User.name }}
-            </td>
-            <td>
-              {{ '%0.2f'|format(User.bill) }} €
-            </td>
+    {% for User in hidden_users %}
+    <tr>
+        <td>
+            {{ User.name }}
+        </td>
+        <td>
+            {{ '%0.2f'|format(User.bill) }} €
+        </td>
 
-        </tr>
-        {% endfor %}
-     <tr></tr>
-      <tr>
-            <td>
-             <b>SUM:</b>
-            </td>
-            <td>
-              <b>{{ '%0.2f'|format(hidden_total_bill) }} €</b>
-            </td>
+    </tr>
+    {% endfor %}
+    <tr></tr>
+    <tr>
+        <td>
+            <b>SUM:</b>
+        </td>
+        <td>
+            <b>{{ '%0.2f'|format(hidden_total_bill) }} €</b>
+        </td>
 
-        </tr>
+    </tr>
     </tbody>
 </table>
 
 <script>
-  function toggleHiddenUserList()
-    {
-    var status = document.getElementById("hiddenUser").style.display;
+    function toggleHiddenUserList() {
+        const status = document.getElementById("hiddenUser").style.display;
 
-    if (status == 'table') {
-      document.getElementById("hiddenUser").style.display="none";
-    } else {
-      document.getElementById("hiddenUser").style.display="table";
+        if (status === 'table') {
+            document.getElementById("hiddenUser").style.display = "none";
+        } else {
+            document.getElementById("hiddenUser").style.display = "table";
+        }
     }
-  }
 </script>
 {% endblock %}

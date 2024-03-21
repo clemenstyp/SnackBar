@@ -127,37 +127,38 @@ body {
 <script type="text/javascript">
 
 function djb2(str){
-  var hash = 5381;
-  for (var i = 0; i < str.length; i++) {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
   }
   return hash;
 }
 
 function hashStringToColor(str) {
-  var hash = djb2(str);
-  console.log(str)
-  var r = (hash & 0xFF0000) >> 16;
-  var g = (hash & 0x00FF00) >> 8;
-  var b = hash & 0x0000FF;
-  return "rgb(" + r + "," + g + "," + b + ")"
+    const hash = djb2(str);
+    console.log(str)
+    const r = (hash & 0xFF0000) >> 16;
+    const g = (hash & 0x00FF00) >> 8;
+    const b = hash & 0x0000FF;
+    return "rgb(" + r + "," + g + "," + b + ")"
 
 }
 
-var default_colors = ['#3366CC','#DC3912','#FF9900','#109618','#990099','#3B3EAC','#0099C6','#DD4477','#66AA00','#B82E2E','#316395','#994499','#22AA99','#AAAA11','#6633CC','#E67300','#8B0707','#329262','#5574A6','#3B3EAC']
+const default_colors = ['#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#3B3EAC', '#0099C6', '#DD4477', '#66AA00', '#B82E2E', '#316395', '#994499', '#22AA99', '#AAAA11', '#6633CC', '#E67300', '#8B0707', '#329262', '#5574A6', '#3B3EAC'];
 
 
 var ctx = document.getElementById('Weekdays').getContext('2d');
-var weekDaysChart = new Chart(ctx, {
+const weekDaysChart = new Chart(ctx, {
     // The type of chart we want to create
     type: 'bar',
     // The data for our dataset
     data: {
         //labels: ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday' ,'Saturday' , 'Sunday' ],
-        labels: ['Monday' ,'Tuesday','Wednesday' ,'Thursday' , 'Friday'],
+        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
         datasets: [
-        {% for key, value in content.items() %}
-        {
+            { % for key, value in content.items() %
+    };
+{
             label: "{{key}}",
             backgroundColor: default_colors[{{loop.index}}],
             data: {{value["amountDays"]|tojson}},
@@ -203,15 +204,16 @@ var weekDaysChart = new Chart(ctx, {
 
 
 var ctx = document.getElementById('Month').getContext('2d');
-var monthChart = new Chart(ctx, {
+const monthChart = new Chart(ctx, {
     // The type of chart we want to create
     type: 'bar',
     // The data for our dataset
     data: {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         datasets: [
-        {% for key, value in content.items() %}
-        {
+            { % for key, value in content.items() %
+    };
+{
             label: "{{key}}",
             backgroundColor: default_colors[{{loop.index}}],
             data: {{value["amountMonth"]|tojson}},
@@ -257,7 +259,7 @@ var monthChart = new Chart(ctx, {
 
 
 var ctx = document.getElementById('WeekHours').getContext('2d');
-var weekHoursChart = new Chart(ctx, {
+const weekHoursChart = new Chart(ctx, {
     // The type of chart we want to create
     type: 'line',
     // The data for our dataset
@@ -265,8 +267,9 @@ var weekHoursChart = new Chart(ctx, {
         //labels: {{tagsHours|safe}},
         //labels: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00','24:00'] ,
         datasets: [
-        {% for key, value in content.items() %}
-        {
+            { % for key, value in content.items() %
+    };
+{
             label: "{{key}}",
             borderColor:default_colors[{{loop.index}}],
             fill: false,

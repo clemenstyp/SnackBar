@@ -10,6 +10,7 @@ class MyUserModelView(ModelView):
     export_types = ['csv']
     column_exclude_list = ['history', 'inpayment', ]
     form_excluded_columns = ['history', 'inpayment']
+    can_set_page_size = True
     # column_descriptions = dict(
     #     firstName='Name of the corresponding person'
     # )

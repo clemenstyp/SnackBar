@@ -12,20 +12,22 @@ function IdleTimerOpenURL() {
     window.onscroll = resetTimer;    // catches scrolling with arrow keys
     window.onkeypress = resetTimer;
 
-    this.setupTimer = function(timeout, url){
-         this.timeout = timeout;
-         this.url = url;
-         resetTimer();
+    this.setupTimer = function (timeout, url) {
+        this.timeout = timeout;
+        this.url = url;
+        resetTimer();
     }
-    this.changeTimeout = function(timeout){
+    this.changeTimeout = function (timeout) {
         this.timeout = timeout;
         resetTimer();
     }
+
     function callTimeout() {
-        if (seconds == 0){
-             window.location.href= self.url
+        if (seconds === 0) {
+            window.location.href = self.url
         }
     }
+
     function resetTimer() {
         seconds = self.timeout;
         updateTimer();
@@ -33,21 +35,23 @@ function IdleTimerOpenURL() {
         timer = setTimeout(timeoutTick, 1000)
         // 1000 milisec = 1 sec
     }
-    function updateTimer(){
-        if (document.getElementById('timeout_in')){
+
+    function updateTimer() {
+        if (document.getElementById('timeout_in')) {
             document.getElementById('timeout_in').innerHTML = "-" + seconds + " s";
         }
-        if (document.getElementById('timeout_in_top')){
+        if (document.getElementById('timeout_in_top')) {
             document.getElementById('timeout_in_top').innerHTML = "-" + seconds + " s";
         }
         console.log('callling timeout in ' + seconds + ' seconds.')
     }
-    function timeoutTick(){
+
+    function timeoutTick() {
         seconds = seconds - 1;
         updateTimer();
-        if (seconds <= 0){
+        if (seconds <= 0) {
             callTimeout();
-        }else{
+        } else {
             clearTimeout(timer);
             timer = setTimeout(timeoutTick, 1000)
             // 1000 milisec = 1 sec

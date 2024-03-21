@@ -7,7 +7,7 @@ from logging.handlers import SMTPHandler
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from Snackbar import app
-from Snackbar.Adminpanel import setup_admin
+from Snackbar.Adminpage import setup_admin
 from Snackbar.Frontpage import setup_frontpage
 from Snackbar.Helper.Autoreminder import setup_schedule, stop_schedule
 from Snackbar.Helper.Database import database_exist, set_default_settings, build_sample_db, settings_for
@@ -27,27 +27,27 @@ def load_args(default_host="127.0.0.1", default_port="5000", url_prefix=""):
     parser = argparse.ArgumentParser(prog='SnackBar')
 
     parser.add_argument("-H", "--host",
-                      help="Hostname of the Flask app " +
-                           "[default %s]" % default_host,
-                      default=default_host)
+                        help="Hostname of the Flask app " +
+                        "[default %s]" % default_host,
+                        default=default_host)
     parser.add_argument("-P", "--port",
-                      help="Port for the Flask app " +
-                           "[default %s]" % default_port,
-                      default=default_port)
+                        help="Port for the Flask app " +
+                        "[default %s]" % default_port,
+                        default=default_port)
 
     parser.add_argument("-U", "--url_prefix",
-                      help="Url Prefix for the Flask app " +
-                           "[default %s]" % url_prefix,
-                      default=url_prefix)
+                        help="Url Prefix for the Flask app " +
+                        "[default %s]" % url_prefix,
+                        default=url_prefix)
 
     # Two options useful for debugging purposes, but
     # a bit dangerous so not exposed in the help message.
     parser.add_argument("-d", "--debug",
-                      action="store_true", dest="debug",
-                      help="enable debug")
+                        action="store_true", dest="debug",
+                        help="enable debug")
     parser.add_argument("-p", "--profile",
-                      action="store_true", dest="profile",
-                      help="")
+                        action="store_true", dest="profile",
+                        help="")
 
     loaded_args = parser.parse_args()
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         build_sample_db()
     set_default_settings()
 
-    args = load_args()
+    flask_args = load_args()
 
     # Email Errors to Admins
     mail_handler = SMTPHandler(
@@ -112,16 +112,16 @@ if __name__ == "__main__":
         '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
     ))
 
-    if not args.debug:
+    if not flask_args.debug:
         app.logger.addHandler(mail_handler)
 
     setup_admin(app)
     setup_frontpage()
 
-    app.config['SECRET_KEY'] = '123456790' + args.url_prefix
-    app.config["APPLICATION_ROOT"] = args.url_prefix
+    app.config['SECRET_KEY'] = '123456790' + flask_args.url_prefix
+    app.config["APPLICATION_ROOT"] = flask_args.url_prefix
 
     # app.run()
     # app.run(host='0.0.0.0', port=5000, debug=False)
-    flaskrun(app, args=args)
+    flaskrun(app, args=flask_args)
     stop_schedule()
