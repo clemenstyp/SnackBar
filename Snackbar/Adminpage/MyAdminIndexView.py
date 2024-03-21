@@ -2,7 +2,7 @@ import flask_login as loginflask
 from flask import redirect, url_for, request
 from flask_admin import AdminIndexView, expose, helpers
 
-from Snackbar.Adminpanel.LoginForm import LoginForm
+from Snackbar.Adminpage.LoginForm import LoginForm
 
 
 class MyAdminIndexView(AdminIndexView):

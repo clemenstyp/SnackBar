@@ -1,5 +1,6 @@
  <!DOCTYPE html>
-<html lang="en-US">
+<!--suppress CssInvalidHtmlTagReference -->
+ <html lang="en-US">
 
 <head>
     <title>SnackBar</title>
@@ -97,12 +98,12 @@
             height:60px !important;
         }
 		.bottom {
-			bottom: 0px;
+			bottom: 0;
 			width: 100%;
 			height: 96px;
 		}
 		.top {
-			top: 0px;
+			top: 0;
 			width: 100%;
 			height: 52px !important;
 			padding-top: 10px;
@@ -150,12 +151,12 @@
         <div class="button_user">
             {% for Item in User.leader %}
             <img class="flag" id="Item{{Item.item_id}}User{{User.id}}" style="right: {{Item.position}}px"
-                 src="{{url_for('get_icon',icon=Item.icon)}}"/>
+                 src="{{url_for('get_icon',icon=Item.icon)}}" alt="Most {{Item.name}} per Month"/>
             {% endfor %}
             <a href="{{url_for('user_page',userid=User.id)}}" id="User{{User.id}}" class="ui coffee-button huge button"
                style="color:{{User.fontcolor}};
                             background-color:{{ User.bgcolor }}">
-                <span class="imageBorder"><img src="{{url_for('image',filename=User.imageName)}}?userID={{User.email}}" class="circle"></span>
+                <span class="imageBorder"><img src="{{url_for('image',filename=User.imageName)}}?userID={{User.email}}" class="circle" alt="User Icon"></span>
                 <span class="textBorder">{{ User.firstName }}<br>{{ User.lastName }}</span>
             </a>
         </div>

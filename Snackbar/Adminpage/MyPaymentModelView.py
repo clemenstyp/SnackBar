@@ -3,7 +3,7 @@ from flask_admin.contrib.sqla import ModelView
 from sqlalchemy import func
 
 from Snackbar import app
-from Snackbar.Models.Inpayment import Inpayment
+from Snackbar.models import Inpayment
 
 
 class MyPaymentModelView(ModelView):
@@ -11,7 +11,7 @@ class MyPaymentModelView(ModelView):
     can_delete = False
     can_edit = True
     can_export = True
-    form_excluded_columns = 'date'
+    # form_excluded_columns = 'date'
     export_types = ['csv']
     column_descriptions = dict()
     column_labels = dict(user='Name')
@@ -19,7 +19,7 @@ class MyPaymentModelView(ModelView):
     column_filters = ('user', 'amount', 'date')
     column_list = ('user', 'amount', 'date', 'notes')
     column_sortable_list = ('user', 'date')
-    list_template = 'Adminpanel/custom_list.html'
+    list_template = 'admin/custom_list.html'
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def date_format(self, context, model, name):
@@ -69,7 +69,7 @@ class MyPaymentModelView(ModelView):
 
     def render(self, template, **kwargs):
         # we are only interested in the list page
-        if template == 'Adminpanel/custom_list.html':
+        if template == 'admin/custom_list.html':
             # append a summary_data dictionary into kwargs
             _current_page = kwargs['page']
             kwargs['summary_data'] = [

@@ -9,9 +9,7 @@ from sqlalchemy.sql import func
 
 from Snackbar import app, db
 from Snackbar.Helper.Mailing import send_bill_to, send_reminder
-from Snackbar.Models.Coffeeadmin import Coffeeadmin
-from Snackbar.Models.Inpayment import Inpayment
-from Snackbar.Models.User import User
+from Snackbar.models import Coffeeadmin, Inpayment, User
 
 running = True
 
@@ -19,7 +17,6 @@ running = True
 def setup_schedule():
     schedule.every().monday.at("10:30").do(send_reminder_to_all)
     schedule.every().monday.at("00:00").do(send_bill_to_admin)
-
     schedule_thread = threading.Thread(target=run_schedule).start()
 
 

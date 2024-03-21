@@ -23,3 +23,5 @@ CoffeeDB.db
 !/static/icons/.gitkeep
 /data/
 docker-compose.override.yaml
+.pylintrc
+setup.cfg

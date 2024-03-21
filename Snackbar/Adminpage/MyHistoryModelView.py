@@ -17,7 +17,8 @@ class MyHistoryModelView(ModelView):
     column_list = ('user', 'item', 'price', 'date')
     column_sortable_list = ('user', 'date')
     form_args = dict(date=dict(default=datetime.now()), price=dict(default=0))
-
+    can_set_page_size = True
+    
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def date_format(self, context, model, name):
         field = getattr(model, name)

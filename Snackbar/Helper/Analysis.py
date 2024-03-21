@@ -2,10 +2,10 @@ from collections import Counter
 from datetime import timedelta
 
 from Snackbar import db, app
-from Snackbar.Models.History import History
-from Snackbar.Models.Item import Item
+from Snackbar.models import History, Item
 
 
+# noinspection PyUnresolvedReferences
 def get_analysis():
     with app.app_context():
         # get no of users
