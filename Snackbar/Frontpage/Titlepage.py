@@ -57,28 +57,29 @@ def change_image():
     with app.app_context():
         if 'image' in request.files:
             file = request.files['image']
-            imagename = file.filename
-            userid = request.form["userid"]
-            imagename = str(userid) + "_" + imagename + "_ " + ''.join(
-                random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-            if imagename != '':  # and allowed_file(imagename):
+            if file.filename != "":
+                imagename = file.filename
                 userid = request.form["userid"]
-                filename = secure_filename(imagename)
-                full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
-                add = 0
-                while os.path.isfile(full_path):
-                    add = add + 1
-                    split = imagename.rsplit('.', 1)
-                    part_1 = split[0] + "_" + str(add)
-                    new_imagename = ".".join([part_1, split[1]])
-                    filename = secure_filename(new_imagename)
+                imagename = str(userid) + "_" + imagename + "_ " + ''.join(
+                    random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+                if imagename != '':  # and allowed_file(imagename):
+                    userid = request.form["userid"]
+                    filename = secure_filename(imagename)
                     full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
+                    add = 0
+                    while os.path.isfile(full_path):
+                        add = add + 1
+                        split = imagename.rsplit('.', 1)
+                        part_1 = split[0] + "_" + str(add)
+                        new_imagename = ".".join([part_1, split[1]])
+                        filename = secure_filename(new_imagename)
+                        full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
 
-                file.save(full_path)
+                    file.save(full_path)
 
-                current_user = db.session.get(User, userid)
-                current_user.imageName = filename
+                    current_user = db.session.get(User, userid)
+                    current_user.imageName = filename
 
-                db.session.commit()
+                    db.session.commit()
 
     return redirect(url_for('initial'))

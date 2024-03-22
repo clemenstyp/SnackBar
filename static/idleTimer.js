@@ -43,7 +43,7 @@ function IdleTimerOpenURL() {
         if (document.getElementById('timeout_in_top')) {
             document.getElementById('timeout_in_top').innerHTML = "-" + seconds + " s";
         }
-        console.log('callling timeout in ' + seconds + ' seconds.')
+        // console.log('callling timeout in ' + seconds + ' seconds.')
     }
 
     function timeoutTick() {

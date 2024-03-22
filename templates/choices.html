@@ -155,9 +155,9 @@
             <input type="hidden" id="userid" name="userid" value="{{userid}}">
                 <div class="field">
                 <label>Image</label>
-                   <input onclick="extendTimerTo(90)" type="file" name="image">
+                   <input onclick="extendTimerTo(90)" type="file" name="image" id="file_input">
                 </div>
-                <button onclick="extendTimerTo(90)" class="ui button" type="submit">Change Image</button>
+                <button onclick="extendTimerTo(90)" class="ui button" type="submit" id="file_submit" disabled="true">Change Image</button>
             </form>
         </div>
         <br/>
@@ -170,6 +170,11 @@
 <script type="text/javascript">
     var idleTimer = new IdleTimerOpenURL();
     idleTimer.setupTimer(20, '{{ url_for('initial') }}');
+
+    const fileInput = document.getElementById('file_input');
+    fileInput.onchange = () => {
+      document.getElementById('file_submit').removeAttribute("disabled");
+    }
 
 function buyItem(userid, itemid, itemName, itemPrice, buyURL){
 
