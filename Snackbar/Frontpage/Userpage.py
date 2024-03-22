@@ -88,12 +88,16 @@ def adduser():
                 filename = ''
                 if 'image' in request.files:
                     file = request.files['image']
-                    imagename = first_name + "_" + file.filename + "_ " + ''.join(
-                        random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-                    if imagename != '':  # and allowed_file(imagename):
-                        filename = secure_filename(imagename)
-                        full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
-                        file.save(full_path)
+                    if file.filename != "":
+                        imagename_extension = file.filename.rsplit('.', 1)[-1]
+                        imagename = file.filename.rsplit('.',1)[0]
+                        imagename = first_name + "_" + imagename + "_ " + ''.join(
+                            random.choice(string.ascii_uppercase + string.digits) for _ in
+                            range(6)) + '.' + imagename_extension
+                        if imagename != '':  # and allowed_file(imagename):
+                            filename = secure_filename(imagename)
+                            full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
+                            file.save(full_path)
 
                 new_user = User(firstname=first_name, lastname=last_name, email=email, imagename=filename)
 

@@ -61,10 +61,11 @@ def change_image():
         if 'image' in request.files:
             file = request.files['image']
             if file.filename != "":
-                imagename = file.filename
+                imagename_extension = file.filename.rsplit('.',1)[-1]
+                imagename = file.filename.rsplit('.', 1)[0]
                 userid = request.form["userid"]
                 imagename = str(userid) + "_" + imagename + "_ " + ''.join(
-                    random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+                    random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) + '.' + imagename_extension
                 if imagename != '':  # and allowed_file(imagename):
                     userid = request.form["userid"]
                     filename = secure_filename(imagename)
