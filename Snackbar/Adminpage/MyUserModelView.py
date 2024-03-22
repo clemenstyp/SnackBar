@@ -11,20 +11,19 @@ class MyUserModelView(ModelView):
     column_exclude_list = ['history', 'inpayment', ]
     form_excluded_columns = ['history', 'inpayment']
     can_set_page_size = True
-
-    can_edit = True
-    column_editable_list = ('imageName',)
     # column_descriptions = dict(
     #     firstName='Name of the corresponding person'
     # )
 
+    can_edit = True
+    # column_editable_list = ('imageName',)
     base_path = app.config['IMAGE_FOLDER']
-    # form_overrides = dict(imageName=FileUploadField)
-    # form_args = {
-    #     'imageName': {
-    #         'base_path': base_path
-    #     }
-    # }
+    form_overrides = dict(imageName=FileUploadField)
+    form_args = {
+        'imageName': {
+            'base_path': base_path
+        }
+    }
 
     column_labels = dict(firstName='First Name',
                          lastName='Last Name',
