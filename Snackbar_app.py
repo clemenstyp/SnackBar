@@ -71,8 +71,11 @@ def get_default_options(default_host="0.0.0.0", default_port="5000", default_url
     else:
         default_options.url_prefix = default_url_prefix
 
-    if os.getenv("SNACKBAR_DEBUG").lower() == 'true':
-        default_options.debug = True
+    if debug := os.getenv("SNACKBAR_DEBUG"):
+        if debug.lower() == 'true':
+            default_options.debug = True
+        else:
+            default_options.debug = False
     else:
         default_options.debug = False
 
