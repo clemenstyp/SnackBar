@@ -66,7 +66,7 @@ def get_default_options(default_host="0.0.0.0", default_port="5000", default_url
     else:
         default_options.port = default_port
 
-    if url_prefix := os.getenv("SNACKBAR_URL_PREFIX", "") != "":
+    if url_prefix := os.getenv("SNACKBAR_URL_PREFIX", ""):
         if url_prefix.startswith("/"):
             default_options.url_prefix = url_prefix
         else:
