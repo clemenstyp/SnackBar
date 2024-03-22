@@ -51,7 +51,7 @@ def monster_image(filename: str, userID):
     if filename is None:
         return monster_image_for_id(userID)
 
-    fullpath = os.path.join(current_app.root_path, app.config['IMAGE_FOLDER'])
+    fullpath = app.config['IMAGE_FOLDER']
 
     full_file_path = safe_join(fullpath, filename)
     if not os.path.isabs(full_file_path):
@@ -72,22 +72,8 @@ def monster_image_for_id(userID):
         userID = "example@example.org"
 
     use_gravatar = True
-    returnValue = send_from_directory(directory=current_app.root_path, path="static/unknown_image.png",
+    returnValue = send_from_directory(directory=app.config['STATIC_FOLDER'], path="unknown_image.png",
                                       as_attachment=False)
-
-    # mail_parts = userID.split("@")
-    # if len(mail_parts) == 2:
-    #     prefix = mail_parts[0]
-    #     domain = mail_parts[1]
-    #     if domain == "fit.fraunhofer.de":
-    #         use_gravatar = False
-    #         requestURL = "https://chat.fit.fraunhofer.de/avatar/" + prefix
-    #         try:
-    #             proxyResponse = requests.get(requestURL, timeout=5)
-    #
-    #             returnValue = Response(proxyResponse)
-    #         except:
-    #             pass
 
     if use_gravatar:
         userHash = hashlib.md5(str(userID).encode('utf-8').lower()).hexdigest()
@@ -136,18 +122,20 @@ def get_monster_id_from_gravatar(userHash):
     return returnValue
 
 
-def image_from_folder(filename, image_folder, the_default_image):
+def icon_from_folder(filename):
     if filename is None:
-        return send_from_directory(directory=current_app.root_path, path=the_default_image, as_attachment=False)
+        return send_from_directory(directory=app.config['STATIC_FOLDER'], path="unknown_icon.svg", as_attachment=False)
 
-    fullpath = os.path.join(current_app.root_path, image_folder)
+    fullpath = app.config['ICON_FOLDER']
 
     full_file_path = safe_join(fullpath, filename)
     if not os.path.isabs(full_file_path):
         full_file_path = os.path.join(current_app.root_path, full_file_path)
     try:
         if not os.path.isfile(full_file_path):
-            return send_from_directory(directory=current_app.root_path, path=the_default_image, as_attachment=False)
+            icon_path = os.path.join(app.config['STATIC_FOLDER'], "unknown_icon.svg")
+            return send_from_directory(directory=app.config['STATIC_FOLDER'], path="unknown_icon.svg",
+                                       as_attachment=False)
     except (TypeError, ValueError):
         pass
 

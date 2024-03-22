@@ -17,10 +17,10 @@ sqlite
 *.bak
 /.vs
 CoffeeDB.db
-/static/images/
-!/static/images/.gitkeep
-/static/icons/
-!/static/icons/.gitkeep
+/data/user/
+!/data/user/.gitkeep
+/data/icons/
+!/data/icons/.gitkeep
 /data/CoffeeDB.db
 docker-compose.override.yaml
 .pylintrc

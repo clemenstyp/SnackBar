@@ -20,9 +20,9 @@ session = Session()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['STATIC_FOLDER'] = 'static'
-app.config['IMAGE_FOLDER'] = 'static/images'
-app.config['ICON_FOLDER'] = 'static/icons'
+app.config['STATIC_FOLDER'] = os.path.join(root_folder, "static")
+app.config['IMAGE_FOLDER'] = os.path.join(app.instance_path, 'user')
+app.config['ICON_FOLDER'] = os.path.join(app.instance_path, 'icons')
 app.config['DEBUG'] = False
 
 if not os.path.exists(app.config['IMAGE_FOLDER']):
