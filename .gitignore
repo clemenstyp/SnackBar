@@ -21,7 +21,8 @@ CoffeeDB.db
 !/static/images/.gitkeep
 /static/icons/
 !/static/icons/.gitkeep
-/data/
+/data/CoffeeDB.db
 docker-compose.override.yaml
 .pylintrc
 setup.cfg
+qodana.yaml
