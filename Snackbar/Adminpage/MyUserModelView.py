@@ -11,6 +11,9 @@ class MyUserModelView(ModelView):
     column_exclude_list = ['history', 'inpayment', ]
     form_excluded_columns = ['history', 'inpayment']
     can_set_page_size = True
+
+    can_edit = True
+    column_editable_list = ('imageName',)
     # column_descriptions = dict(
     #     firstName='Name of the corresponding person'
     # )
