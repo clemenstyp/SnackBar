@@ -30,10 +30,10 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copy the source code into the container.
-COPY . .
+COPY .. .
 
 # Expose the port that the application listens on.
 EXPOSE 5000
 
 # Run the application.
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
+CMD ["gunicorn", "--config","/app/gunicorn_config.py", "--bind", "0.0.0.0:5000", "Snackbar_app:app"]

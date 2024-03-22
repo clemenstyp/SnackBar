@@ -12,11 +12,17 @@ from Snackbar.Helper.Mailing import send_bill_to, send_reminder
 from Snackbar.models import Coffeeadmin, Inpayment, User
 
 running = True
+schedule_thread = None
 
 
 def setup_schedule():
     schedule.every().monday.at("10:30").do(send_reminder_to_all)
     schedule.every().monday.at("00:00").do(send_bill_to_admin)
+
+
+def start_schedule():
+    print("Starting Scheduler")
+    global schedule_thread
     schedule_thread = threading.Thread(target=run_schedule).start()
 
 
