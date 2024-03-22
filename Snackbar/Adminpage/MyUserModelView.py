@@ -19,12 +19,12 @@ class MyUserModelView(ModelView):
     # )
 
     base_path = app.config['IMAGE_FOLDER']
-    form_overrides = dict(imageName=FileUploadField)
-    form_args = {
-        'imageName': {
-            'base_path': base_path
-        }
-    }
+    # form_overrides = dict(imageName=FileUploadField)
+    # form_args = {
+    #     'imageName': {
+    #         'base_path': base_path
+    #     }
+    # }
 
     column_labels = dict(firstName='First Name',
                          lastName='Last Name',
