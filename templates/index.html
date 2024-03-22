@@ -128,17 +128,17 @@
     <div class="ui text container">
         <h2 class="ui center aligned header" style="height: 30px; overflow: hidden">
             Name:
-            <a href="{{url_for('sort',sorting='az')}}">
+            <a href="{{url_for('initial',sorting='az')}}">
                 {% if current_sorting == 'az' %}<i class="sort alphabet ascending icon"></i>{% else %}<i class="sort alphabet ascending icon black"></i>{% endif %}
             </a>
-            <a href="{{url_for('sort',sorting='za')}}">
+            <a href="{{url_for('initial',sorting='za')}}">
                 {% if current_sorting == 'za' %}<i class="sort alphabet descending icon"></i>{% else %}<i class="sort alphabet descending icon black"></i>{% endif %}
             </a>
             &nbsp;&nbsp; | &nbsp;&nbsp; Coffee:
-            <a href="{{url_for('sort',sorting='coffee91')}}">
+            <a href="{{url_for('initial',sorting='coffee91')}}">
                 {% if current_sorting == 'coffee91' %}<i class="sort numeric descending icon"></i>{% else %}<i class="sort numeric descending icon black"></i>{% endif %}
             </a>
-            <a href="{{url_for('sort',sorting='coffee19')}}">
+            <a href="{{url_for('initial',sorting='coffee19')}}">
                 {% if current_sorting == 'coffee19' %}<i class="sort numeric ascending icon"></i>{% else %}<i class="sort numeric ascending icon black"></i>{% endif %}
             </a>
         </h2>

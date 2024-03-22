@@ -2,7 +2,7 @@ import os
 import random
 import string
 
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, make_response
 from werkzeug.utils import secure_filename
 
 from Snackbar import app, db
@@ -10,12 +10,14 @@ from Snackbar.Helper.Appearance import monster_image, image_from_folder
 from Snackbar.Helper.Database import get_users_with_leaders
 from Snackbar.models import User
 
-current_sorting = ""
-
 
 @app.route('/')
 def initial():
-    global current_sorting
+    sorting = request.args.get('sorting', default=None, type=str)
+    if sorting is None:
+        current_sorting = request.cookies.get('current_sorting')
+    else:
+        current_sorting = sorting
     initusers = get_users_with_leaders()
     users = sorted(initusers, key=lambda k: k['firstName'])
 
@@ -27,32 +29,14 @@ def initial():
         users.reverse()
         users = sorted(users, key=lambda k: k['coffeeMonth'])
         users.reverse()
-
     else:
         current_sorting = "az"
 
-    # if current_sorting == "az":
-    #     users = sorted(initusers, key=lambda k: k['firstName'])
-    # elif current_sorting == "za":
-    #     users = sorted(initusers, key=lambda k: k['firstName'])
-    #     users.reverse()
-    # elif current_sorting == "coffee19":
-    #     users = sorted(initusers, key=lambda k: k['coffeeMonth'])
-    # elif current_sorting == "coffee91":
-    #     users = sorted(initusers, key=lambda k: k['coffeeMonth'])
-    #     users.reverse()
-    # else:
-    #     current_sorting = "az"
-    #     users = sorted(initusers, key=lambda k: k['firstName'])
+    resp = make_response(render_template('index.html', users=users, current_sorting=current_sorting))
+    resp.set_cookie('current_sorting', current_sorting)
+    return resp
+    # return render_template('index.html', users=users, current_sorting=sorting)
 
-    return render_template('index.html', users=users, current_sorting=current_sorting)
-
-
-@app.route('/sort/<sorting>')
-def sort(sorting):
-    global current_sorting
-    current_sorting = sorting
-    return redirect(url_for('initial'))
 
 
 @app.route('/image/')
