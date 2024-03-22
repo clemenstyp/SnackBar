@@ -153,8 +153,7 @@ def build_sample_db():
     with app.app_context():
         db.drop_all()
         db.create_all()
-        default_user_list_file_path = os.path.join(app.instance_path, 'defaultUserList.csv')
-        with open(default_user_list_file_path) as csvfile:
+        with open('defaultUserList.csv') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 newuser = User(firstname='{}'.format(row['FirstName']),
@@ -204,8 +203,7 @@ def build_sample_db():
 
 def set_default_settings():
     with app.app_context():
-        default_settings_file_path = os.path.join(app.instance_path, 'defaultSettings.csv')
-        with open(default_settings_file_path) as csvfile:
+        with open('defaultSettings.csv') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 key = '{}'.format(row['key'])
