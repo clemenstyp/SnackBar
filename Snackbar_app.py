@@ -53,7 +53,7 @@ def load_args_options():
     parser.parse_args(namespace=options)
 
 
-def get_default_options(default_host="127.0.0.1", default_port="5000", default_url_prefix=""):
+def get_default_options(default_host="0.0.0.0", default_port="5000", default_url_prefix=""):
     default_options = Options()
 
     if host := os.getenv("SNACKBAR_HOST"):

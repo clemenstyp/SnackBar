@@ -16,8 +16,8 @@ services:
       - ./data:/app/data
       - /etc/localtime:/etc/localtime:ro
     restart: on-failure
-    environment:
-      SNACKBAR_HOST: 0.0.0.0
+#    environment:
+#      SNACKBAR_HOST: 0.0.0.0
 #      SNACKBAR_PORT: 5000
 #      SNACKBAR_URL_PREFIX: '/demo'
 #      SNACKBAR_DEBUG: FALSE

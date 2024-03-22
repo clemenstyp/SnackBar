@@ -36,4 +36,4 @@ COPY .. .
 EXPOSE 5000
 
 # Run the application.
-CMD ["gunicorn", "--config","/app/gunicorn_config.py", "--bind", "0.0.0.0:5000", "Snackbar_app:app"]
+CMD ["gunicorn", "--config","/app/gunicorn_config.py"]

@@ -14,6 +14,9 @@ keepalive = 5
 workers = 4
 threads = 4
 
+bind = f"{options.host}:{options.port}"
+wsgi_app = "Snackbar_app:app"
+
 
 def on_starting(server):
     print(f"starting server: {server}")
