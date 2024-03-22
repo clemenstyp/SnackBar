@@ -38,18 +38,21 @@ def initial():
     # return render_template('index.html', users=users, current_sorting=sorting)
 
 
-
 @app.route('/image/')
 @app.route('/image/<filename>')
 def image(filename=None):
     userID = request.args.get('userID')
-    return monster_image(filename, userID)
+    resp = make_response(monster_image(filename, userID))
+    resp.cache_control.max_age = 86400
+    return resp
 
 
 @app.route('/icon/')
 @app.route('/icon/<icon>')
 def get_icon(icon=None):
-    return icon_from_folder(icon)
+    resp = make_response(icon_from_folder(icon))
+    resp.cache_control.max_age = 86400
+    return resp
 
 
 @app.route('/change_image', methods=(['POST']))
