@@ -16,8 +16,12 @@ from Snackbar.models import Coffeeadmin, History, Inpayment, Item, Settings, Use
 
 def setup_admin(app):
     init_login(app)
-    admin = Admin(app, name='SnackBar Admin Page', index_view=MyAdminIndexView(), base_template='my_master.html',
+    admin = Admin(app, name='SnackBar Admin Page',
+                  url=app.config["APPLICATION_ROOT"],
+                  index_view=MyAdminIndexView(),
+                  base_template='my_master.html',
                   template_mode='bootstrap3')
+
     admin.add_view(MyBillView(name='Bill', endpoint='bill'))
     # admin.add_view(MyAccountingView(name='Accounting', endpoint='accounting'))
     admin.add_view(MyPaymentModelView(Inpayment, db.session, 'Inpayment'))

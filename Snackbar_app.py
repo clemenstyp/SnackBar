@@ -19,10 +19,10 @@ class Options:
 
 
 def simple(env, resp):
-    resp('301 Moved Permanently', [('Location', options.url_prefix)])
+    resp('307 Temporary Redirect', [('Location', options.url_prefix)])
     return [b'']
     # resp(b'200 OK', [(b'Content-Type', b'text/plain')])
-    # return [b'You have to call the url_prefix']
+    # return [bytes(f'you have to call the url_suffix: {options.url_prefix}', 'utf8')]
 
 
 def load_args_options():
@@ -66,16 +66,16 @@ def get_default_options(default_host="0.0.0.0", default_port="5000", default_url
     else:
         default_options.port = default_port
 
-    if url_prefix := os.getenv("SNACKBAR_URL_PREFIX"):
-        default_options.url_prefix = url_prefix
+    if url_prefix := os.getenv("SNACKBAR_URL_PREFIX", "") != "":
+        if url_prefix.startswith("/"):
+            default_options.url_prefix = url_prefix
+        else:
+            default_options.url_prefix = f"/{url_prefix}"
     else:
         default_options.url_prefix = default_url_prefix
 
-    if debug := os.getenv("SNACKBAR_DEBUG"):
-        if debug.lower() == 'true':
-            default_options.debug = True
-        else:
-            default_options.debug = False
+    if os.getenv("SNACKBAR_DEBUG", 'False').lower() == 'true':
+        default_options.debug = True
     else:
         default_options.debug = False
 
@@ -96,6 +96,11 @@ def init_app():
     global options
     app.wsgi_app = DispatcherMiddleware(simple, {options.url_prefix: app.wsgi_app})
     app.config["APPLICATION_ROOT"] = options.url_prefix
+    if options.url_prefix.startswith("/"):
+        app.config['SESSION_COOKIE_PATH'] = options.url_prefix
+    else:
+        app.config['SESSION_COOKIE_PATH'] = "/"
+
     app.config['SECRET_KEY'] = f"{options.secret_key}_{options.url_prefix}"
     app.config['DEBUG'] = options.debug
 
@@ -133,5 +138,5 @@ if __name__ == "__main__":
     load_args_options()
     init_app()
     start_schedule()
-    app.run(debug=options.debug, host=options.host, port=int(options.port))
+    app.run(debug=options.debug, host=options.host, port=int(options.port), use_debugger=False, use_reloader=False)
     stop_schedule()

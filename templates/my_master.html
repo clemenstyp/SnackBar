@@ -15,7 +15,7 @@
 <script src="{{url_for('static', filename='idleTimer.js')}}"></script>
 <script type="text/javascript">
 var idleTimer = new IdleTimerOpenURL();
-idleTimer.setupTimer(30, '{{ url_for('initial') }}');
+idleTimer.setupTimer(90, '{{ url_for('initial') }}');
 </script>
 
 {% endif %}

@@ -27,8 +27,8 @@ class MyUserModelView(ModelView):
                          lastName='Last Name',
                          imageName='User Image')
 
-    column_list = ('firstName', 'lastName', 'email', 'hidden')
-    column_sortable_list = ('firstName', 'lastName', 'email', 'hidden')
+    column_list = ('firstName', 'lastName', 'email', 'imageName', 'hidden')
+    column_sortable_list = ('firstName', 'lastName', 'email', 'imageName', 'hidden')
 
     def is_accessible(self):
         return loginflask.current_user.is_authenticated
