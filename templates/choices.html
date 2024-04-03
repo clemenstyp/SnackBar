@@ -171,10 +171,10 @@
     var idleTimer = new IdleTimerOpenURL();
     idleTimer.setupTimer(20, '{{ url_for('initial') }}');
 
-    const fileInput = document.getElementById('file_input');
-    fileInput.onchange = () => {
-      document.getElementById('file_submit').removeAttribute("disabled");
-    }
+    var fileInput = document.getElementById('file_input');
+    fileInput.onchange = function() {
+        document.getElementById('file_submit').removeAttribute("disabled");
+    };
 
 function buyItem(userid, itemid, itemName, itemPrice, buyURL){
 
@@ -182,7 +182,7 @@ function buyItem(userid, itemid, itemName, itemPrice, buyURL){
  }
 
 function askTobuyItem(userid, itemid, itemName, itemPrice, buyURL){
-    const ask = confirm("Do you really want to buy \"" + itemName + "\" for " + itemPrice + "€?");
+    var ask = confirm("Do you really want to buy \"" + itemName + "\" for " + itemPrice + "€?");
     if(ask){
      buyItemNow(userid, itemid, itemName, itemPrice, buyURL);
     }
@@ -214,11 +214,11 @@ function buyItemNow(userid, itemid, itemName, itemPrice, buyURL){
             balance = balance - itemPrice;
             document.getElementById('balance').innerHTML = balance.toFixed(2);
 
-            const date = new Date();
+            var  date = new Date();
 
-            const hours = date.getHours();
+            var hours = date.getHours();
             // getMinutes returns the minutes in local time zone from 0 to 59
-            let minutes = date.getMinutes();
+            var minutes = date.getMinutes();
 
             // hours should always be two digits long
             //if (hours < 10) {
