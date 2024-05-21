@@ -28,7 +28,7 @@ openpyxl==3.1.2
 python-dateutil==2.8.2
 python-editor==1.0.4
 PyYAML==6.0.1
-requests==2.31.0
+requests==2.32.0
 schedule==1.2.1
 six==1.16.0
 SQLAlchemy==2.0.27
