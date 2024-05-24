@@ -1,10 +1,6 @@
-LastName,FirstName,email,ImageName,InitialBalance
-Kerry,Phillips,kerry@phillips.com,unknown.png,10
-Brett,Bradley,brett@bradley.com,,
-Mel,Foster,mel@foster.com,unknown.png,4
-Kiran,Bennett,kiran@bennett.com,unknown.png,15
-Charlie,Caldwell,charlie@caldwell.com,unknown.png,-12.4
-Tanner,Bell,tanner@bell.com,unknown.png,11.80
-Raylee,Snow,raylee@snow.com,unknown.png,10
-Brook,Atkins,brook@atikins.com,unknown.png,0
-Cameron,Mathis,cameron@mathis.com,unknown.png,0.2
+LastName,FirstName,email,ImageName
+Kerry,Phillips,kerry@phillips.com,unknown.png
+Brett,Bradley,brett@bradley.com
+Mel,Foster,mel@foster.com,unknown.png
+Kiran,Bennett,kiran@bennett.com,unknown.png
+Charlie,Caldwell,charlie@caldwell.com,unknown.png

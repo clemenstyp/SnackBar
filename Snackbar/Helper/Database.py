@@ -162,28 +162,6 @@ def build_sample_db():
                 email = '{}'.format(row['email'])
                 newuser = User(firstName=firstName, lastName=lastName, email=email, imageName=imageName)
                 db.session.add(newuser)
-                initial_balance = '{}'.format(row['InitialBalance'])
-                # noinspection PyBroadException,PyPep8
-                try:
-                    initial_balance_float = float(initial_balance)
-                    if initial_balance_float != 0:
-                        initial_payment = Inpayment(amount=initial_balance)
-                        initial_payment.user = newuser
-                        db.session.add(initial_payment)
-                except:
-                    pass
-
-        '''
-        name = [
-            'Wilhelm Müller', 'Franz Meier', 'Berta Schmitt', 'Fritz Hase']
-        email = [
-            'wilhelm@mueller.de', 'franz@meier.de', 'berta@schmitt.de', 'fritz@hase.de']
-    
-        for i in range(len(name)):
-            newuser = User(username='{}'.format(name[i]),email = '{}'.format(email[i]))
-            #newuser.username = name[i]
-            #newuser.email = email[i]
-        '''
 
         itemname = ['Coffee', 'Water', 'Snacks', 'Cola']
         price = [0.2, 0.55, 0.2, 0.4]
