@@ -46,9 +46,9 @@ class User(db.Model):
     def username(self):
         if self.firstName and self.lastName:
             return '{} {}'.format(self.firstName, self.lastName)
-        elif self.firstName 
+        elif self.firstName:
             return '{}'.format(self.firstName)
-        elif self.lastName 
+        elif self.lastName:
             return '{}'.format(self.lastName)
         else
             return 'Unknown User'
