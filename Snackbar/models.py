@@ -85,8 +85,8 @@ class History(db.Model):
     userid: Mapped[int] = mapped_column(ForeignKey('user.userid'))
     user: Mapped["User"] = relationship(back_populates="history")
 
-    itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'))
-    item: Mapped["Item"] = relationship(back_populates="history")
+    itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
+    item: Mapped["Item"] = relationship(back_populates="history", nullable=True)
 
     price: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
@@ -99,8 +99,8 @@ class History(db.Model):
 class Inpayment(db.Model):
     paymentid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
-    userid: Mapped[int] = mapped_column(ForeignKey('user.userid'))
-    user: Mapped["User"] = relationship(back_populates="inpayment")
+    userid: Mapped[int] = mapped_column(ForeignKey('user.userid'), nullable=True)
+    user: Mapped["User"] = relationship(back_populates="inpayment", nullable=True)
 
     amount: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
