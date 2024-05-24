@@ -99,7 +99,7 @@ def adduser():
                             full_path = os.path.join(app.config['IMAGE_FOLDER'], filename)
                             file.save(full_path)
 
-                new_user = User(firstname=first_name, lastname=last_name, email=email, imagename=filename)
+                new_user = User(firstName=first_name, lastName=last_name, email=email, imageName=filename)
 
                 db.session.add(new_user)
                 db.session.commit()

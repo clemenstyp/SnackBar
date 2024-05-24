@@ -156,10 +156,11 @@ def build_sample_db():
         with open('defaultUserList.csv') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                newuser = User(firstname='{}'.format(row['FirstName']),
-                               lastname='{}'.format(row['LastName']),
-                               imagename='{}'.format(row['ImageName']),
-                               email='{}'.format(row['email']))
+                firstName = '{}'.format(row['FirstName'])
+                lastName = '{}'.format(row['LastName'])
+                imageName = '{}'.format(row['ImageName'])
+                email = '{}'.format(row['email'])
+                newuser = User(firstName=firstName, lastName=lastName, email=email, imageName=imageName)
                 db.session.add(newuser)
                 initial_balance = '{}'.format(row['InitialBalance'])
                 # noinspection PyBroadException,PyPep8

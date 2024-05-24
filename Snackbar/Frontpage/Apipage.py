@@ -135,7 +135,7 @@ def api_info():
                                                     func.lower(User.lastName) == func.lower(lastName)).first()
             if curuser is None:
                 with app.app_context():
-                    newuser = User(firstname=firstName, lastname=lastName, email='', imagename='')
+                    newuser = User(firstName=firstName, lastName=lastName, email='', imageName='')
                     db.session.add(newuser)
                     db.session.commit()
                     db.session.flush()
@@ -217,7 +217,7 @@ def api_buy():
                                                     func.lower(User.lastName) == func.lower(lastName)).first()
             if curuser is None:
                 with app.app_context():
-                    newuser = User(firstname=firstName, lastname=lastName, email='', imagename='')
+                    newuser = User(firstName=firstName, lastName=lastName, email='', imageName='')
                     db.session.add(newuser)
                     db.session.commit()
                     db.session.flush()
