@@ -50,7 +50,7 @@ class User(db.Model):
             return '{}'.format(self.firstName)
         elif self.lastName:
             return '{}'.format(self.lastName)
-        else
+        else:
             return 'Unknown User'
     def __repr__(self):
         return '{} {}'.format(self.firstName, self.lastName)
