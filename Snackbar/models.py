@@ -79,7 +79,7 @@ class User(db.Model):
         return account_balance
 
 # Event listener für das Löschen eines Benutzers
-@event.listens_for(User, 'before_delete')
+@db.event.listens_for(User, 'before_delete')
 def create_placeholder(mapper, connection, target):
     for hist in target.history:
         hist.user_placeholder = target.username 
@@ -97,7 +97,7 @@ class Item(db.Model):
     def __repr__(self):
         return self.name
 
-@event.listens_for(Item, 'before_delete')
+@db.event.listens_for(Item, 'before_delete')
 def create_placeholder(mapper, connection, target):
     for hist in target.history:
         hist.item_placeholder = target.name  
