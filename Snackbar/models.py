@@ -42,7 +42,7 @@ class User(db.Model):
     inpayment: Mapped[List["Inpayment"]] = relationship(back_populates="user")
     history: Mapped[List["History"]] = relationship(back_populates="user")
 
-    @propery
+    @hybrid_property
     def username(self):
         if self.firstName and self.lastName:
             return '{} {}'.format(self.firstName, self.lastName)
