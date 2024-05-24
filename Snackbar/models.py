@@ -42,6 +42,16 @@ class User(db.Model):
     inpayment: Mapped[List["Inpayment"]] = relationship(back_populates="user")
     history: Mapped[List["History"]] = relationship(back_populates="user")
 
+    @propery
+    def username(self):
+        if self.firstName and self.lastName:
+            return '{} {}'.format(self.firstName, self.lastName)
+        elif self.firstName 
+            return '{}'.format(self.firstName)
+        elif self.lastName 
+            return '{}'.format(self.lastName)
+        else
+            return 'Unknown User'
     def __repr__(self):
         return '{} {}'.format(self.firstName, self.lastName)
 
@@ -66,6 +76,13 @@ class User(db.Model):
 
         return account_balance
 
+# Event listener für das Löschen eines Benutzers
+@event.listens_for(User, 'before_delete')
+def create_placeholder(mapper, connection, target):
+    for hist in target.history:
+        hist.user_placeholder = target.username 
+        hist.userid = None 
+
 
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -78,18 +95,36 @@ class Item(db.Model):
     def __repr__(self):
         return self.name
 
+@event.listens_for(Item, 'before_delete')
+def create_placeholder(mapper, connection, target):
+    for hist in target.history:
+        hist.item_placeholder = target.name  
+        hist.itemid = None  
+
+
 
 class History(db.Model):
     historyid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
     userid: Mapped[int] = mapped_column(ForeignKey('user.userid'), nullable=True)
     user: Mapped["User"] = relationship(back_populates="history")
+    user_placeholder = db.Column(db.String(80), nullable=True)
+    @hybrid_property
+    def username_or_placeholder(self):
+        return self.user.username if self.user else self.user_placeholder
 
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
     item: Mapped["Item"] = relationship(back_populates="history")
+    item_placeholder = db.Column(db.String(80), nullable=True)
+
+    @hybrid_property
+    def item_or_placeholder(self):
+        return self.item.name if self.item else self.item_placeholder
 
     price: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
+
+   
 
     def __repr__(self):
         return 'User {} ({} {}) bought {} for {} on the {}'.format(self.user, self.user.firstName, self.user.lastName,

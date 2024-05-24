@@ -13,9 +13,9 @@ class MyHistoryModelView(ModelView):
     column_descriptions = dict()
     column_labels = dict(user='Name')
     column_default_sort = ('date', True)
-    column_filters = ('user', 'item', 'price', 'date')
-    column_list = ('user', 'item', 'price', 'date')
-    column_sortable_list = ('user', 'date')
+    column_filters = ('username_or_placeholder', 'item_or_placeholder', 'price', 'date')
+    column_list = ('username_or_placeholder', 'item_or_placeholder', 'price', 'date')
+    column_sortable_list = ('username_or_placeholder', 'date')
     form_args = dict(date=dict(default=datetime.now()), price=dict(default=0))
     can_set_page_size = True
     
