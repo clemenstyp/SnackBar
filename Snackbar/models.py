@@ -115,8 +115,10 @@ class History(db.Model):
     
     @hybrid_property
     def username_or_placeholder(self):
-        print(self.user)
-        return self.user.username if self.user else self.user_placeholder
+        if self.user:
+	        if hasattr(self.user, 'username'):
+				return self.user.username
+        return self.user_placeholder
 
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
     item: Mapped["Item"] = relationship(back_populates="history")
@@ -124,7 +126,10 @@ class History(db.Model):
 
     @hybrid_property
     def item_or_placeholder(self):
-        return self.item.name if self.item else self.item_placeholder
+        if self.item:
+	        if hasattr(self.item, 'username'):
+				return self.item.name
+        return self.item_placeholder
 
     price: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
