@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
+import Snackbar.models
 
 root_folder = pathlib.Path(__file__).parent.parent.resolve()
 
