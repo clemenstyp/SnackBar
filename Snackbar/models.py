@@ -45,7 +45,7 @@ class User(db.Model):
     history: Mapped[List["History"]] = relationship(back_populates="user")
 
     @hybrid_property
-    def username(self) -> string:
+    def username(self):
         if self.firstName and self.lastName:
             return '{} {}'.format(self.firstName, self.lastName)
         elif self.firstName:
