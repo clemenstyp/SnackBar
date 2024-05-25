@@ -45,7 +45,7 @@ class User(db.Model):
     history: Mapped[List["History"]] = relationship(back_populates="user")
 
     @hybrid_property
-    def username(self):
+    def username(self) -> string:
         if self.firstName and self.lastName:
             return '{} {}'.format(self.firstName, self.lastName)
         elif self.firstName:
@@ -54,6 +54,7 @@ class User(db.Model):
             return '{}'.format(self.lastName)
         else:
             return 'Unknown User'
+            
     def __repr__(self):
         return '{} {}'.format(self.firstName, self.lastName)
 
@@ -111,8 +112,10 @@ class History(db.Model):
     userid: Mapped[int] = mapped_column(ForeignKey('user.userid'), nullable=True)
     user: Mapped["User"] = relationship(back_populates="history")
     user_placeholder = db.Column(db.String(80), nullable=True)
+    
     @hybrid_property
     def username_or_placeholder(self):
+        print(self.user)
         return self.user.username if self.user else self.user_placeholder
 
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
