@@ -47,11 +47,11 @@ class User(db.Model):
     @hybrid_property
     def username(self):
         if self.firstName and self.lastName:
-            return '{} {}'.format(self.firstName, self.lastName)
+            return 'F:{} L:{}'.format(self.firstName, self.lastName)
         elif self.firstName:
-            return '{}'.format(self.firstName)
+            return 'F:{}'.format(self.firstName)
         elif self.lastName:
-            return '{}'.format(self.lastName)
+            return 'L:{}'.format(self.lastName)
         else:
             return 'Unknown User'
             
@@ -86,6 +86,9 @@ def create_placeholder(mapper, connection, target):
         hist.user_placeholder = target.username 
         hist.userid = None 
 
+    for inpay in target.inpayment:
+        inpay.user_placeholder = target.username 
+        inpay.userid = None 
 
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -127,7 +130,7 @@ class History(db.Model):
     @hybrid_property
     def item_or_placeholder(self):
         if self.item:
-            if hasattr(self.item, 'username'):
+            if hasattr(self.item, 'name'):
                 return self.item.name
         return self.item_placeholder
 
@@ -146,6 +149,14 @@ class Inpayment(db.Model):
 
     userid: Mapped[int] = mapped_column(ForeignKey('user.userid'), nullable=True)
     user: Mapped["User"] = relationship(back_populates="inpayment")
+    user_placeholder = db.Column(db.String(80), nullable=True)
+    
+    @hybrid_property
+    def username_or_placeholder(self):
+        if self.user:
+            if hasattr(self.user, 'username'):
+                return self.user.username
+        return self.user_placeholder
 
     amount: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
