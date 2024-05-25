@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
@@ -80,7 +80,7 @@ class User(db.Model):
         return account_balance
 
 # Event listener für das Löschen eines Benutzers
-@db.event.listens_for(User, 'before_delete')
+@event.listens_for(User, 'before_delete')
 def create_placeholder(mapper, connection, target):
     for hist in target.history:
         hist.user_placeholder = target.username 
@@ -101,7 +101,7 @@ class Item(db.Model):
     def __repr__(self):
         return self.name
 
-@db.event.listens_for(Item, 'before_delete')
+@event.listens_for(Item, 'before_delete')
 def create_placeholder(mapper, connection, target):
     for hist in target.history:
         hist.item_placeholder = target.name  
