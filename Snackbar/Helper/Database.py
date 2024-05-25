@@ -8,7 +8,7 @@ from sqlalchemy import func, and_, extract
 from Snackbar import app, db, databaseName
 from Snackbar.Helper.Appearance import button_background, button_font_color
 #from Snackbar.models import Coffeeadmin, History, Inpayment, Item, Settings, User
-import Snackbar.models
+from Snackbar.models import *
 
 
 def database_exist():
