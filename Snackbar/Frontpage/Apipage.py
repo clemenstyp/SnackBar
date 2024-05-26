@@ -5,11 +5,11 @@ from flask import request, url_for, Response
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
-from Snackbar import app, db
+from Snackbar import app
 from Snackbar.Helper.Database import get_coffee_dict
 from Snackbar.Helper.Mailing import send_email
 from Snackbar.Helper.Webhook import send_webhook
-from Snackbar.models import History, Item, User
+from Snackbar.models import History, Item, User, db
 
 
 @app.get('/api/items')
