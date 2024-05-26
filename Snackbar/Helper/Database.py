@@ -5,7 +5,7 @@ from datetime import date, datetime
 from flask import url_for
 from sqlalchemy import func, and_, extract
 
-from Snackbar import app, db, databaseName
+from Snackbar import app, databaseName
 from Snackbar.Helper.Appearance import button_background, button_font_color
 #from Snackbar.models import Coffeeadmin, History, Inpayment, Item, Settings, User
 from Snackbar.models import *
