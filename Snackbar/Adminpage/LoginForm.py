@@ -1,7 +1,7 @@
 from wtforms import form, fields, validators
 
-from Snackbar import app, db
-from Snackbar.models import Coffeeadmin
+from Snackbar import app
+from Snackbar.models import Coffeeadmin, db
 
 
 class LoginForm(form.Form):
