@@ -28,4 +28,4 @@ app.config['DEBUG'] = False
 if not os.path.exists(app.config['IMAGE_FOLDER']):
     os.makedirs(app.config['IMAGE_FOLDER'])
 
-db = SQLAlchemy(app)
+#db = SQLAlchemy(app)
