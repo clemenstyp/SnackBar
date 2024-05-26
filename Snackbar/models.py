@@ -80,6 +80,7 @@ class User(db.Model):
         return account_balance
 
 # Event listener für das Löschen eines Benutzers
+@event.listens_for(User, "before_delete")
 def create_user_placeholder(target, context):
     print("before delete create_user_placeholder")
     for hist in target.history:
@@ -90,7 +91,7 @@ def create_user_placeholder(target, context):
         inpay.user_placeholder = target.username 
         inpay.userid = None 
 
-db.event.listens(User, 'before_delete', create_user_placeholder)
+#db.event.listens(User, 'before_delete', create_user_placeholder)
 
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -103,13 +104,14 @@ class Item(db.Model):
     def __repr__(self):
         return self.name
 
+@event.listens_for(Item, "before_delete")
 def create_item_placeholder(target, context):
     print("before delete create_item_placeholder")
     for hist in target.history:
         hist.item_placeholder = target.name  
         hist.itemid = None  
 
-db.event.listens(Item, 'before_delete', create_item_placeholder)
+#db.event.listens(Item, 'before_delete', create_item_placeholder)
 
 class History(db.Model):
     historyid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
