@@ -6,8 +6,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
 
-from Snackbar import db
-
+#from Snackbar import db
+db = SQLAlchemy(app)
 
 class Coffeeadmin(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
