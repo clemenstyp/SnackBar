@@ -6,12 +6,12 @@ from flask import render_template, request, redirect, url_for
 from markupsafe import Markup
 from werkzeug.utils import secure_filename
 
-from Snackbar import app, db
+from Snackbar import app
 from Snackbar.Helper.Appearance import reltime
 from Snackbar.Helper.Database import get_all_leader_data
 from Snackbar.Helper.Database import settings_for, get_unpaid, get_total, get_rank
 from Snackbar.Helper.Mailing import send_email_new_user
-from Snackbar.models import History, Item, User
+from Snackbar.models import History, Item, User, db
 
 
 @app.route('/user/<int:userid>', methods=['GET'])
