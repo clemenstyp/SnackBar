@@ -3,10 +3,10 @@ from flask import redirect, url_for
 from flask_admin import BaseView, expose
 from sqlalchemy import func
 
-from Snackbar import db
+#from Snackbar import db
 # from Snackbar.Helper.Database import make_xls_bill
 from Snackbar.Helper.Mailing import send_reminder
-from Snackbar.models import Inpayment, User
+from Snackbar.models import Inpayment, User, db
 
 
 class MyBillView(BaseView):
