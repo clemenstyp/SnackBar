@@ -1,7 +1,7 @@
 import flask_login as loginflask
 from flask_admin import Admin
 
-from Snackbar import db
+#from Snackbar import db
 from Snackbar.Adminpage.MyAdminIndexView import MyAdminIndexView
 from Snackbar.Adminpage.MyAdminModelView import MyAdminModelView
 from Snackbar.Adminpage.MyBillView import MyBillView
@@ -11,7 +11,7 @@ from Snackbar.Adminpage.MyPaymentModelView import MyPaymentModelView
 from Snackbar.Adminpage.MySettingsModelView import MySettingsModelView
 from Snackbar.Adminpage.MyUserModelView import MyUserModelView
 from Snackbar.Adminpage.SnackBarIndexView import SnackBarIndexView
-from Snackbar.models import Coffeeadmin, History, Inpayment, Item, Settings, User
+from Snackbar.models import Coffeeadmin, History, Inpayment, Item, Settings, User, db
 
 
 def setup_admin(app):
