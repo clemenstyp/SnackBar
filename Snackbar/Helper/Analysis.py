@@ -1,8 +1,8 @@
 from collections import Counter
 from datetime import timedelta
 
-from Snackbar import db, app
-from Snackbar.models import History, Item
+from Snackbar import app
+from Snackbar.models import History, Item, db
 
 
 # noinspection PyUnresolvedReferences
