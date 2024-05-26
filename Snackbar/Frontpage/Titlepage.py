@@ -5,10 +5,10 @@ import string
 from flask import render_template, request, redirect, url_for, make_response
 from werkzeug.utils import secure_filename
 
-from Snackbar import app, db
+from Snackbar import app
 from Snackbar.Helper.Appearance import monster_image, icon_from_folder
 from Snackbar.Helper.Database import get_users_with_leaders
-from Snackbar.models import User
+from Snackbar.models import User, db
 
 
 @app.route('/')
