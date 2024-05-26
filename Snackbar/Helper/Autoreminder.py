@@ -7,9 +7,9 @@ import schedule
 from backports import csv
 from sqlalchemy.sql import func
 
-from Snackbar import app, db
+from Snackbar import app
 from Snackbar.Helper.Mailing import send_bill_to, send_reminder
-from Snackbar.models import Coffeeadmin, Inpayment, User
+from Snackbar.models import Coffeeadmin, Inpayment, User, db
 
 running = True
 schedule_thread = None
