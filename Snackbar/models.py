@@ -82,7 +82,7 @@ class User(db.Model):
 # Event listener für das Löschen eines Benutzers
 @event.listens_for(User, "before_delete")
 def create_user_placeholder(mapper, connection, target):
-    print("before delete create_user_placeholder target: {target} - target.firstName: {target.firstName} - target.username: {target.username}")
+    print(f"before delete create_user_placeholder target: {target} - target.firstName: {target.firstName} - target.username: {target.username}")
     for hist in target.history:
         print(f"hist: {hist}")
         hist.user_placeholder = target.username 
@@ -142,8 +142,7 @@ class History(db.Model):
    
 
     def __repr__(self):
-        return 'User {} ({} {}) bought {} for {} on the {}'.format(self.user, self.user.firstName, self.user.lastName,
-                                                                   self.item, self.price, self.date)
+        return 'User {} bought {} for {} on the {}'.format(self.username_or_placeholder, self.item_or_placeholder, self.price, self.date)
 
 
 class Inpayment(db.Model):
@@ -165,8 +164,7 @@ class Inpayment(db.Model):
     notes: Mapped[str] = mapped_column(String(120), nullable=True)
 
     def __repr__(self):
-        return 'User {} ({} {}) paid {} on the {}'.format(self.userid, self.user.firstName, self.user.lastName,
-                                                          self.amount, self.date)
+        return 'User {} ({}) paid {} on the {}'.format(self.userid, self.username_or_placeholder, self.amount, self.date)
 
 
 class Settings(db.Model):
