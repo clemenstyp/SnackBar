@@ -83,9 +83,11 @@ class User(db.Model):
 @event.listens_for(User, "before_delete")
 def create_user_placeholder(mapper, connection, target):
     print(f"before delete create_user_placeholder target: {target} - target.firstName: {target.firstName} - target.username: {target.username}")
+    username = target.username
     for hist in target.history:
         print(f"hist: {hist}")
-        hist.user_placeholder = f"T:{target.username}" 
+        print(f"set placeholder to: {username}")
+        hist.user_placeholder = username
 
     for inpay in target.inpayment:
         inpay.user_placeholder = target.username 
