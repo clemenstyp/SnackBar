@@ -97,7 +97,6 @@ def create_user_placeholder(mapper, connection, target):
     for inpay in target.inpayment:
         inpay.user_placeholder = target.username 
 
-    db.session.commit()
 
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -121,7 +120,7 @@ class History(db.Model):
 
     userid: Mapped[int] = mapped_column(ForeignKey('user.userid'), nullable=True)
     user: Mapped["User"] = relationship(back_populates="history")
-    user_placeholder = db.Column(db.String(80), nullable=True)
+    user_placeholder: Mapped[str] = mapped_column(String(80), nullable=True)
     
     @hybrid_property
     def username_or_placeholder(self):
@@ -132,7 +131,7 @@ class History(db.Model):
 
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
     item: Mapped["Item"] = relationship(back_populates="history")
-    item_placeholder = db.Column(db.String(80), nullable=True)
+    item_placeholder: Mapped[str] = mapped_column(String(80), nullable=True)
 
     @hybrid_property
     def item_or_placeholder(self):
@@ -155,7 +154,7 @@ class Inpayment(db.Model):
 
     userid: Mapped[int] = mapped_column(ForeignKey('user.userid'), nullable=True)
     user: Mapped["User"] = relationship(back_populates="inpayment")
-    user_placeholder = db.Column(db.String(80), nullable=True)
+    user_placeholder: Mapped[str] = mapped_column(String(80), nullable=True)
     
     @hybrid_property
     def username_or_placeholder(self):
