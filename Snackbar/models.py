@@ -10,17 +10,17 @@ from flask_sqlalchemy import SQLAlchemy
 from Snackbar import app
 db = SQLAlchemy(app)
 
-import logging
-
-logging.basicConfig()
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+# # sql alchemy debug logging:
+# import logging
+# logging.basicConfig()
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 class Coffeeadmin(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, default='')
-    password: Mapped[str] = mapped_column(String(64))
+    password: Mapped[str] = mapped_column(String(64), nullable=True)
     send_bill: Mapped[bool] = mapped_column(default=False)
-    email: Mapped[str] = mapped_column(String(120), default='')
+    email: Mapped[str] = mapped_column(String(120), default='', nullable=True)
 
     # Flask-Login integration
     @staticmethod
@@ -53,11 +53,11 @@ class User(db.Model):
     @hybrid_property
     def username(self):
         if self.firstName and self.lastName:
-            return 'F:{} L:{}'.format(self.firstName, self.lastName)
+            return '{} {}'.format(self.firstName, self.lastName)
         elif self.firstName:
-            return 'F:{}'.format(self.firstName)
+            return '{}'.format(self.firstName)
         elif self.lastName:
-            return 'L:{}'.format(self.lastName)
+            return '{}'.format(self.lastName)
         else:
             return 'Unknown User'
             
@@ -89,18 +89,18 @@ class User(db.Model):
 def database_flush(session, flush_context, instances):
     for p_object in session.deleted:
         if isinstance(p_object, User):
-            print(f"before flush / delete  user target: {p_object} - target.firstName: {p_object.firstName} - target.username: {p_object.username}")
+            # print(f"before flush / delete  user target: {p_object} - target.firstName: {p_object.firstName} - target.username: {p_object.username}")
             for hist in p_object.history:
                 hist.user_placeholder = p_object.username
             for inpay in p_object.inpayment:
-                print(f"hist: {inpay}")
+                # print(f"hist: {inpay}")
                 inpay.user_placeholder = p_object.username
         elif isinstance(p_object, Item):
-            print(f"before flush / delete  item target: {p_object}")
+            # print(f"before flush / delete  item target: {p_object}")
             for hist in p_object.history:
                 hist.item_placeholder = p_object.name  
-        else:
-            print(f"before flush / delete  other target: {p_object}")
+        # else:
+        #     print(f"before flush / delete  other target: {p_object}")
             
 
 class Item(db.Model):
