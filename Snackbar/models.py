@@ -84,6 +84,14 @@ class User(db.Model):
 
         return account_balance
 
+@event.listens_for(User, 'before_flush')
+def database_flush(session, flush_context, instances):
+    for p_object in session.deleted:
+        print(f"before flush / delete  target: {p_object} - target.firstName: {p_object.firstName} - target.username: {p_object.username}")
+        for inpay in p_object.inpayment:
+            print(f"hist: {inpay}")
+            inpay.user_placeholder = p_object.username
+
 # Event listener für das Löschen eines Benutzers
 @event.listens_for(User, "before_delete")
 def create_user_placeholder(mapper, connection, target):
