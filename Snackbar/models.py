@@ -92,7 +92,8 @@ def create_user_placeholder(mapper, connection, target):
     for hist in target.history:
         print(f"hist: {hist}")
         print(f"set placeholder to: {username}")
-        hist.user_placeholder = username
+        history_element = db.session.get(History, hist.historyid)
+        history_element.user_placeholder = username
 
     for inpay in target.inpayment:
         inpay.user_placeholder = target.username 
