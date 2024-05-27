@@ -82,8 +82,9 @@ class User(db.Model):
 # Event listener für das Löschen eines Benutzers
 @event.listens_for(User, "before_delete")
 def create_user_placeholder(mapper, connection, target):
-    print("before delete create_user_placeholder")
+    print("before delete create_user_placeholder target: {target} - target.firstName: {target.firstName} - target.username: {target.username}")
     for hist in target.history:
+        print(f"hist: {hist}")
         hist.user_placeholder = target.username 
         hist.userid = None 
 
@@ -106,6 +107,7 @@ class Item(db.Model):
 def create_item_placeholder(mapper, connection, target):
     print("before delete create_item_placeholder")
     for hist in target.history:
+
         hist.item_placeholder = target.name  
         hist.itemid = None  
 

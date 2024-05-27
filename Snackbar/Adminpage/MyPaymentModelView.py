@@ -16,9 +16,9 @@ class MyPaymentModelView(ModelView):
     column_descriptions = dict()
     column_labels = dict(user='Name')
     column_default_sort = ('date', True)
-    column_filters = ('user', 'amount', 'date')
-    column_list = ('user', 'amount', 'date', 'notes')
-    column_sortable_list = ('user', 'date')
+    column_filters = ('username_or_placeholder', 'amount', 'date')
+    column_list = ('username_or_placeholder', 'amount', 'date', 'notes')
+    column_sortable_list = ('username_or_placeholder', 'date')
     list_template = 'admin/custom_list.html'
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
