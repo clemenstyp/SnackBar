@@ -88,25 +88,20 @@ class User(db.Model):
 @event.listens_for(Session, 'before_flush')
 def database_flush(session, flush_context, instances):
     for p_object in session.deleted:
-        print(f"before flush / delete  target: {p_object} - target.firstName: {p_object.firstName} - target.username: {p_object.username}")
-        for inpay in p_object.inpayment:
-            print(f"hist: {inpay}")
-            inpay.user_placeholder = p_object.username
-
-# Event listener für das Löschen eines Benutzers
-@event.listens_for(User, "before_delete")
-def create_user_placeholder(mapper, connection, target):
-    print(f"before delete create_user_placeholder target: {target} - target.firstName: {target.firstName} - target.username: {target.username}")
-    username = target.username
-    for hist in target.history:
-        print(f"hist: {hist}")
-        print(f"set placeholder to: {username}")
-        history_element = db.session.get(History, hist.historyid)
-        history_element.user_placeholder = username
-
-    for inpay in target.inpayment:
-        inpay.user_placeholder = target.username 
-
+        if isinstance(p_object, User):
+            print(f"before flush / delete  user target: {p_object} - target.firstName: {p_object.firstName} - target.username: {p_object.username}")
+            for hist in p_object.history:
+                hist.user_placeholder = p_object.username
+            for inpay in p_object.inpayment:
+                print(f"hist: {inpay}")
+                inpay.user_placeholder = p_object.username
+        elif isinstance(p_object, Item):
+            print(f"before flush / delete  item target: {p_object}")
+            for hist in p_object.history:
+                hist.item_placeholder = p_object.name  
+        else:
+            print(f"before flush / delete  other target: {p_object}")
+            
 
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -118,12 +113,6 @@ class Item(db.Model):
 
     def __repr__(self):
         return self.name
-
-@event.listens_for(Item, "before_delete")
-def create_item_placeholder(mapper, connection, target):
-    print("before delete create_item_placeholder")
-    for hist in target.history:
-        hist.item_placeholder = target.name  
 
 class History(db.Model):
     historyid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
