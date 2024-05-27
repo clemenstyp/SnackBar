@@ -19,7 +19,7 @@ class MyPaymentModelView(ModelView):
     column_filters = ('username_or_placeholder', 'amount', 'date')
     column_list = ('username_or_placeholder', 'amount', 'date', 'notes')
     column_labels = dict(username_or_placeholder='Name')
-    form_excluded_columns = ('username_or_placeholder')
+    form_columns = ('user', 'amount', 'date', 'notes')
     column_sortable_list = ('username_or_placeholder', 'date')
     list_template = 'admin/custom_list.html'
 

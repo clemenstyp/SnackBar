@@ -85,12 +85,10 @@ def create_user_placeholder(mapper, connection, target):
     print(f"before delete create_user_placeholder target: {target} - target.firstName: {target.firstName} - target.username: {target.username}")
     for hist in target.history:
         print(f"hist: {hist}")
-        hist.user_placeholder = target.username 
-        hist.userid = None 
+        hist.user_placeholder = f"T:{target.username}" 
 
     for inpay in target.inpayment:
         inpay.user_placeholder = target.username 
-        inpay.userid = None 
 
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -107,9 +105,7 @@ class Item(db.Model):
 def create_item_placeholder(mapper, connection, target):
     print("before delete create_item_placeholder")
     for hist in target.history:
-
         hist.item_placeholder = target.name  
-        hist.itemid = None  
 
 class History(db.Model):
     historyid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
