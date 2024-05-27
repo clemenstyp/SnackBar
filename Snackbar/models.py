@@ -9,6 +9,11 @@ from flask_sqlalchemy import SQLAlchemy
 from Snackbar import app
 db = SQLAlchemy(app)
 
+import logging
+
+logging.basicConfig()
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
 class Coffeeadmin(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, default='')
@@ -91,6 +96,8 @@ def create_user_placeholder(mapper, connection, target):
 
     for inpay in target.inpayment:
         inpay.user_placeholder = target.username 
+
+    db.session.commit()
 
 class Item(db.Model):
     itemid: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
