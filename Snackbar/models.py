@@ -3,6 +3,7 @@ from typing import List
 
 from sqlalchemy import String, ForeignKey, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm.session import Session
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
 
@@ -84,7 +85,7 @@ class User(db.Model):
 
         return account_balance
 
-@event.listens_for(User, 'before_flush')
+@event.listens_for(Session, 'before_flush')
 def database_flush(session, flush_context, instances):
     for p_object in session.deleted:
         print(f"before flush / delete  target: {p_object} - target.firstName: {p_object.firstName} - target.username: {p_object.username}")
