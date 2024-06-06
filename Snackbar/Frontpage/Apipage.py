@@ -3,6 +3,7 @@ import traceback
 
 import datetime
 import os
+import time
 from flask import request, url_for, Response
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
@@ -280,6 +281,15 @@ def api_buy():
         log_path = os.path.join(root_path, "../../data/buy")
         if not os.path.exists(log_path):
             os.makedirs(log_path)
+
+
+
+        for filename in os.listdir(log_path):
+            filestamp = os.stat(os.path.join(log_path, filename)).st_mtime
+            seven_days_ago = time.time() - 14 * 86400
+            if filestamp < seven_days_ago:
+                os.remove(os.path.join(log_path, filename))
+
         log_name = f"{datetime.date.today().strftime('%Y-%m-%d')}.txt"
        
         with open(os.path.join(log_path, log_name), 'a') as log_file:
