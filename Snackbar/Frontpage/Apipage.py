@@ -1,7 +1,8 @@
 import json
 import traceback
-import logging
 
+import datetime
+import os
 from flask import request, url_for, Response
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload
@@ -274,8 +275,17 @@ def api_buy():
         send_email(curuser, curitem)
         coffeeDict = get_coffee_dict(curuser, user_purchase, get_extra_data(request))
 
-        print('/api/buy called: ')
-        print(json.dumps(coffeeDict, indent=4))
+        # log_path
+        root_path = os.path.dirname(os.path.abspath(__file__))
+        log_path = os.path.join(root_path, "../../data/buy")
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
+        log_name = f"{datetime.date.today().strftime('%Y-%m-%d')}.txt"
+       
+        with open(os.path.join(log_path, log_name), 'a') as log_file:
+            print(f'{datetime.datetime.now().replace(microsecond=0).isoformat()}: /api/buy called: ', file=log_file)
+            print(json.dumps(coffeeDict, indent=4), file=log_file)
+
 
         try:
             send_webhook(coffeeDict)
