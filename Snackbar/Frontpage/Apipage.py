@@ -274,8 +274,8 @@ def api_buy():
         send_email(curuser, curitem)
         coffeeDict = get_coffee_dict(curuser, user_purchase, get_extra_data(request))
 
-        logging.debug('/api/buy called: ')
-        logging.debug(json.dumps(coffeeDict, indent=4))
+        app.logger.info('/api/buy called: ')
+        app.logger.info(json.dumps(coffeeDict, indent=4))
 
         try:
             send_webhook(coffeeDict)
