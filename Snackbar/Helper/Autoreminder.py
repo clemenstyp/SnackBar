@@ -85,7 +85,7 @@ def save_bill(total_cash, total_bill, bill_date):
 
     # export_path
     root_path = os.path.dirname(os.path.abspath(__file__))
-    export_path = os.path.join(root_path, "bill")
+    export_path = os.path.join(root_path, "../../data/bill")
     if not os.path.exists(export_path):
         os.makedirs(export_path)
 
