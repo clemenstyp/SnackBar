@@ -1,5 +1,6 @@
 import json
 import traceback
+import logging
 
 from flask import request, url_for, Response
 from sqlalchemy import func
@@ -272,6 +273,9 @@ def api_buy():
 
         send_email(curuser, curitem)
         coffeeDict = get_coffee_dict(curuser, user_purchase, get_extra_data(request))
+
+        logging.debug('/api/buy called: ')
+        logging.debug(json.dumps(coffeeDict, indent=4))
 
         try:
             send_webhook(coffeeDict)
