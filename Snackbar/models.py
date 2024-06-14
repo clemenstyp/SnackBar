@@ -63,7 +63,7 @@ class User(db.Model):
         else:
             return 'Unknown User'
     
-    #@username.inplace.expression
+    @username.inplace.expression
     @classmethod
     def _username_expression(cls):
         return case(
