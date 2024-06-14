@@ -7,6 +7,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import case
+from sqlalchemy import select
 
 from Snackbar import app
 db = SQLAlchemy(app)
