@@ -140,13 +140,13 @@ class History(db.Model):
                 return self.user.username
         return self.user_placeholder
 
-    @username_or_placeholder.inplace.expression
-    @classmethod
-    def _username_or_placeholder_expression(cls):
-        return case(
-            (cls.user != None, cls.user.username),
-            else_=cls.user_placeholder
-        )
+    #@username_or_placeholder.inplace.expression
+    #@classmethod
+    #def _username_or_placeholder_expression(cls):
+    #    return case(
+    #        (cls.user != None, cls.user.username),
+    #        else_=cls.user_placeholder
+    #    )
 
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
     item: Mapped["Item"] = relationship(back_populates="history")
