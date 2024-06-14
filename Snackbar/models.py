@@ -141,7 +141,7 @@ class History(db.Model):
                 return self.user.username
         return self.user_placeholder
 
-    @username_or_placeholder.inplace.expression
+    #@username_or_placeholder.inplace.expression
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
@@ -164,7 +164,7 @@ class History(db.Model):
     @classmethod
     def _item_or_placeholder_expression(cls):
         return case(
-            (cls.item != None, cls.item.name),
+            (cls.item != None, select(Item).where(Item.userid == cls.itemid)).first().name,
             else_=cls.item_placeholder
         )
     
@@ -195,7 +195,7 @@ class Inpayment(db.Model):
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None, cls.user.username),
+            (cls.user != None, select(User).where(User.userid == cls.userid)).first().username,
             else_=cls.user_placeholder
         )
     
