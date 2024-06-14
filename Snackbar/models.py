@@ -66,7 +66,7 @@ class User(db.Model):
     @classmethod
     def _username_expression(cls):
         return case(
-            (cls.firstName != None && cls.lastName != None, cls.firstName + " " + cls.lastName),
+            (cls.firstName != None & cls.lastName != None, cls.firstName + " " + cls.lastName),
             (cls.firstName != None, cls.firstName),
             (cls.lastName != None, cls.lastName),
             else_='Unknown User'
@@ -144,7 +144,7 @@ class History(db.Model):
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None && cls.user.username != None, cls.user.username),
+            (cls.user != None & cls.user.username != None, cls.user.username),
             else_=cls.user_placeholder
         )
 
@@ -163,7 +163,7 @@ class History(db.Model):
     @classmethod
     def _item_or_placeholder_expression(cls):
         return case(
-            (cls.item != None && cls.item.name != None, cls.item.name),
+            (cls.item != None & cls.item.name != None, cls.item.name),
             else_=cls.item_placeholder
         )
     
