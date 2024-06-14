@@ -160,13 +160,13 @@ class History(db.Model):
                 return self.item.name
         return self.item_placeholder
 
-    #@item_or_placeholder.inplace.expression
-    #@classmethod
-    #def _item_or_placeholder_expression(cls):
-    #    return case(
-    #        (cls.item != None, select(Item).where(Item.userid == cls.itemid)).first().name,
-    #        else_=cls.item_placeholder
-    #    )
+    @item_or_placeholder.inplace.expression
+    @classmethod
+    def _item_or_placeholder_expression(cls):
+        return case(
+            (cls.item != None, select(Item).where(Item.userid == cls.itemid)).first().name,
+            else_=cls.item_placeholder
+        )
     
     price: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
