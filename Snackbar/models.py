@@ -192,12 +192,12 @@ class Inpayment(db.Model):
         return self.user_placeholder
 
     #@username_or_placeholder.inplace.expression
-    #@classmethod
-    #def _username_or_placeholder_expression(cls):
-    #    return case(
-    #        (cls.user != None, select(User).where(User.userid == cls.userid).first().username,
-    #        else_=cls.user_placeholder)
-    #    )
+    @classmethod
+    def _username_or_placeholder_expression(cls):
+        return case(
+            (cls.user != None, select(User).where(User.userid == cls.userid).first().firstName + " " + select(User).where(User.userid == cls.userid).first().lastName,
+            else_=cls.user_placeholder)
+        )
     
     amount: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
