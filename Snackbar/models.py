@@ -141,11 +141,11 @@ class History(db.Model):
                 return self.user.username
         return self.user_placeholder
 
-    #@username_or_placeholder.inplace.expression
+    @username_or_placeholder.inplace.expression
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None, select(User.username).where(User.userid == cls.userid)),
+            (cls.user != None, select(User).where(User.userid == cls.userid))..first().username,
             else_=cls.user_placeholder
         )
 
