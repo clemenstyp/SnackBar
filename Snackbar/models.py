@@ -145,8 +145,8 @@ class History(db.Model):
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None, select(User).where(User.userid == cls.userid).first().firstName + " " + select(User).where(User.userid == cls.userid).first().lastName,
-            else_=cls.user_placeholder)
+            (cls.user != None, select(User).where(User.userid == cls.userid).first().firstName + " " + select(User).where(User.userid == cls.userid).first().lastName),
+            else_=cls.user_placeholder
         )
 
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
@@ -164,8 +164,8 @@ class History(db.Model):
     @classmethod
     def _item_or_placeholder_expression(cls):
         return case(
-            (cls.item != None, select(Item).where(Item.itemid == cls.itemid).first().name,
-            else_=cls.item_placeholder)
+            (cls.item != None, select(Item).where(Item.itemid == cls.itemid).first().name),
+            else_=cls.item_placeholder
         )
     
     price: Mapped[float] = mapped_column(nullable=False)
@@ -195,8 +195,8 @@ class Inpayment(db.Model):
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None, select(User).where(User.userid == cls.userid).first().firstName + " " + select(User).where(User.userid == cls.userid).first().lastName,
-            else_=cls.user_placeholder)
+            (cls.user != None, select(User).where(User.userid == cls.userid).first().firstName + " " + select(User).where(User.userid == cls.userid).first().lastName),
+            else_=cls.user_placeholder
         )
     
     amount: Mapped[float] = mapped_column(nullable=False)
