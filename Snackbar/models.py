@@ -144,7 +144,7 @@ class History(db.Model):
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None & cls.user.username != None, cls.user.username),
+            (cls.user != None, cls.user.username),
             else_=cls.user_placeholder
         )
 
@@ -163,7 +163,7 @@ class History(db.Model):
     @classmethod
     def _item_or_placeholder_expression(cls):
         return case(
-            (cls.item != None & cls.item.name != None, cls.item.name),
+            (cls.item != None, cls.item.name),
             else_=cls.item_placeholder
         )
     
@@ -190,6 +190,14 @@ class Inpayment(db.Model):
                 return self.user.username
         return self.user_placeholder
 
+    @username_or_placeholder.inplace.expression
+    @classmethod
+    def _username_or_placeholder_expression(cls):
+        return case(
+            (cls.user != None, cls.user.username),
+            else_=cls.user_placeholder
+        )
+    
     amount: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
     notes: Mapped[str] = mapped_column(String(120), nullable=True)
