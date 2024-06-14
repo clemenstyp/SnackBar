@@ -164,7 +164,7 @@ class History(db.Model):
     @classmethod
     def _item_or_placeholder_expression(cls):
         return case(
-            (cls.item != None, select(Item).where(Item.itemid == cls.itemid).first().name),
+            (cls.item != None, select(Item).where(Item.itemid == cls.itemid).name),
             else_=cls.item_placeholder
         )
     
