@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import case
 from sqlalchemy import select
-
+from sqlalchemy import and_
 from Snackbar import app
 db = SQLAlchemy(app)
 
@@ -63,11 +63,11 @@ class User(db.Model):
         else:
             return 'Unknown User'
     
-    #@username.inplace.expression
+    @username.inplace.expression
     @classmethod
     def _username_expression(cls):
         return case(
-            (cls.firstName != None & cls.lastName != None, cls.firstName + " " + cls.lastName),
+            (and_(cls.firstName != None, cls.lastName != None), cls.firstName + " " + cls.lastName),
             (cls.firstName != None, cls.firstName),
             (cls.lastName != None, cls.lastName),
             else_='Unknown User'
