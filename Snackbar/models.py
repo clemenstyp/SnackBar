@@ -145,7 +145,13 @@ class History(db.Model):
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None, select(User).where(User.userid == cls.userid).first().firstName + " " + select(User).where(User.userid == cls.userid).first().lastName),
+            (cls.user != None, 
+             select(User.firstName)
+             .where(User.userid == cls.userid)
+             .scalar_subquery() + " " + select(User.lastName)
+             .where(User.userid == cls.userid)
+             .scalar_subquery()             
+            ),
             else_=cls.user_placeholder
         )
 
@@ -199,7 +205,13 @@ class Inpayment(db.Model):
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
-            (cls.user != None, select(User).where(User.userid == cls.userid).first().firstName + " " + select(User).where(User.userid == cls.userid).first().lastName),
+            (cls.user != None, 
+             select(User.firstName)
+             .where(User.userid == cls.userid)
+             .scalar_subquery() + " " + select(User.lastName)
+             .where(User.userid == cls.userid)
+             .scalar_subquery()             
+            ),
             else_=cls.user_placeholder
         )
     
