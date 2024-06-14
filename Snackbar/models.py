@@ -142,12 +142,12 @@ class History(db.Model):
         return self.user_placeholder
 
     #@username_or_placeholder.inplace.expression
-    @classmethod
-    def _username_or_placeholder_expression(cls):
-        return case(
-            (cls.user != None, select(User).where(User.userid == cls.userid)).first().username,
-            else_=cls.user_placeholder
-        )
+    #@classmethod
+    #def _username_or_placeholder_expression(cls):
+    #    return case(
+    #        (cls.user != None, select(User).where(User.userid == cls.userid)).first().username,
+    #        else_=cls.user_placeholder
+    #    )
 
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
     item: Mapped["Item"] = relationship(back_populates="history")
@@ -161,12 +161,12 @@ class History(db.Model):
         return self.item_placeholder
 
     #@item_or_placeholder.inplace.expression
-    @classmethod
-    def _item_or_placeholder_expression(cls):
-        return case(
-            (cls.item != None, select(Item).where(Item.userid == cls.itemid)).first().name,
-            else_=cls.item_placeholder
-        )
+    #@classmethod
+    #def _item_or_placeholder_expression(cls):
+    #    return case(
+    #        (cls.item != None, select(Item).where(Item.userid == cls.itemid)).first().name,
+    #        else_=cls.item_placeholder
+    #    )
     
     price: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
@@ -192,12 +192,12 @@ class Inpayment(db.Model):
         return self.user_placeholder
 
     #@username_or_placeholder.inplace.expression
-    @classmethod
-    def _username_or_placeholder_expression(cls):
-        return case(
-            (cls.user != None, select(User).where(User.userid == cls.userid)).first().username,
-            else_=cls.user_placeholder
-        )
+    #@classmethod
+    #def _username_or_placeholder_expression(cls):
+    #    return case(
+    #        (cls.user != None, select(User).where(User.userid == cls.userid)).first().username,
+    #        else_=cls.user_placeholder
+    #    )
     
     amount: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
