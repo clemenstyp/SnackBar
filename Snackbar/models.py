@@ -168,7 +168,7 @@ class History(db.Model):
 
     @item_or_placeholder.inplace.expression
     @classmethod
-    def _item_or_placeholder_expression(cls) -> SQLColumnExpression[str]:
+    def _item_or_placeholder_expression(cls):
         return case(
             (cls.item != None, 
              select(Item.name)
