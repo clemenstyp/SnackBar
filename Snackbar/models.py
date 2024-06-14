@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.orm.session import Session
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import case
 
 from Snackbar import app
 db = SQLAlchemy(app)
@@ -53,14 +54,25 @@ class User(db.Model):
     @hybrid_property
     def username(self):
         if self.firstName and self.lastName:
-            return '{} {}'.format(self.firstName, self.lastName)
+            return self.firstName + " " + self.lastName
         elif self.firstName:
-            return '{}'.format(self.firstName)
+            return self.firstName
         elif self.lastName:
-            return '{}'.format(self.lastName)
+            return self.lastName
         else:
             return 'Unknown User'
-            
+    
+    @username.inplace.expression
+    @classmethod
+    def _username_expression(cls):
+        return case(
+            (cls.firstName != None && cls.lastName != None, cls.firstName + " " + cls.lastName),
+            (cls.firstName != None, cls.firstName),
+            (cls.lastName != None, cls.lastName),
+            else_='Unknown User'
+        )
+
+    
     def __repr__(self):
         return '{} {}'.format(self.firstName, self.lastName)
 
@@ -128,6 +140,14 @@ class History(db.Model):
                 return self.user.username
         return self.user_placeholder
 
+    @username_or_placeholder.inplace.expression
+    @classmethod
+    def _username_or_placeholder_expression(cls):
+        return case(
+            (cls.user != None && cls.user.username != None, cls.user.username),
+            else_=cls.user_placeholder
+        )
+
     itemid: Mapped[int] = mapped_column(ForeignKey('item.itemid'), nullable=True)
     item: Mapped["Item"] = relationship(back_populates="history")
     item_placeholder: Mapped[str] = mapped_column(String(80), nullable=True)
@@ -139,6 +159,14 @@ class History(db.Model):
                 return self.item.name
         return self.item_placeholder
 
+    @item_or_placeholder.inplace.expression
+    @classmethod
+    def _item_or_placeholder_expression(cls):
+        return case(
+            (cls.item != None && cls.item.name != None, cls.item.name),
+            else_=cls.item_placeholder
+        )
+    
     price: Mapped[float] = mapped_column(nullable=False)
     date: Mapped[datetime] = mapped_column(default=datetime.now, nullable=False)
 
