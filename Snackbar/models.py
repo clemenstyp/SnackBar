@@ -159,7 +159,7 @@ class History(db.Model):
                 return self.item.name
         return self.item_placeholder
 
-    @item_or_placeholder.inplace.expression
+    #@item_or_placeholder.inplace.expression
     @classmethod
     def _item_or_placeholder_expression(cls):
         return case(
@@ -190,7 +190,7 @@ class Inpayment(db.Model):
                 return self.user.username
         return self.user_placeholder
 
-    @username_or_placeholder.inplace.expression
+    #@username_or_placeholder.inplace.expression
     @classmethod
     def _username_or_placeholder_expression(cls):
         return case(
