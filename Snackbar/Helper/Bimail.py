@@ -38,13 +38,14 @@ class Bimail:
             if msg.get('Date', None) is None:
                 msg['Date'] = email.utils.formatdate()
             # send
-            s = smtplib.SMTP(self.servername)
+            with smtplib.SMTP(self.servername, timeout=3) as s:
+                s.sendmail(self.sender, self.recipients, msg.as_string())
+            # s = smtplib.SMTP(self.servername)
             # s.starttls()
             # s.login(self.sender, self.senderpass)
-            s.sendmail(self.sender, self.recipients, msg.as_string())
             # test
             # print(msg)
-            s.quit()
+            # s.quit()
         except Exception as e:
             pass
 
